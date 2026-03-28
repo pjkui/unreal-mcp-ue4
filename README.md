@@ -1,130 +1,103 @@
 # unreal-mcp-ue4
-> UE4.27.2-focused MCP server for Unreal Engine that uses Unreal Python Remote Execution
+> UE4.27.2-focused MCP server for Unreal Engine using Unreal Python Remote Execution
 
-Based on the original project: [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp)
+`unreal-mcp-ue4` is a UE4.27.2-compatible fork of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp). It keeps the original local Node.js MCP workflow, adapts the tool layer to Unreal Engine 4.27, and adds broader UE4-safe coverage for actors, assets, Blueprints, UMG, materials, world-building helpers, and domain-style namespace tools.
 
-This fork was modified to support Unreal Engine 4.27 while preserving the original Unreal MCP workflow where possible.
+This port and the follow-up tool, documentation, and smoke-test work were developed with assistance from OpenAI Codex.
 
-This UE4.27 port and the follow-up tool, documentation, and smoke-test extensions were developed with assistance from OpenAI Codex.
+## Overview
 
-![hero](hero.png)
+- No custom Unreal C++ plugin from this repository is required.
+- The server talks to the editor through Unreal's built-in Python Remote Execution path.
+- The tool surface is organized into granular tools and higher-level domain tools.
+- UE5-only editor scripting features are not reintroduced; unsupported operations return a clear message instead of silently failing.
 
-![gif](mcp.gif)
+## Origin
 
-[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](https://github.com/conaman/unreal-mcp-ue4/blob/main/LICENSE)
+- Original project: [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp)
+- This fork adapts that workflow for Unreal Engine 4.27.2.
+- Unreal Python API reference: [Unreal Engine Python API 4.27](https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.27)
 
-## ⚡ Differences
+## Safety
 
-This server does not require installing a new UE plugin as it uses the built-in Python remote execution protocol.
+- This is not an official Epic Games project.
+- Any connected MCP client can inspect and modify your open Unreal Editor session.
+- Use a disposable test project first, especially when trying asset or world-generation tools.
 
-Adding new tools/features is much faster to develop since it does not require any C++ code.
+## Requirements
 
-This fork adds UE4.27.2 compatibility while keeping equivalent UE5 editor scripting paths where they overlap.
+- Unreal Engine `4.27.2`
+- Node.js `18+`
+- `npm`
+- An MCP client such as Codex, Claude Desktop, Cursor, or GitHub Copilot in a supported IDE
 
-Original source: [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp)
+## Required Unreal Editor Setup
 
-It can support the [Unreal Engine Python API for 4.27](https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.27)
+This repository does not ship its own Unreal plugin. Instead, it depends on built-in editor features that must be enabled in your UE4.27.2 project.
 
+### Required plugins
 
-## ⚠️ Note
+- `Python Editor Script Plugin`
+- `Editor Scripting Utilities`
 
-- This is not an official Unreal Engine project.
-- Your AI agents or tools will have full access to your Editor.
-- Review any changes your Client suggests before you approve them.
+### Required project setting
 
-## 📦 Installation
+- `Edit -> Project Settings -> Python -> Enable Remote Execution`
 
-#### 📋 Requirements
-- 🔧 Unreal Engine 4.27.2 (verified)
-- 🟢 Node.js 18+ (`npm` is included with Node.js. You do not need `rpm` on Windows.)
-- 🟢 npm (recommended) or pnpm
-- 🤖 MCP Client (Claude, Cursor, etc.)
+### Notes
 
-1. Setting up your Editor:
-   - Open your Unreal Engine project
-   - Go to `Edit` -> `Plugins`
-   - Search for "Python Editor Script Plugin" and enable it
-   - Search for "Editor Scripting Utilities" and enable it
-   - Restart the editor if prompted
-   - Go to `Edit` -> `Project Settings` 
-   - Search for "Python" and enable the "Enable Remote Execution" option
+- UMG tooling works with editor modules that already ship with Unreal Editor. There is no extra UMG plugin from this repository to install.
+- Keep the target Unreal project open while using the MCP server or running tests.
+- If you change plugin or Python settings, restart the editor before testing again.
 
-  ![enable plugin](img1.png)
-  ![enable remote execution](img2.png)
+## Installation
 
-2. Set up your Client:
-   - Build this local fork
+### 1. Clone and build the server
+
 ```bash
+git clone https://github.com/conaman/unreal-mcp-ue4.git
+cd unreal-mcp-ue4
 npm install
 npm run build
-
-# or
-pnpm install
-pnpm build
 ```
-   - Edit your Claude (or Cursor) config
+
+Successful build output should create `dist/bin.js`, `dist/index.js`, and `dist/editor/tools.js`.
+
+### 2. Enable the Unreal requirements
+
+In Unreal Editor:
+
+1. Open the target UE4.27.2 project.
+2. Go to `Edit -> Plugins`.
+3. Enable `Python Editor Script Plugin`.
+4. Enable `Editor Scripting Utilities`.
+5. Restart the editor if prompted.
+6. Go to `Edit -> Project Settings -> Python`.
+7. Enable `Enable Remote Execution`.
+8. Restart the editor again if needed.
+
+### 3. Configure your MCP client
+
+Most clients use a local `stdio` server command. The safest configuration is to point to an absolute `node` path and an absolute `dist/bin.js` path.
+
+Generic MCP client example:
+
 ```json
 {
   "mcpServers": {
     "unreal-ue4": {
-      "command": "node",
+      "command": "/absolute/path/to/node",
       "args": [
-        "/absolute/path/to/runreal_unreal_mcp_ue4/dist/bin.js"
+        "/absolute/path/to/unreal-mcp-ue4/dist/bin.js"
       ]
     }
   }
 }
 ```
 
-### ✅ End-to-End Smoke Test
+If `node` is already on your `PATH`, you can use `"command": "node"` instead.
 
-With your UE4.27.2 project open and Remote Execution enabled, you can run a deterministic MCP smoke test directly against the local server:
-
-```bash
-cd /Users/conaman/Works/runreal_unreal_mcp_ue4
-npm run test:e2e
-```
-
-The default smoke test checks:
-- MCP server startup and tool discovery
-- project info, map info, and world outliner reads
-- actor spawn, search, transform, inspect, and delete
-- domain-tool dispatch for actor control
-
-To also test Blueprint and UMG asset creation, run:
-
-```bash
-npm run test:e2e -- --with-assets
-```
-
-The asset-enabled run creates temporary Blueprint and Widget Blueprint assets under `/Game/MCP/Tests` and then attempts to clean them up automatically before exiting.
-
-### 🪟 Windows Quick Start
-
-Open PowerShell in the repository folder and run:
-
-```powershell
-cd C:\dev\unreal-mcp-ue4
-npm install
-npm run build
-```
-
-For Windows MCP client configs, use `node` if it is on your `PATH`:
-
-```json
-{
-  "mcpServers": {
-    "unreal-ue4": {
-      "command": "node",
-      "args": [
-        "C:\\Users\\YourName\\dev\\unreal-mcp-ue4\\dist\\bin.js"
-      ]
-    }
-  }
-}
-```
-
-If your client cannot find `node`, point directly to `node.exe`:
+### Windows client example
 
 ```json
 {
@@ -139,18 +112,17 @@ If your client cannot find `node`, point directly to `node.exe`:
 }
 ```
 
-### 🧰 GitHub Copilot
+In JSON on Windows, either escape backslashes or use forward slashes.
 
-GitHub Copilot supports MCP in VS Code, Visual Studio, JetBrains, Eclipse, Xcode, and Copilot CLI. For a local `stdio` server like this project, VS Code is the simplest setup.
-
-1. Build the server first:
+### Codex example
 
 ```bash
-npm install
-npm run build
+codex mcp add unreal-ue4 -- /absolute/path/to/node /absolute/path/to/unreal-mcp-ue4/dist/bin.js
 ```
 
-2. In VS Code, create `.vscode/mcp.json` in your workspace:
+### GitHub Copilot example
+
+For VS Code, create `.vscode/mcp.json`:
 
 ```json
 {
@@ -165,50 +137,135 @@ npm run build
 }
 ```
 
-3. Open `.vscode/mcp.json` and click `Start`.
-4. Open Copilot Chat and switch to `Agent` mode.
-5. Open the tools picker and confirm that `unreal-ue4` is available.
+Then start the server from the MCP config UI and verify that `unreal-ue4` appears in the tools picker.
 
-If `node` is not on your `PATH`, use `C:\\Program Files\\nodejs\\node.exe` as the `command` value instead.
+Official Copilot docs:
 
-If you use Copilot Business or Copilot Enterprise, your organization may need to enable the `MCP servers in Copilot` policy first.
+- [Extending GitHub Copilot Chat with MCP servers](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp/extend-copilot-chat-with-mcp)
+- [About Model Context Protocol in GitHub Copilot](https://docs.github.com/en/copilot/concepts/context/mcp)
 
-Official setup docs:
-- [GitHub Docs: Extending GitHub Copilot Chat with MCP servers](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp/extend-copilot-chat-with-mcp)
-- [GitHub Docs: About Model Context Protocol in GitHub Copilot](https://docs.github.com/en/copilot/concepts/context/mcp)
+## Usage
 
-### 🔧 Troubleshooting
+### Recommended first-run flow
 
-If you get an error similar to `MCP Unreal: Unexpected token 'C', Connection...` it means that the mcp-server was not able to connect to the Unreal Editor.
+1. Open your UE4.27.2 project and wait for the editor to finish loading.
+2. Make sure the required plugins and `Enable Remote Execution` are enabled.
+3. Build the MCP server with `npm run build`.
+4. Start your MCP client or open a new session in the client that already references this server.
+5. Run a small read-only command first.
 
-- Make sure that the Python Editor Script Plugin is enabled and that the Remote Execution option is checked in your project settings.
-- Make sure that the Editor Scripting Utilities plugin is also enabled for UE4.27.2.
-- On Windows, allow `UnrealEditor.exe` and `node.exe` through Windows Defender Firewall if node discovery fails. The bundled `unreal-remote-execution` package uses UDP multicast discovery on `239.0.0.1:6766` and a localhost command channel on `127.0.0.1:6776`.
-- In Windows JSON config files, either escape backslashes (`C:\\path\\to\\dist\\bin.js`) or use forward slashes (`C:/path/to/dist/bin.js`).
-- Try also changing your bind address from `127.0.0.1` to `0.0.0.0` but note that this will allow connections from your local network.
-- Restart your Unreal Editor fully.
-- Fully close/open your client (Claude, Cursor, etc.) to ensure it reconnects to the MCP server. (`File -> Exit` on windows).
-- Check your running processes and kill any zombie unreal-mcp Node.js processes.
+Useful first commands:
 
-### 🧩 UMG Notes
+- `editor_project_info`
+- `editor_get_map_info`
+- `editor_get_world_outliner`
 
-- The UMG tools work against Widget Blueprint assets such as `/Game/UI/WBP_MainMenu`.
-- The nested-widget commands use the UMG term `child widget` instead of `component`.
-- Position changes currently target `CanvasPanel` slots in UE4.27. Non-canvas panel layouts are not repositioned by these tools.
-- Creating nested `UserWidget` blueprint instances is not included in this UE4.27 port. Use native UMG widget classes such as `CanvasPanel`, `Border`, `Button`, `TextBlock`, and `Image`.
-- Reparenting the current root widget and editing named-slot content are not handled by the current UMG commands.
+Useful first natural-language requests:
 
-### 🧪 Blueprint Notes
+- `Get project info from the unreal-ue4 server.`
+- `List the actors in the current level.`
+- `Spawn a StaticMeshActor named TestCube at 0,0,100.`
 
-- The tool surface is grouped into Actor / Level, Physics & Materials, Blueprint Analysis, Blueprint Asset / Component, Blueprint Node Graph, Blueprint Graph Editing, Project / Input, World Building, Epic Structures, Level Design, and UMG categories.
-- The World Building, Epic Structures, and Level Design tools are UE4.27-friendly preset builders that assemble scenes from engine basic-shape assets rather than importing any UE5-only generation systems.
-- Several Blueprint graph and UMG binding commands rely on editor-only Python APIs that are only partially exposed in UE4.27. When Unreal does not expose a required editor type, the tool returns a clear unsupported message instead of failing silently.
+### What the server can do
 
-### 🧭 Domain Tool Notes
+- Read project, map, asset, and actor information from the open editor.
+- Spawn, inspect, move, and delete actors in the current level.
+- Search assets and inspect references or metadata.
+- Create and edit Blueprint assets where UE4.27 Python exposes the necessary editor APIs.
+- Create and edit Widget Blueprint trees with UE4.27-safe UMG helpers.
+- Run grouped domain tools that dispatch through `action` and `params`.
 
-- This port also exposes domain tools that use an `action` plus `params` dispatch shape on top of the granular UE4.27 tool set.
-- Domain tools reuse the existing UE4.27-safe editor scripting commands wherever possible instead of introducing a separate native C++ bridge layer.
-- Actions that depend on systems not covered by this UE4.27 Python port return a clear unsupported response instead of pretending to implement the original UE5/C++ feature set.
+## Testing
+
+### Quick smoke test
+
+The smoke test builds the server, launches its own local MCP server process, connects to the already running Unreal Editor, and runs a deterministic validation flow. You do not need to start a separate MCP server manually before this test.
+
+```bash
+npm run test:e2e
+```
+
+This checks:
+
+- MCP server startup
+- tool discovery
+- project info, map info, and world outliner reads
+- actor spawn, search, transform, inspect, and delete
+- domain-tool dispatch for actor control
+
+### Asset-inclusive smoke test
+
+```bash
+npm run test:e2e -- --with-assets
+```
+
+This adds:
+
+- Blueprint creation
+- Blueprint component editing
+- Blueprint compilation
+- Widget Blueprint creation
+- UMG widget insertion
+- cleanup of temporary assets under `/Game/MCP/Tests`
+
+### Windows test commands
+
+Open PowerShell in the repository folder:
+
+```powershell
+cd C:\dev\unreal-mcp-ue4
+npm install
+npm run test:e2e
+npm run test:e2e -- --with-assets
+```
+
+### What success looks like
+
+- The console prints `[PASS]` for every test step.
+- Actor tests visibly create and then remove temporary actors in the editor.
+- The asset-inclusive test creates temporary Blueprint and Widget Blueprint assets under `/Game/MCP/Tests` and then removes them before exit.
+
+### Recommended test workflow
+
+1. Start with `npm run test:e2e`.
+2. If that passes, run `npm run test:e2e -- --with-assets`.
+3. After both pass, try the server once from your real MCP client.
+4. Use a separate Unreal test project before pointing the server at production content.
+
+## Troubleshooting
+
+### `Remote node is not available`
+
+- Make sure Unreal Editor is fully open before running the MCP client or smoke test.
+- Verify that `Python Editor Script Plugin` is enabled.
+- Verify that `Editor Scripting Utilities` is enabled.
+- Verify that `Enable Remote Execution` is enabled in project settings.
+- Restart Unreal Editor after changing any of the above.
+
+### Connection or discovery problems on Windows
+
+- Allow `UnrealEditor.exe` and `node.exe` through Windows Defender Firewall.
+- The bundled `unreal-remote-execution` package uses UDP multicast discovery on `239.0.0.1:6766` and a localhost command channel on `127.0.0.1:6776`.
+- If your client config uses JSON, escape backslashes or switch to forward slashes.
+
+### Client starts but cannot find `node`
+
+- Use an absolute path to `node` or `node.exe` in the MCP config instead of relying on `PATH`.
+
+### Blueprint or UMG commands return `unsupported`
+
+- Some editor-only Blueprint graph and UMG binding APIs are only partially exposed in UE4.27 Python.
+- In those cases this fork returns a clear unsupported response instead of pretending the operation succeeded.
+
+## Notes and Limitations
+
+- World-building and structure-generation tools use UE4.27-friendly preset builders based on engine basic-shape assets.
+- UMG positioning currently targets `CanvasPanel` slots in UE4.27.
+- Reparenting the current root widget and editing named-slot content are not currently handled.
+- Some advanced Blueprint graph editing flows are limited by what UE4.27 exposes through Python.
+- The tool surface includes both granular tools and action-based domain tools so different MCP clients can work at different abstraction levels.
+
+The tool list below is generated from `server/index.ts` during build.
 
 ## 🛠️ Available Tools
 
