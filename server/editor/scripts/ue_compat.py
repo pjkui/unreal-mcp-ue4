@@ -349,20 +349,41 @@ def resolve_actor_class(object_class, class_mappings=None):
     return None
 
 
-def set_object_property(target, prop_name, prop_value):
-    try:
-        if hasattr(target, "set_editor_property"):
-            target.set_editor_property(prop_name, prop_value)
-            return True
-    except Exception:
-        pass
+def get_property_name_candidates(prop_name):
+    normalized_name = str(prop_name or "").strip()
+    if not normalized_name:
+        return []
 
-    try:
-        if hasattr(target, prop_name):
-            setattr(target, prop_name, prop_value)
-            return True
-    except Exception:
-        pass
+    candidates = [normalized_name]
+    if "_" in normalized_name:
+        parts = [part for part in normalized_name.split("_") if part]
+        if parts:
+            pascal_case_name = "".join(part[:1].upper() + part[1:] for part in parts)
+            camel_case_name = parts[0] + "".join(
+                part[:1].upper() + part[1:] for part in parts[1:]
+            )
+            for candidate_name in (pascal_case_name, camel_case_name):
+                if candidate_name and candidate_name not in candidates:
+                    candidates.append(candidate_name)
+
+    return candidates
+
+
+def set_object_property(target, prop_name, prop_value):
+    for candidate_name in get_property_name_candidates(prop_name):
+        try:
+            if hasattr(target, "set_editor_property"):
+                target.set_editor_property(candidate_name, prop_value)
+                return True
+        except Exception:
+            pass
+
+        try:
+            if hasattr(target, candidate_name):
+                setattr(target, candidate_name, prop_value)
+                return True
+        except Exception:
+            pass
 
     return False
 
@@ -514,19 +535,20 @@ def take_editor_screenshot(width=640, height=520):
 
 
 def get_editor_property_value(target, prop_name, default=None):
-    try:
-        value = target.get_editor_property(prop_name)
-        if value is not None:
-            return value
-    except Exception:
-        pass
+    for candidate_name in get_property_name_candidates(prop_name):
+        try:
+            value = target.get_editor_property(candidate_name)
+            if value is not None:
+                return value
+        except Exception:
+            pass
 
-    try:
-        value = getattr(target, prop_name)
-        if value is not None:
-            return value
-    except Exception:
-        pass
+        try:
+            value = getattr(target, candidate_name)
+            if value is not None:
+                return value
+        except Exception:
+            pass
 
     return default
 
