@@ -1574,6 +1574,45 @@ def find_blueprint_cdo_component(blueprint, component_name):
     return None
 
 
+def get_blueprint_component_candidates(blueprint):
+    candidates = []
+    seen = set()
+
+    for component_template in get_blueprint_component_templates(blueprint):
+        component_key = get_object_path_name(component_template) or get_object_name(
+            component_template
+        )
+        if component_key in seen:
+            continue
+        seen.add(component_key)
+        candidates.append((None, component_template))
+
+    cdo = get_blueprint_default_object(blueprint)
+    if cdo:
+        try:
+            for component in list(cdo.get_components_by_class(unreal.ActorComponent) or []):
+                component_key = get_object_path_name(component) or get_object_name(component)
+                if component_key in seen:
+                    continue
+                seen.add(component_key)
+                candidates.append((None, component))
+        except Exception:
+            pass
+
+    return candidates
+
+
+def list_blueprint_component_names(blueprint):
+    names = []
+    seen = set()
+    for _, component in get_blueprint_component_candidates(blueprint):
+        component_name = get_object_name(component)
+        if component_name and component_name not in seen:
+            seen.add(component_name)
+            names.append(component_name)
+    return names
+
+
 def get_blueprint_construction_graph(blueprint):
     for graph in get_blueprint_graphs(blueprint):
         graph_name = get_object_name(graph).lower()
@@ -1617,11 +1656,29 @@ def add_component_to_blueprint_via_harvest(
 
     component_template = None
     try:
-        component_template = unreal.new_object(component_class, temp_actor, template_name)
+        if hasattr(temp_actor, "add_component_by_class"):
+            try:
+                component_template = temp_actor.add_component_by_class(
+                    component_class,
+                    True,
+                    unreal.Transform(),
+                    False,
+                )
+            except Exception:
+                component_template = None
+
+        if not component_template:
+            component_template = unreal.new_object(component_class, temp_actor, template_name)
+
         if not component_template:
             raise RuntimeError(
                 "Failed to create a temporary component instance: {0}".format(template_name)
             )
+
+        try:
+            component_template.rename(template_name, temp_actor)
+        except Exception:
+            pass
 
         apply_scene_component_transform(component_template, location, rotation, scale)
 
@@ -1958,6 +2015,35 @@ def get_component_template(blueprint, component_name):
         component_template = find_blueprint_cdo_component(blueprint, component_name)
         if component_template:
             return None, component_template
+
+    component_candidates = get_blueprint_component_candidates(blueprint)
+    fuzzy_matches = []
+    requested_name_lower = str(component_name or "").lower()
+    for component_node, candidate in component_candidates:
+        candidate_name_lower = get_object_name(candidate).lower()
+        if (
+            requested_name_lower
+            and (
+                requested_name_lower in candidate_name_lower
+                or candidate_name_lower in requested_name_lower
+            )
+        ):
+            fuzzy_matches.append((component_node, candidate))
+
+    if len(fuzzy_matches) == 1:
+        return fuzzy_matches[0]
+
+    if len(component_candidates) == 1:
+        return component_candidates[0]
+
+    available_names = list_blueprint_component_names(blueprint)
+    if available_names:
+        raise ValueError(
+            "Blueprint component not found: {0}. Available components: {1}".format(
+                component_name,
+                ", ".join(available_names),
+            )
+        )
 
     raise ValueError("Blueprint component not found: {0}".format(component_name))
 
