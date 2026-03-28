@@ -1516,7 +1516,7 @@ registerToolNamespace(
 
 registerToolNamespace(
 	"manage_widget_authoring",
-	"Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions.",
+	"Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. Use add_child_widget for typical nested layout work under an existing root such as CanvasPanel_0; add_widget without parent_widget_name is only for assigning a new root widget.",
 	{
 		create_widget_blueprint: (params) =>
 			pythonDispatch(

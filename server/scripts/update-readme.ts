@@ -152,7 +152,7 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_widget_authoring: {
 		status: "Partial",
-		note: "create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.",
+		note: "create_widget_blueprint, add_text_block, and add_button work; use add_child_widget for normal nested layout under an existing root such as CanvasPanel_0, while add_widget without parent_widget_name is only for assigning a new root. add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.",
 	},
 	manage_source_control: {
 		status: "Supported",

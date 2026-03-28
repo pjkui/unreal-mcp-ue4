@@ -1078,7 +1078,7 @@ def add_widget_to_tree(widget_tree, widget, parent_widget=None):
     if parent_widget is None:
         if get_root_widget(widget_tree):
             raise ValueError(
-                "Widget blueprint already has a root widget. Use editor_umg_add_child_widget to add nested widgets."
+                "Widget blueprint already has a root widget. Use manage_widget_authoring.add_child_widget for nested widgets, or pass parent_widget_name when calling add_widget."
             )
         if not set_object_property(widget_tree, "root_widget", widget):
             raise RuntimeError("Failed to assign root widget")

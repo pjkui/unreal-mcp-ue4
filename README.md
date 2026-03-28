@@ -495,8 +495,8 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_widget_authoring</code></td>
-		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions.</td>
-		<td width="30%">create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.</td>
+		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions</td>
+		<td width="30%">create_widget_blueprint, add_text_block, and add_button work; use add_child_widget for normal nested layout under an existing root such as CanvasPanel_0, while add_widget without parent_widget_name is only for assigning a new root. add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.</td>
 	</tr>
 	</tbody>
 </table>
