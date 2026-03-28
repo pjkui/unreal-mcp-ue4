@@ -20,10 +20,13 @@ const remoteExecution = new RemoteExecution(config)
 remoteExecution.start()
 
 let remoteNode: RemoteExecution | undefined = undefined
+let remoteConnectionPromise: Promise<void> | undefined = undefined
 let enginePath: string | undefined = undefined
 let projectPath: string | undefined = undefined
 
 const connectWithRetry = async (maxRetries: number = 3, retryDelay: number = 2000) => {
+	let lastError: unknown = undefined
+
 	for (let attempt = 1; attempt <= maxRetries; attempt++) {
 		try {
 			const node = await remoteExecution.getFirstRemoteNode(1000, 5000)
@@ -40,6 +43,7 @@ const connectWithRetry = async (maxRetries: number = 3, retryDelay: number = 200
 
 			return
 		} catch (error) {
+			lastError = error
 			console.error(`Connection attempt ${attempt} failed:`, error)
 
 			if (attempt < maxRetries) {
@@ -47,28 +51,57 @@ const connectWithRetry = async (maxRetries: number = 3, retryDelay: number = 200
 				await new Promise((resolve) => setTimeout(resolve, retryDelay))
 				// Exponential backoff
 				retryDelay = Math.min(retryDelay * 1.5, 10000)
-			} else {
-				console.error("Unable to connect to your Unreal Engine Editor after multiple attempts")
-				remoteExecution.stop()
-				process.exit(1)
 			}
 		}
 	}
+
+	throw lastError instanceof Error
+		? lastError
+		: new Error("Unable to connect to your Unreal Engine Editor after multiple attempts")
 }
 
-connectWithRetry()
+const ensureRemoteConnection = async () => {
+	if (remoteNode) {
+		return
+	}
+
+	if (!remoteConnectionPromise) {
+		remoteConnectionPromise = connectWithRetry().finally(() => {
+			if (!remoteNode) {
+				remoteConnectionPromise = undefined
+			}
+		})
+	}
+
+	await remoteConnectionPromise
+}
+
+void ensureRemoteConnection().catch((error) => {
+	console.error("Initial Unreal Remote Execution connection failed:", error)
+})
 
 const tryRunCommand = async (command: string): Promise<string> => {
-	if (!remoteNode) {
-		throw new Error("Remote node is not available")
-	}
+	await ensureRemoteConnection()
 
-	const result = await remoteNode.runCommand(command)
-	if (!result.success) {
-		throw new Error(`Command failed with: ${result.result}`)
-	}
+	try {
+		const result = await remoteNode!.runCommand(command)
+		if (!result.success) {
+			throw new Error(`Command failed with: ${result.result}`)
+		}
 
-	return result.output.map((line) => line.output).join("\n")
+		return result.output.map((line) => line.output).join("\n")
+	} catch (error) {
+		remoteNode = undefined
+		remoteConnectionPromise = undefined
+		await ensureRemoteConnection()
+
+		const retryResult = await remoteNode!.runCommand(command)
+		if (!retryResult.success) {
+			throw error instanceof Error ? error : new Error(String(error))
+		}
+
+		return retryResult.output.map((line) => line.output).join("\n")
+	}
 }
 
 const textResponse = (text: string) => ({
