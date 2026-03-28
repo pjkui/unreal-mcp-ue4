@@ -8,6 +8,13 @@ interface ToolInfo {
 	name: string
 }
 
+type SupportStatus = "Supported" | "Partial" | "Unsupported"
+
+interface ToolSupportInfo {
+	note?: string
+	status: SupportStatus
+}
+
 const categoryOrder = [
 	"Connection & Setup",
 	"Editor & Asset Tools",
@@ -24,6 +31,131 @@ const categoryOrder = [
 	"UMG Tools",
 	"Domain Tools",
 ]
+
+const toolSupport: Record<string, ToolSupportInfo> = {
+	read_blueprint_content: {
+		status: "Partial",
+		note: "Blueprint graph listings depend on what UE4.27 Python exposes; asset and component reads still work.",
+	},
+	analyze_blueprint_graph: {
+		status: "Partial",
+		note: "Only Blueprint graphs exposed by UE4.27 Python can be inspected.",
+	},
+	get_blueprint_variable_details: {
+		status: "Partial",
+		note: "Reads existing variable metadata only when UE4.27 Python exposes it.",
+	},
+	get_blueprint_function_details: {
+		status: "Partial",
+		note: "Only function graphs exposed by UE4.27 Python can be inspected.",
+	},
+	add_component_to_blueprint: {
+		status: "Partial",
+		note: "Basic component adds work; parent_component_name and some hierarchy edits require SimpleConstructionScript exposure.",
+	},
+	add_blueprint_event_node: {
+		status: "Unsupported",
+		note: "The current UE4.27 Python environment does not expose reliable event graph editing and K2 event reference setup.",
+	},
+	add_blueprint_input_action_node: {
+		status: "Unsupported",
+		note: "The current UE4.27 Python environment does not expose reliable event graph node creation.",
+	},
+	add_blueprint_function_node: {
+		status: "Unsupported",
+		note: "The current UE4.27 Python environment does not expose reliable function node reference setup.",
+	},
+	connect_blueprint_nodes: {
+		status: "Partial",
+		note: "Requires Blueprint graphs and pins to be visible through UE4.27 Python.",
+	},
+	add_blueprint_variable: {
+		status: "Unsupported",
+		note: "BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment.",
+	},
+	add_blueprint_get_self_component_reference: {
+		status: "Unsupported",
+		note: "The current UE4.27 Python environment does not expose reliable Blueprint component reference node setup.",
+	},
+	add_blueprint_self_reference: {
+		status: "Unsupported",
+		note: "The current UE4.27 Python environment does not expose reliable graph node creation.",
+	},
+	find_blueprint_nodes: {
+		status: "Partial",
+		note: "Searches only the Blueprint graphs that UE4.27 Python exposes.",
+	},
+	add_node: {
+		status: "Unsupported",
+		note: "Low-level graph node creation is not exposed in the current UE4.27 Python environment.",
+	},
+	connect_nodes: {
+		status: "Partial",
+		note: "Requires Blueprint graphs and pins to be visible through UE4.27 Python.",
+	},
+	disconnect_nodes: {
+		status: "Partial",
+		note: "Requires Blueprint graphs and pins to be visible through UE4.27 Python.",
+	},
+	create_variable: {
+		status: "Unsupported",
+		note: "BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment.",
+	},
+	editor_umg_add_widget: {
+		status: "Partial",
+		note: "Widget tree edits work, but nested UserWidget subclasses are not supported and positioning is reliable only on CanvasPanel children.",
+	},
+	editor_umg_set_widget_position: {
+		status: "Partial",
+		note: "Only widgets attached to CanvasPanel slots can be repositioned.",
+	},
+	editor_umg_reparent_widget: {
+		status: "Partial",
+		note: "Cannot reparent the current root widget, and CanvasPanel slot positioning rules still apply after reparenting.",
+	},
+	editor_umg_add_child_widget: {
+		status: "Partial",
+		note: "Supports native widget classes; nested UserWidget subclasses are not supported, and positioning is reliable only on CanvasPanel children.",
+	},
+	editor_umg_set_child_widget_position: {
+		status: "Partial",
+		note: "Only direct children attached to CanvasPanel slots can be repositioned.",
+	},
+	bind_widget_event: {
+		status: "Unsupported",
+		note: "DelegateEditorBinding is not exposed in the current UE4.27 Python environment.",
+	},
+	add_widget_to_viewport: {
+		status: "Partial",
+		note: "Requires an active PIE or game world and successful UserWidget instancing in the editor session.",
+	},
+	set_text_block_binding: {
+		status: "Unsupported",
+		note: "DelegateEditorBinding is not exposed in the current UE4.27 Python environment.",
+	},
+	inspect: {
+		status: "Partial",
+		note: "Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure.",
+	},
+	manage_blueprint: {
+		status: "Partial",
+		note: "Blueprint asset and component edits work; graph editing and variable creation remain limited by UE4.27 Python exposure.",
+	},
+	manage_interaction: {
+		status: "Partial",
+		note: "Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python.",
+	},
+	manage_widget_authoring: {
+		status: "Partial",
+		note: "create_widget_blueprint, add_text_block, and add_button work; bind_event and set_text_binding are unsupported; add_to_viewport requires PIE.",
+	},
+}
+
+function supportForTool(name: string): ToolSupportInfo {
+	return toolSupport[name] ?? {
+		status: "Supported",
+	}
+}
 
 function extractCategoryMarkers(content: string) {
 	const markers: Array<{ category: string; index: number }> = []
@@ -213,9 +345,19 @@ function extractToolsFromSourceFile(): ToolInfo[] {
 	return tools.sort((a, b) => a.index - b.index)
 }
 
+function formatTableCell(value?: string): string {
+	return value && value.trim() ? value.replace(/\|/g, "\\|") : "-"
+}
+
 function generateToolsTable(tools: ToolInfo[]): string {
-	const header = "| Tool | Description |\n|------|-------------|\n"
-	const rows = tools.map((tool) => `| \`${tool.name}\` | ${tool.description} |`).join("\n")
+	const header =
+		"| Tool | Status | Notes | Description |\n|------|--------|-------|-------------|\n"
+	const rows = tools
+		.map((tool) => {
+			const support = supportForTool(tool.name)
+			return `| \`${tool.name}\` | ${formatTableCell(support.status)} | ${formatTableCell(support.note)} | ${formatTableCell(tool.description)} |`
+		})
+		.join("\n")
 	return header + rows
 }
 
@@ -244,7 +386,13 @@ function updateReadmeWithTools() {
 	const readmeContent = fs.readFileSync(readmePath, "utf-8")
 
 	const tools = extractToolsFromSourceFile()
-	const toolsSection = `## 🛠️ Available Tools
+	const toolsSection = `## Available Tools
+
+Status legend:
+
+- \`Supported\`: implemented and expected to work in this UE4.27.2 fork.
+- \`Partial\`: implemented, but limited by UE4.27 Python exposure or runtime requirements.
+- \`Unsupported\`: exposed for compatibility, but not currently available in this UE4.27 Python environment.
 
 ${generateToolsSections(tools)}
 
@@ -257,7 +405,7 @@ ${generateToolsSections(tools)}
 }
 
 function replaceToolsSection(content: string, toolsSection: string): string {
-	const sectionHeaderRegex = /^##(?:\s+🛠️)?\s+Available Tools\s*$/m
+	const sectionHeaderRegex = /^##.*Available Tools\s*$/m
 	const headerMatch = sectionHeaderRegex.exec(content)
 
 	if (!headerMatch || headerMatch.index === undefined) {
@@ -277,10 +425,10 @@ function replaceToolsSection(content: string, toolsSection: string): string {
 
 function insertToolsSection(content: string, toolsSection: string): string {
 	const insertMarkers = [
-		"## 🤝 Contributing",
 		"## Contributing",
-		"## 📄 License",
 		"## License",
+		"## ?뱞 License",
+		"## ?쩃 Contributing",
 	]
 	const insertPoints = insertMarkers
 		.map((marker) => ({ found: content.indexOf(marker), marker }))

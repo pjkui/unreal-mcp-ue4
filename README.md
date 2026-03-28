@@ -250,197 +250,203 @@ npm run test:e2e -- --with-assets
 
 The tool list below is generated from `server/index.ts` during build.
 
-## 🛠️ Available Tools
+## Available Tools
+
+Status legend:
+
+- `Supported`: implemented and expected to work in this UE4.27.2 fork.
+- `Partial`: implemented, but limited by UE4.27 Python exposure or runtime requirements.
+- `Unsupported`: exposed for compatibility, but not currently available in this UE4.27 Python environment.
 
 ### Connection & Setup
 
-| Tool | Description |
-|------|-------------|
-| `set_unreal_engine_path` | Set the Unreal Engine path |
-| `set_unreal_project_path` | Set the Project path |
-| `get_unreal_engine_path` | Get the current Unreal Engine path |
-| `get_unreal_project_path` | Get the current Unreal Project path |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `set_unreal_engine_path` | Supported | - | Set the Unreal Engine path |
+| `set_unreal_project_path` | Supported | - | Set the Project path |
+| `get_unreal_engine_path` | Supported | - | Get the current Unreal Engine path |
+| `get_unreal_project_path` | Supported | - | Get the current Unreal Project path |
 
 ### Editor & Asset Tools
 
-| Tool | Description |
-|------|-------------|
-| `editor_run_python` | Execute any python within the Unreal Editor |
-| `editor_list_assets` | List all Unreal assets |
-| `editor_export_asset` | Export an Unreal asset to text |
-| `editor_get_asset_info` | Get information about an asset, including LOD levels for StaticMesh and SkeletalMesh assets |
-| `editor_get_asset_references` | Get references for an asset |
-| `editor_console_command` | Run a console command in Unreal |
-| `editor_project_info` | Get detailed information about the current project |
-| `editor_get_map_info` | Get detailed information about the current map/level |
-| `editor_search_assets` | Search for assets by name or path with optional class filter |
-| `editor_get_world_outliner` | Get all actors in the current world with their properties |
-| `editor_validate_assets` | Validate assets in the project to check for errors |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `editor_run_python` | Supported | - | Execute any python within the Unreal Editor |
+| `editor_list_assets` | Supported | - | List all Unreal assets |
+| `editor_export_asset` | Supported | - | Export an Unreal asset to text |
+| `editor_get_asset_info` | Supported | - | Get information about an asset, including LOD levels for StaticMesh and SkeletalMesh assets |
+| `editor_get_asset_references` | Supported | - | Get references for an asset |
+| `editor_console_command` | Supported | - | Run a console command in Unreal |
+| `editor_project_info` | Supported | - | Get detailed information about the current project |
+| `editor_get_map_info` | Supported | - | Get detailed information about the current map/level |
+| `editor_search_assets` | Supported | - | Search for assets by name or path with optional class filter |
+| `editor_get_world_outliner` | Supported | - | Get all actors in the current world with their properties |
+| `editor_validate_assets` | Supported | - | Validate assets in the project to check for errors |
 
 ### Actor / Level Tools
 
-| Tool | Description |
-|------|-------------|
-| `editor_create_object` | Create a new object/actor in the world |
-| `editor_update_object` | Update an existing object/actor in the world |
-| `editor_delete_object` | Delete an object/actor from the world |
-| `editor_take_screenshot` | Take a screenshot of the Unreal Editor |
-| `editor_move_camera` | Move the viewport camera to a specific location and rotation for positioning screenshots |
-| `get_actors_in_level` | Get all actors currently loaded in the editor level. |
-| `find_actors_by_name` | Find level actors by matching a name or label pattern. |
-| `spawn_actor` | Spawn a native actor class into the current level. |
-| `delete_actor` | Delete a level actor by name or actor label. |
-| `set_actor_transform` | Set actor location, rotation, or scale in the current level. |
-| `get_actor_properties` | Inspect common editor properties for a specific actor. |
-| `get_actor_material_info` | Inspect the material slots used by an actor |
-| `set_actor_property` | Set a single editor property on an existing actor. |
-| `spawn_blueprint_actor` | Spawn an actor from a Blueprint asset into the current level. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `editor_create_object` | Supported | - | Create a new object/actor in the world |
+| `editor_update_object` | Supported | - | Update an existing object/actor in the world |
+| `editor_delete_object` | Supported | - | Delete an object/actor from the world |
+| `editor_take_screenshot` | Supported | - | Take a screenshot of the Unreal Editor |
+| `editor_move_camera` | Supported | - | Move the viewport camera to a specific location and rotation for positioning screenshots |
+| `get_actors_in_level` | Supported | - | Get all actors currently loaded in the editor level. |
+| `find_actors_by_name` | Supported | - | Find level actors by matching a name or label pattern. |
+| `spawn_actor` | Supported | - | Spawn a native actor class into the current level. |
+| `delete_actor` | Supported | - | Delete a level actor by name or actor label. |
+| `set_actor_transform` | Supported | - | Set actor location, rotation, or scale in the current level. |
+| `get_actor_properties` | Supported | - | Inspect common editor properties for a specific actor. |
+| `get_actor_material_info` | Supported | - | Inspect the material slots used by an actor |
+| `set_actor_property` | Supported | - | Set a single editor property on an existing actor. |
+| `spawn_blueprint_actor` | Supported | - | Spawn an actor from a Blueprint asset into the current level. |
 
 ### Physics & Materials Tools
 
-| Tool | Description |
-|------|-------------|
-| `spawn_physics_blueprint_actor` | Spawn a Blueprint actor and enable physics on a material-capable component. |
-| `get_available_materials` | List project or engine materials available for assignment. |
-| `apply_material_to_actor` | Apply a material asset to an actor |
-| `apply_material_to_blueprint` | Apply a material asset to a Blueprint component template. |
-| `set_mesh_material_color` | Tint a mesh material by editing or generating a material instance constant. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `spawn_physics_blueprint_actor` | Supported | - | Spawn a Blueprint actor and enable physics on a material-capable component. |
+| `get_available_materials` | Supported | - | List project or engine materials available for assignment. |
+| `apply_material_to_actor` | Supported | - | Apply a material asset to an actor |
+| `apply_material_to_blueprint` | Supported | - | Apply a material asset to a Blueprint component template. |
+| `set_mesh_material_color` | Supported | - | Tint a mesh material by editing or generating a material instance constant. |
 
 ### Blueprint Analysis Tools
 
-| Tool | Description |
-|------|-------------|
-| `read_blueprint_content` | Read a Blueprint |
-| `analyze_blueprint_graph` | Analyze Blueprint graph nodes and connections. |
-| `get_blueprint_variable_details` | Inspect Blueprint variable definitions and pin metadata. |
-| `get_blueprint_function_details` | Inspect Blueprint function graphs, entry nodes, and call nodes. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `read_blueprint_content` | Partial | Blueprint graph listings depend on what UE4.27 Python exposes; asset and component reads still work. | Read a Blueprint |
+| `analyze_blueprint_graph` | Partial | Only Blueprint graphs exposed by UE4.27 Python can be inspected. | Analyze Blueprint graph nodes and connections. |
+| `get_blueprint_variable_details` | Partial | Reads existing variable metadata only when UE4.27 Python exposes it. | Inspect Blueprint variable definitions and pin metadata. |
+| `get_blueprint_function_details` | Partial | Only function graphs exposed by UE4.27 Python can be inspected. | Inspect Blueprint function graphs, entry nodes, and call nodes. |
 
 ### Blueprint Asset / Component Tools
 
-| Tool | Description |
-|------|-------------|
-| `create_blueprint` | Create a new Blueprint asset from a parent class. |
-| `add_component_to_blueprint` | Add a component to a Blueprint construction script. |
-| `set_static_mesh_properties` | Assign a Static Mesh asset to a Blueprint StaticMeshComponent. |
-| `set_component_property` | Set a single editor property on a Blueprint component template. |
-| `set_physics_properties` | Apply common physics settings to a Blueprint component template. |
-| `compile_blueprint` | Compile and save a Blueprint asset after edits. |
-| `set_blueprint_property` | Set a class default property on a Blueprint asset. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `create_blueprint` | Supported | - | Create a new Blueprint asset from a parent class. |
+| `add_component_to_blueprint` | Partial | Basic component adds work; parent_component_name and some hierarchy edits require SimpleConstructionScript exposure. | Add a component to a Blueprint construction script. |
+| `set_static_mesh_properties` | Supported | - | Assign a Static Mesh asset to a Blueprint StaticMeshComponent. |
+| `set_component_property` | Supported | - | Set a single editor property on a Blueprint component template. |
+| `set_physics_properties` | Supported | - | Apply common physics settings to a Blueprint component template. |
+| `compile_blueprint` | Supported | - | Compile and save a Blueprint asset after edits. |
+| `set_blueprint_property` | Supported | - | Set a class default property on a Blueprint asset. |
 
 ### Blueprint Node Graph Tools
 
-| Tool | Description |
-|------|-------------|
-| `add_blueprint_event_node` | Add an event node to a Blueprint event graph. |
-| `add_blueprint_input_action_node` | Add an input action event node to a Blueprint event graph. |
-| `add_blueprint_function_node` | Add a function call node to a Blueprint graph. |
-| `connect_blueprint_nodes` | Connect two Blueprint graph pins by node id and pin name. |
-| `add_blueprint_variable` | Add a variable declaration to a Blueprint asset. |
-| `add_blueprint_get_self_component_reference` | Add a Blueprint node that gets a component reference from self. |
-| `add_blueprint_self_reference` | Add a self reference node to a Blueprint graph. |
-| `find_blueprint_nodes` | Search Blueprint graphs for matching node titles, names, or classes. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `add_blueprint_event_node` | Unsupported | The current UE4.27 Python environment does not expose reliable event graph editing and K2 event reference setup. | Add an event node to a Blueprint event graph. |
+| `add_blueprint_input_action_node` | Unsupported | The current UE4.27 Python environment does not expose reliable event graph node creation. | Add an input action event node to a Blueprint event graph. |
+| `add_blueprint_function_node` | Unsupported | The current UE4.27 Python environment does not expose reliable function node reference setup. | Add a function call node to a Blueprint graph. |
+| `connect_blueprint_nodes` | Partial | Requires Blueprint graphs and pins to be visible through UE4.27 Python. | Connect two Blueprint graph pins by node id and pin name. |
+| `add_blueprint_variable` | Unsupported | BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment. | Add a variable declaration to a Blueprint asset. |
+| `add_blueprint_get_self_component_reference` | Unsupported | The current UE4.27 Python environment does not expose reliable Blueprint component reference node setup. | Add a Blueprint node that gets a component reference from self. |
+| `add_blueprint_self_reference` | Unsupported | The current UE4.27 Python environment does not expose reliable graph node creation. | Add a self reference node to a Blueprint graph. |
+| `find_blueprint_nodes` | Partial | Searches only the Blueprint graphs that UE4.27 Python exposes. | Search Blueprint graphs for matching node titles, names, or classes. |
 
 ### Blueprint Graph Editing Tools
 
-| Tool | Description |
-|------|-------------|
-| `add_node` | Add a low-level Blueprint graph node using a helper node_type or raw node_class. |
-| `connect_nodes` | Connect low-level Blueprint graph pins by node id and pin name. |
-| `disconnect_nodes` | Disconnect low-level Blueprint graph links for a pin or a specific pin-to-pin connection. |
-| `create_variable` | Create a low-level Blueprint variable declaration. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `add_node` | Unsupported | Low-level graph node creation is not exposed in the current UE4.27 Python environment. | Add a low-level Blueprint graph node using a helper node_type or raw node_class. |
+| `connect_nodes` | Partial | Requires Blueprint graphs and pins to be visible through UE4.27 Python. | Connect low-level Blueprint graph pins by node id and pin name. |
+| `disconnect_nodes` | Partial | Requires Blueprint graphs and pins to be visible through UE4.27 Python. | Disconnect low-level Blueprint graph links for a pin or a specific pin-to-pin connection. |
+| `create_variable` | Unsupported | BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment. | Create a low-level Blueprint variable declaration. |
 
 ### Project / Input Tools
 
-| Tool | Description |
-|------|-------------|
-| `create_input_mapping` | Create an Action or Axis mapping in DefaultInput.ini for the current project. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `create_input_mapping` | Supported | - | Create an Action or Axis mapping in DefaultInput.ini for the current project. |
 
 ### World Building Tools
 
-| Tool | Description |
-|------|-------------|
-| `create_town` | Create a procedural small town using UE basic shapes. |
-| `construct_house` | Construct a house preset from UE basic shapes. |
-| `construct_mansion` | Construct a mansion preset from UE basic shapes. |
-| `create_tower` | Create a tower preset from UE basic shapes. |
-| `create_arch` | Create an arch preset from UE basic shapes. |
-| `create_staircase` | Create a staircase preset from UE basic shapes. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `create_town` | Supported | - | Create a procedural small town using UE basic shapes. |
+| `construct_house` | Supported | - | Construct a house preset from UE basic shapes. |
+| `construct_mansion` | Supported | - | Construct a mansion preset from UE basic shapes. |
+| `create_tower` | Supported | - | Create a tower preset from UE basic shapes. |
+| `create_arch` | Supported | - | Create an arch preset from UE basic shapes. |
+| `create_staircase` | Supported | - | Create a staircase preset from UE basic shapes. |
 
 ### Epic Structures Tools
 
-| Tool | Description |
-|------|-------------|
-| `create_castle_fortress` | Create a castle fortress preset from UE basic shapes. |
-| `create_suspension_bridge` | Create a suspension bridge preset from UE basic shapes. |
-| `create_bridge` | Create a simple bridge preset from UE basic shapes. |
-| `create_aqueduct` | Create an aqueduct preset from UE basic shapes. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `create_castle_fortress` | Supported | - | Create a castle fortress preset from UE basic shapes. |
+| `create_suspension_bridge` | Supported | - | Create a suspension bridge preset from UE basic shapes. |
+| `create_bridge` | Supported | - | Create a simple bridge preset from UE basic shapes. |
+| `create_aqueduct` | Supported | - | Create an aqueduct preset from UE basic shapes. |
 
 ### Level Design Tools
 
-| Tool | Description |
-|------|-------------|
-| `create_maze` | Create a procedural maze from UE basic shapes. |
-| `create_pyramid` | Create a stepped pyramid from UE basic shapes. |
-| `create_wall` | Create a reusable wall segment preset from UE basic shapes. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `create_maze` | Supported | - | Create a procedural maze from UE basic shapes. |
+| `create_pyramid` | Supported | - | Create a stepped pyramid from UE basic shapes. |
+| `create_wall` | Supported | - | Create a reusable wall segment preset from UE basic shapes. |
 
 ### UMG Tools
 
-| Tool | Description |
-|------|-------------|
-| `editor_umg_add_widget` | Add a UMG widget to a Widget Blueprint |
-| `editor_umg_remove_widget` | Remove a UMG widget from a Widget Blueprint by widget name |
-| `editor_umg_set_widget_position` | Set the position of a UMG widget inside a Widget Blueprint |
-| `editor_umg_reparent_widget` | Change the parent panel of an existing UMG widget inside a Widget Blueprint |
-| `editor_umg_add_child_widget` | Add a child widget to a parent panel inside a Widget Blueprint |
-| `editor_umg_remove_child_widget` | Remove a direct child widget from a parent panel inside a Widget Blueprint. |
-| `editor_umg_set_child_widget_position` | Set the position of a direct child widget on a parent panel inside a Widget Blueprint |
-| `create_umg_widget_blueprint` | Create a Widget Blueprint asset for UMG authoring. |
-| `add_text_block_to_widget` | Add a TextBlock to a Widget Blueprint and optionally position it on a CanvasPanel. |
-| `add_button_to_widget` | Add a Button to a Widget Blueprint and optionally place it on a CanvasPanel. |
-| `bind_widget_event` | Bind a widget event to a Blueprint function when delegate editing is exposed by UE4.27 Python. |
-| `add_widget_to_viewport` | Instantiate a Widget Blueprint and add it to the active PIE or game viewport. |
-| `set_text_block_binding` | Configure a TextBlock binding when delegate editing is exposed by UE4.27 Python. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `editor_umg_add_widget` | Partial | Widget tree edits work, but nested UserWidget subclasses are not supported and positioning is reliable only on CanvasPanel children. | Add a UMG widget to a Widget Blueprint |
+| `editor_umg_remove_widget` | Supported | - | Remove a UMG widget from a Widget Blueprint by widget name |
+| `editor_umg_set_widget_position` | Partial | Only widgets attached to CanvasPanel slots can be repositioned. | Set the position of a UMG widget inside a Widget Blueprint |
+| `editor_umg_reparent_widget` | Partial | Cannot reparent the current root widget, and CanvasPanel slot positioning rules still apply after reparenting. | Change the parent panel of an existing UMG widget inside a Widget Blueprint |
+| `editor_umg_add_child_widget` | Partial | Supports native widget classes; nested UserWidget subclasses are not supported, and positioning is reliable only on CanvasPanel children. | Add a child widget to a parent panel inside a Widget Blueprint |
+| `editor_umg_remove_child_widget` | Supported | - | Remove a direct child widget from a parent panel inside a Widget Blueprint. |
+| `editor_umg_set_child_widget_position` | Partial | Only direct children attached to CanvasPanel slots can be repositioned. | Set the position of a direct child widget on a parent panel inside a Widget Blueprint |
+| `create_umg_widget_blueprint` | Supported | - | Create a Widget Blueprint asset for UMG authoring. |
+| `add_text_block_to_widget` | Supported | - | Add a TextBlock to a Widget Blueprint and optionally position it on a CanvasPanel. |
+| `add_button_to_widget` | Supported | - | Add a Button to a Widget Blueprint and optionally place it on a CanvasPanel. |
+| `bind_widget_event` | Unsupported | DelegateEditorBinding is not exposed in the current UE4.27 Python environment. | Bind a widget event to a Blueprint function when delegate editing is exposed by UE4.27 Python. |
+| `add_widget_to_viewport` | Partial | Requires an active PIE or game world and successful UserWidget instancing in the editor session. | Instantiate a Widget Blueprint and add it to the active PIE or game viewport. |
+| `set_text_block_binding` | Unsupported | DelegateEditorBinding is not exposed in the current UE4.27 Python environment. | Configure a TextBlock binding when delegate editing is exposed by UE4.27 Python. |
 
 ### Domain Tools
 
-| Tool | Description |
-|------|-------------|
-| `manage_asset` | Domain asset namespace for list, search, info, references, export, and validation actions. |
-| `control_actor` | Domain actor namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors. |
-| `control_editor` | Domain editor namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control. |
-| `manage_level` | Domain level namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions. |
-| `system_control` | Domain system namespace for console commands, project state inspection, and asset validation actions. |
-| `inspect` | Domain inspection namespace for asset, actor, project, map, and Blueprint analysis actions. |
-| `manage_pipeline` | Domain pipeline namespace for asset validation, project inspection, and tool status reporting actions. |
-| `manage_tools` | Domain tool-management namespace for listing registered domain tools and describing supported actions. |
-| `manage_lighting` | Domain lighting namespace for spawning common light actors, transforming them, and inspecting level lighting state. |
-| `manage_level_structure` | Domain level-structure namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions. |
-| `manage_volumes` | Domain volume namespace for spawning common engine volumes and applying delete or transform actions. |
-| `manage_navigation` | Domain navigation namespace for spawning navigation volumes and proxies plus basic map inspection actions. |
-| `build_environment` | Domain environment-building namespace for preset town, arch, staircase, pyramid, and maze generation actions. |
-| `manage_splines` | Domain spline namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it. |
-| `animation_physics` | Domain animation-and-physics namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions. |
-| `manage_skeleton` | Domain skeleton namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata. |
-| `manage_geometry` | Domain geometry namespace for wall, arch, staircase, and pyramid preset construction actions. |
-| `manage_effect` | Domain effects namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them. |
-| `manage_material_authoring` | Domain material namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances. |
-| `manage_texture` | Domain texture namespace for searching texture assets and reading their asset metadata. |
-| `manage_blueprint` | Domain Blueprint namespace for Blueprint creation, component editing, graph editing, compilation, and Blueprint inspection actions. |
-| `manage_sequence` | Domain sequence namespace for searching LevelSequence assets and inspecting their asset metadata. |
-| `manage_performance` | Domain performance namespace for editor console commands and screenshot capture actions. |
-| `manage_audio` | Domain audio namespace for searching audio assets and inspecting their asset metadata. |
-| `manage_input` | Domain input namespace for creating classic UE4 input mappings and inspecting project input settings. |
-| `manage_behavior_tree` | Domain behavior-tree namespace for searching BehaviorTree assets and inspecting their asset metadata. |
-| `manage_ai` | Domain AI namespace for searching AI-related assets through the existing asset registry and project inspection actions. |
-| `manage_gas` | Domain GAS namespace for searching gameplay-ability-related assets and inspecting their asset metadata. |
-| `manage_character` | Domain character namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data. |
-| `manage_combat` | Domain combat namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits. |
-| `manage_inventory` | Domain inventory namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions. |
-| `manage_interaction` | Domain interaction namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions. |
-| `manage_widget_authoring` | Domain widget namespace for UMG Blueprint creation, widget-tree edits, viewport spawning, and basic binding actions. |
-| `manage_networking` | Domain networking namespace for project inspection and console-command driven networking diagnostics. |
-| `manage_game_framework` | Domain game-framework namespace for project inspection and gameplay Blueprint scaffolding actions. |
-| `manage_sessions` | Domain sessions namespace for project inspection and console-command driven local session diagnostics. |
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `manage_asset` | Supported | - | Domain asset namespace for list, search, info, references, export, and validation actions. |
+| `control_actor` | Supported | - | Domain actor namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors. |
+| `control_editor` | Supported | - | Domain editor namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control. |
+| `manage_level` | Supported | - | Domain level namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions. |
+| `system_control` | Supported | - | Domain system namespace for console commands, project state inspection, and asset validation actions. |
+| `inspect` | Partial | Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure. | Domain inspection namespace for asset, actor, project, map, and Blueprint analysis actions. |
+| `manage_pipeline` | Supported | - | Domain pipeline namespace for asset validation, project inspection, and tool status reporting actions. |
+| `manage_tools` | Supported | - | Domain tool-management namespace for listing registered domain tools and describing supported actions. |
+| `manage_lighting` | Supported | - | Domain lighting namespace for spawning common light actors, transforming them, and inspecting level lighting state. |
+| `manage_level_structure` | Supported | - | Domain level-structure namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions. |
+| `manage_volumes` | Supported | - | Domain volume namespace for spawning common engine volumes and applying delete or transform actions. |
+| `manage_navigation` | Supported | - | Domain navigation namespace for spawning navigation volumes and proxies plus basic map inspection actions. |
+| `build_environment` | Supported | - | Domain environment-building namespace for preset town, arch, staircase, pyramid, and maze generation actions. |
+| `manage_splines` | Supported | - | Domain spline namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it. |
+| `animation_physics` | Supported | - | Domain animation-and-physics namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions. |
+| `manage_skeleton` | Supported | - | Domain skeleton namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata. |
+| `manage_geometry` | Supported | - | Domain geometry namespace for wall, arch, staircase, and pyramid preset construction actions. |
+| `manage_effect` | Supported | - | Domain effects namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them. |
+| `manage_material_authoring` | Supported | - | Domain material namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances. |
+| `manage_texture` | Supported | - | Domain texture namespace for searching texture assets and reading their asset metadata. |
+| `manage_blueprint` | Partial | Blueprint asset and component edits work; graph editing and variable creation remain limited by UE4.27 Python exposure. | Domain Blueprint namespace for Blueprint creation, component editing, graph editing, compilation, and Blueprint inspection actions. |
+| `manage_sequence` | Supported | - | Domain sequence namespace for searching LevelSequence assets and inspecting their asset metadata. |
+| `manage_performance` | Supported | - | Domain performance namespace for editor console commands and screenshot capture actions. |
+| `manage_audio` | Supported | - | Domain audio namespace for searching audio assets and inspecting their asset metadata. |
+| `manage_input` | Supported | - | Domain input namespace for creating classic UE4 input mappings and inspecting project input settings. |
+| `manage_behavior_tree` | Supported | - | Domain behavior-tree namespace for searching BehaviorTree assets and inspecting their asset metadata. |
+| `manage_ai` | Supported | - | Domain AI namespace for searching AI-related assets through the existing asset registry and project inspection actions. |
+| `manage_gas` | Supported | - | Domain GAS namespace for searching gameplay-ability-related assets and inspecting their asset metadata. |
+| `manage_character` | Supported | - | Domain character namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data. |
+| `manage_combat` | Supported | - | Domain combat namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits. |
+| `manage_inventory` | Supported | - | Domain inventory namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions. |
+| `manage_interaction` | Partial | Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python. | Domain interaction namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions. |
+| `manage_widget_authoring` | Partial | create_widget_blueprint, add_text_block, and add_button work; bind_event and set_text_binding are unsupported; add_to_viewport requires PIE. | Domain widget namespace for UMG Blueprint creation, widget-tree edits, viewport spawning, and basic binding actions. |
+| `manage_networking` | Supported | - | Domain networking namespace for project inspection and console-command driven networking diagnostics. |
+| `manage_game_framework` | Supported | - | Domain game-framework namespace for project inspection and gameplay Blueprint scaffolding actions. |
+| `manage_sessions` | Supported | - | Domain sessions namespace for project inspection and console-command driven local session diagnostics. |
 
 ## 📄 License
 
