@@ -1501,7 +1501,28 @@ def finalize_blueprint_change(blueprint, structural=False):
 
 
 def get_simple_construction_script(blueprint):
+    try:
+        blueprint_editor_utils = getattr(unreal, "BlueprintEditorUtils", None)
+        if blueprint_editor_utils and hasattr(
+            blueprint_editor_utils, "preload_construction_script"
+        ):
+            try:
+                blueprint_editor_utils.preload_construction_script(blueprint)
+            except Exception:
+                pass
+    except Exception:
+        pass
+
     scs = get_editor_property_value(blueprint, "simple_construction_script")
+    if scs:
+        return scs
+
+    generated_class = get_blueprint_generated_class(blueprint)
+    if generated_class:
+        scs = get_editor_property_value(generated_class, "simple_construction_script")
+        if scs:
+            return scs
+
     if not scs:
         raise ValueError(
             "Blueprint '{0}' does not expose a SimpleConstructionScript in UE4.27 Python.".format(
@@ -1651,6 +1672,19 @@ def list_blueprint_component_names(blueprint):
 
 
 def get_blueprint_construction_graph(blueprint):
+    try:
+        blueprint_editor_utils = getattr(unreal, "BlueprintEditorUtils", None)
+        if blueprint_editor_utils and hasattr(
+            blueprint_editor_utils, "find_user_construction_script"
+        ):
+            construction_graph = blueprint_editor_utils.find_user_construction_script(
+                blueprint
+            )
+            if construction_graph:
+                return construction_graph
+    except Exception:
+        pass
+
     for graph in get_blueprint_graphs(blueprint):
         graph_name = get_object_name(graph).lower()
         if graph_name in ("userconstructionscript", "constructionscript"):
