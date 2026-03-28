@@ -1412,13 +1412,26 @@ def find_blueprint_component_template(blueprint, component_name):
 
     for component_template in get_blueprint_component_templates(blueprint):
         template_name = get_object_name(component_template)
-        if template_name == component_name:
-            return component_template
-
-        if template_name.endswith("_GEN_VARIABLE") and template_name[: -len("_GEN_VARIABLE")] == component_name:
+        if component_name_matches(template_name, component_name):
             return component_template
 
     return None
+
+
+def component_name_matches(candidate_name, component_name):
+    candidate_name = str(candidate_name or "")
+    component_name = str(component_name or "")
+
+    if not candidate_name or not component_name:
+        return False
+
+    if candidate_name == component_name:
+        return True
+
+    if candidate_name.endswith("_GEN_VARIABLE") and candidate_name[: -len("_GEN_VARIABLE")] == component_name:
+        return True
+
+    return False
 
 
 def blueprint_has_component(blueprint, component_name):
@@ -1434,6 +1447,23 @@ def blueprint_has_component(blueprint, component_name):
     return find_blueprint_component_template(blueprint, component_name) is not None
 
 
+def find_blueprint_cdo_component(blueprint, component_name):
+    cdo = get_blueprint_default_object(blueprint)
+    if not cdo or not component_name:
+        return None
+
+    try:
+        components = list(cdo.get_components_by_class(unreal.ActorComponent) or [])
+    except Exception:
+        return None
+
+    for component in components:
+        if component_name_matches(get_object_name(component), component_name):
+            return component
+
+    return None
+
+
 def get_blueprint_construction_graph(blueprint):
     for graph in get_blueprint_graphs(blueprint):
         graph_name = get_object_name(graph).lower()
@@ -1441,6 +1471,64 @@ def get_blueprint_construction_graph(blueprint):
             return graph
 
     return None
+
+
+def supports_kismet_component_harvest():
+    return hasattr(unreal, "KismetEditorUtilities") and hasattr(
+        unreal.KismetEditorUtilities, "add_components_to_blueprint"
+    )
+
+
+def add_component_to_blueprint_via_harvest(
+    blueprint,
+    component_class,
+    component_name,
+    location=None,
+    rotation=None,
+    scale=None,
+    component_properties=None,
+):
+    if not supports_kismet_component_harvest():
+        raise ValueError(
+            "KismetEditorUtilities.add_components_to_blueprint is not available in this UE4.27 Python environment."
+        )
+
+    template_name = str(component_name or "").strip()
+    if not template_name:
+        raise ValueError("component_name is required")
+
+    temp_actor = unreal.EditorLevelLibrary.spawn_actor_from_class(
+        unreal.Actor,
+        unreal.Vector(0.0, 0.0, 0.0),
+        unreal.Rotator(0.0, 0.0, 0.0),
+    )
+    if not temp_actor:
+        raise RuntimeError("Failed to spawn a temporary actor for Blueprint component harvest.")
+
+    component_template = None
+    try:
+        component_template = unreal.new_object(component_class, temp_actor, template_name)
+        if not component_template:
+            raise RuntimeError(
+                "Failed to create a temporary component instance: {0}".format(template_name)
+            )
+
+        apply_scene_component_transform(component_template, location, rotation, scale)
+
+        for property_name, property_value in (component_properties or {}).items():
+            apply_component_property(component_template, property_name, property_value)
+
+        unreal.KismetEditorUtilities.add_components_to_blueprint(
+            blueprint,
+            [component_template],
+        )
+    finally:
+        try:
+            unreal.EditorLevelLibrary.destroy_actor(temp_actor)
+        except Exception:
+            pass
+
+    return find_blueprint_cdo_component(blueprint, component_name)
 
 
 def get_scs_all_nodes(scs):
@@ -1692,19 +1780,30 @@ def add_component_node_to_blueprint(
 
 
 def get_component_template(blueprint, component_name):
-    component_node = find_scs_node(blueprint, component_name)
-    if component_node:
-        component_template = get_scs_node_template(component_node)
-        if not component_template:
-            raise ValueError(
-                "Blueprint component template is not available: {0}".format(component_name)
-            )
+    component_node = None
+    if blueprint_supports_scs_editing(blueprint):
+        component_node = find_scs_node(blueprint, component_name)
+        if component_node:
+            component_template = get_scs_node_template(component_node)
+            if not component_template:
+                raise ValueError(
+                    "Blueprint component template is not available: {0}".format(component_name)
+                )
 
-        return component_node, component_template
+            return component_node, component_template
 
     component_template = find_blueprint_component_template(blueprint, component_name)
     if component_template:
         return None, component_template
+
+    component_template = find_blueprint_cdo_component(blueprint, component_name)
+    if component_template:
+        return None, component_template
+
+    if try_compile_blueprint(blueprint):
+        component_template = find_blueprint_cdo_component(blueprint, component_name)
+        if component_template:
+            return None, component_template
 
     raise ValueError("Blueprint component not found: {0}".format(component_name))
 

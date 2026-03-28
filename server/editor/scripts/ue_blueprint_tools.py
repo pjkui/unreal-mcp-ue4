@@ -131,26 +131,62 @@ def add_component_to_blueprint(args):
         }
 
     try:
-        component_node = add_component_node_to_blueprint(
-            blueprint,
-            component_class,
-            component_name,
-            parent_component_name=parent_component_name,
-        )
+        component_template = None
+        component_node = None
+
+        if (
+            not blueprint_supports_scs_editing(blueprint)
+            and not get_blueprint_construction_graph(blueprint)
+            and not parent_component_name
+            and supports_kismet_component_harvest()
+        ):
+            component_template = add_component_to_blueprint_via_harvest(
+                blueprint,
+                component_class,
+                component_name,
+                location=location,
+                rotation=rotation,
+                scale=scale,
+                component_properties=component_properties,
+            )
+        else:
+            component_node = add_component_node_to_blueprint(
+                blueprint,
+                component_class,
+                component_name,
+                parent_component_name=parent_component_name,
+            )
     except Exception as exc:
         return {"success": False, "message": str(exc)}
 
-    component_template = get_scs_node_template(component_node)
-    apply_scene_component_transform(component_template, location, rotation, scale)
+    if component_template is None:
+        component_template = get_scs_node_template(component_node)
+        apply_scene_component_transform(component_template, location, rotation, scale)
 
-    for property_name, property_value in component_properties.items():
-        apply_component_property(component_template, property_name, property_value)
+        for property_name, property_value in component_properties.items():
+            apply_component_property(component_template, property_name, property_value)
 
     finalize_blueprint_change(blueprint, structural=True)
+
+    if component_template is None:
+        try:
+            component_node, component_template = get_component_template(
+                blueprint, component_name
+            )
+        except Exception:
+            pass
+
+    component_summary = {
+        "name": component_name,
+        "class": get_object_name(component_class),
+    }
+    if component_template is not None:
+        component_summary = _component_summary(component_node, component_template)
+
     return {
         "success": True,
         "blueprint": get_asset_package_name(blueprint),
-        "component": _component_summary(component_node, component_template),
+        "component": component_summary,
     }
 
 
