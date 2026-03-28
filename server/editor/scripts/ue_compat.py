@@ -1351,6 +1351,68 @@ def get_blueprint_default_object(blueprint):
     return None
 
 
+def get_object_flags_value(*flag_names):
+    object_flags = getattr(unreal, "ObjectFlags", None)
+    if not object_flags:
+        return None
+
+    resolved_value = None
+    for flag_name in flag_names:
+        try:
+            flag_value = getattr(object_flags, flag_name)
+        except Exception:
+            continue
+
+        resolved_value = flag_value if resolved_value is None else (resolved_value | flag_value)
+
+    return resolved_value
+
+
+def new_object_with_flags(object_class, outer, name, *flag_names):
+    object_flags = get_object_flags_value(*flag_names)
+
+    constructor_attempts = []
+    if object_flags is not None:
+        constructor_attempts.extend(
+            [
+                lambda: unreal.new_object(
+                    object_class,
+                    outer=outer,
+                    name=name,
+                    set_flags=object_flags,
+                ),
+                lambda: unreal.new_object(object_class, outer, name, set_flags=object_flags),
+                lambda: unreal.new_object(object_class, outer, name, object_flags),
+            ]
+        )
+
+    constructor_attempts.extend(
+        [
+            lambda: unreal.new_object(object_class, outer=outer, name=name),
+            lambda: unreal.new_object(object_class, outer, name),
+        ]
+    )
+
+    last_error = None
+    for constructor in constructor_attempts:
+        try:
+            created_object = constructor()
+            if created_object and object_flags is not None and hasattr(created_object, "set_flags"):
+                try:
+                    created_object.set_flags(object_flags)
+                except Exception:
+                    pass
+            if created_object:
+                return created_object
+        except Exception as exc:
+            last_error = exc
+
+    if last_error:
+        raise last_error
+
+    return None
+
+
 def save_loaded_editor_asset(asset):
     touch_editor_object(asset)
 
@@ -1598,7 +1660,14 @@ def add_component_template_to_blueprint(
     if not template_name:
         raise ValueError("component_name is required")
 
-    new_template = unreal.new_object(component_class, generated_class, template_name)
+    new_template = new_object_with_flags(
+        component_class,
+        generated_class,
+        template_name,
+        "PUBLIC",
+        "ARCHETYPE_OBJECT",
+        "TRANSACTIONAL",
+    )
     if not new_template:
         raise RuntimeError(
             "Failed to create blueprint component template: {0}".format(component_name)
