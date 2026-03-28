@@ -425,19 +425,43 @@ function escapeHtml(value?: string, emptyValue: string = "-"): string {
 		.replace(/>/g, "&gt;")
 }
 
-function generateToolsTable(tools: ToolInfo[]): string {
-	const rows = tools
-		.map((tool) => {
-			const support = supportForTool(tool.name)
-			return [
-				"\t<tr>",
-				`\t\t<td width="18%"><code>${escapeHtml(tool.name)}</code></td>`,
-				`\t\t<td width="52%">${escapeHtml(tool.description)}</td>`,
-				`\t\t<td width="30%">${escapeHtml(support.note, "&nbsp;")}</td>`,
-				"\t</tr>",
-			].join("\n")
-		})
-		.join("\n")
+function generateToolRow(tool: ToolInfo): string {
+	const support = supportForTool(tool.name)
+	return [
+		"\t<tr>",
+		`\t\t<td width="18%"><code>${escapeHtml(tool.name)}</code></td>`,
+		`\t\t<td width="52%">${escapeHtml(tool.description)}</td>`,
+		`\t\t<td width="30%">${escapeHtml(support.note, "&nbsp;")}</td>`,
+		"\t</tr>",
+	].join("\n")
+}
+
+function generateCategoryDividerRow(category: string): string {
+	return [
+		"\t<tr>",
+		`\t\t<td colspan="3"><strong>${escapeHtml(category)}</strong></td>`,
+		"\t</tr>",
+	].join("\n")
+}
+
+function generateToolsCatalog(tools: ToolInfo[]): string {
+	const rows: string[] = []
+
+	for (const category of categoryOrder) {
+		const categoryTools = tools.filter((tool) => tool.category === category)
+		if (categoryTools.length === 0) {
+			continue
+		}
+
+		rows.push(generateCategoryDividerRow(category))
+		rows.push(...categoryTools.map((tool) => generateToolRow(tool)))
+	}
+
+	const uncategorizedTools = tools.filter((tool) => !categoryOrder.includes(tool.category))
+	if (uncategorizedTools.length > 0) {
+		rows.push(generateCategoryDividerRow("Other Tools"))
+		rows.push(...uncategorizedTools.map((tool) => generateToolRow(tool)))
+	}
 
 	return [
 		'<table width="100%">',
@@ -448,36 +472,16 @@ function generateToolsTable(tools: ToolInfo[]): string {
 		'\t</colgroup>',
 		'\t<thead>',
 		'\t\t<tr>',
-			'\t\t\t<th width="18%">Tool</th>',
-			'\t\t\t<th width="52%">Description</th>',
-			'\t\t\t<th width="30%">Notes</th>',
+		'\t\t\t<th width="18%">Tool</th>',
+		'\t\t\t<th width="52%">Description</th>',
+		'\t\t\t<th width="30%">Notes</th>',
 		'\t\t</tr>',
 		'\t</thead>',
 		'\t<tbody>',
-		rows,
+		rows.join("\n"),
 		'\t</tbody>',
 		'</table>',
 	].join("\n")
-}
-
-function generateToolsSections(tools: ToolInfo[]): string {
-	const sections: string[] = []
-
-	for (const category of categoryOrder) {
-		const categoryTools = tools.filter((tool) => tool.category === category)
-		if (categoryTools.length === 0) {
-			continue
-		}
-
-		sections.push(`### ${category}\n\n${generateToolsTable(categoryTools)}`)
-	}
-
-	const uncategorizedTools = tools.filter((tool) => !categoryOrder.includes(tool.category))
-	if (uncategorizedTools.length > 0) {
-		sections.push(`### Other Tools\n\n${generateToolsTable(uncategorizedTools)}`)
-	}
-
-	return sections.join("\n\n")
 }
 
 function generateExcludedCapabilitiesTable(entries: ExcludedCapabilityInfo[]): string {
@@ -500,7 +504,7 @@ function updateReadmeWithTools() {
 
 Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
 
-${generateToolsSections(tools)}
+${generateToolsCatalog(tools)}
 
 ### Excluded Capability Areas
 

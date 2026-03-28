@@ -256,8 +256,6 @@ The tool list below is generated from `server/index.ts` during build.
 
 Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
 
-### Connection & Setup
-
 <table width="100%">
 	<colgroup>
 		<col width="18%">
@@ -272,6 +270,9 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		</tr>
 	</thead>
 	<tbody>
+	<tr>
+		<td colspan="3"><strong>Connection &amp; Setup</strong></td>
+	</tr>
 	<tr>
 		<td width="18%"><code>set_unreal_engine_path</code></td>
 		<td width="52%">Set the Unreal Engine path</td>
@@ -292,25 +293,9 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="52%">Get the current Unreal Project path</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
-	</tbody>
-</table>
-
-### Actor / Level Tools
-
-<table width="100%">
-	<colgroup>
-		<col width="18%">
-		<col width="52%">
-		<col width="30%">
-	</colgroup>
-	<thead>
-		<tr>
-			<th width="18%">Tool</th>
-			<th width="52%">Description</th>
-			<th width="30%">Notes</th>
-		</tr>
-	</thead>
-	<tbody>
+	<tr>
+		<td colspan="3"><strong>Actor / Level Tools</strong></td>
+	</tr>
 	<tr>
 		<td width="18%"><code>editor_create_object</code></td>
 		<td width="52%">Create a new object/actor in the world</td>
@@ -326,25 +311,9 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="52%">Delete an object/actor from the world</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
-	</tbody>
-</table>
-
-### Tool Namespaces
-
-<table width="100%">
-	<colgroup>
-		<col width="18%">
-		<col width="52%">
-		<col width="30%">
-	</colgroup>
-	<thead>
-		<tr>
-			<th width="18%">Tool</th>
-			<th width="52%">Description</th>
-			<th width="30%">Notes</th>
-		</tr>
-	</thead>
-	<tbody>
+	<tr>
+		<td colspan="3"><strong>Tool Namespaces</strong></td>
+	</tr>
 	<tr>
 		<td width="18%"><code>manage_asset</code></td>
 		<td width="52%">Asset tool namespace for list, search, info, references, export, and validation actions.</td>
