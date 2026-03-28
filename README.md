@@ -139,9 +139,9 @@ Official Copilot docs:
 
 Useful first commands:
 
-- `editor_project_info`
-- `editor_get_map_info`
-- `editor_get_world_outliner`
+- `control_editor` with `action: "project_info"`
+- `control_editor` with `action: "map_info"`
+- `manage_level` with `action: "world_outliner"`
 
 Useful first natural-language requests:
 
@@ -268,22 +268,6 @@ Status legend:
 | `get_unreal_engine_path` | Supported | - | Get the current Unreal Engine path |
 | `get_unreal_project_path` | Supported | - | Get the current Unreal Project path |
 
-### Editor & Asset Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `editor_run_python` | Supported | - | Execute any python within the Unreal Editor |
-| `editor_list_assets` | Supported | - | List all Unreal assets |
-| `editor_export_asset` | Supported | - | Export an Unreal asset to text |
-| `editor_get_asset_info` | Supported | - | Get information about an asset, including LOD levels for StaticMesh and SkeletalMesh assets |
-| `editor_get_asset_references` | Supported | - | Get references for an asset |
-| `editor_console_command` | Supported | - | Run a console command in Unreal |
-| `editor_project_info` | Supported | - | Get detailed information about the current project |
-| `editor_get_map_info` | Supported | - | Get detailed information about the current map/level |
-| `editor_search_assets` | Supported | - | Search for assets by name or path with optional class filter |
-| `editor_get_world_outliner` | Supported | - | Get all actors in the current world with their properties |
-| `editor_validate_assets` | Supported | - | Validate assets in the project to check for errors |
-
 ### Actor / Level Tools
 
 | Tool | Status | Notes | Description |
@@ -291,135 +275,6 @@ Status legend:
 | `editor_create_object` | Supported | - | Create a new object/actor in the world |
 | `editor_update_object` | Supported | - | Update an existing object/actor in the world |
 | `editor_delete_object` | Supported | - | Delete an object/actor from the world |
-| `editor_take_screenshot` | Supported | - | Take a screenshot of the Unreal Editor |
-| `editor_move_camera` | Supported | - | Move the viewport camera to a specific location and rotation for positioning screenshots |
-| `get_actors_in_level` | Supported | - | Get all actors currently loaded in the editor level. |
-| `find_actors_by_name` | Supported | - | Find level actors by matching a name or label pattern. |
-| `spawn_actor` | Supported | - | Spawn a native actor class into the current level. |
-| `delete_actor` | Supported | - | Delete a level actor by name or actor label. |
-| `set_actor_transform` | Supported | - | Set actor location, rotation, or scale in the current level. |
-| `get_actor_properties` | Supported | - | Inspect common editor properties for a specific actor. |
-| `get_actor_material_info` | Supported | - | Inspect the material slots used by an actor |
-| `set_actor_property` | Supported | - | Set a single editor property on an existing actor. |
-| `spawn_blueprint_actor` | Supported | - | Spawn an actor from a Blueprint asset into the current level. |
-
-### Physics & Materials Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `spawn_physics_blueprint_actor` | Supported | - | Spawn a Blueprint actor and enable physics on a material-capable component. |
-| `get_available_materials` | Supported | - | List project or engine materials available for assignment. |
-| `apply_material_to_actor` | Supported | - | Apply a material asset to an actor |
-| `apply_material_to_blueprint` | Supported | - | Apply a material asset to a Blueprint component template. |
-| `set_mesh_material_color` | Supported | - | Tint a mesh material by editing or generating a material instance constant. |
-
-### Blueprint Analysis Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `read_blueprint_content` | Partial | Blueprint graph listings depend on what UE4.27 Python exposes; asset and component reads still work. | Read a Blueprint |
-| `analyze_blueprint_graph` | Partial | Only Blueprint graphs exposed by UE4.27 Python can be inspected. | Analyze Blueprint graph nodes and connections. |
-| `get_blueprint_variable_details` | Partial | Reads existing variable metadata only when UE4.27 Python exposes it. | Inspect Blueprint variable definitions and pin metadata. |
-| `get_blueprint_function_details` | Partial | Only function graphs exposed by UE4.27 Python can be inspected. | Inspect Blueprint function graphs, entry nodes, and call nodes. |
-
-### Blueprint Asset / Component Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `create_blueprint` | Supported | - | Create a new Blueprint asset from a parent class. |
-| `add_component_to_blueprint` | Partial | Basic component adds work; parent_component_name and some hierarchy edits require SimpleConstructionScript exposure. | Add a component to a Blueprint construction script. |
-| `set_static_mesh_properties` | Supported | - | Assign a Static Mesh asset to a Blueprint StaticMeshComponent. |
-| `set_component_property` | Supported | - | Set a single editor property on a Blueprint component template. |
-| `set_physics_properties` | Supported | - | Apply common physics settings to a Blueprint component template. |
-| `compile_blueprint` | Supported | - | Compile and save a Blueprint asset after edits. |
-| `set_blueprint_property` | Supported | - | Set a class default property on a Blueprint asset. |
-
-### Blueprint Node Graph Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `connect_blueprint_nodes` | Partial | Requires Blueprint graphs and pins to be visible through UE4.27 Python. | Connect two Blueprint graph pins by node id and pin name. |
-| `find_blueprint_nodes` | Partial | Searches only the Blueprint graphs that UE4.27 Python exposes. | Search Blueprint graphs for matching node titles, names, or classes. |
-
-### Blueprint Graph Editing Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `connect_nodes` | Partial | Requires Blueprint graphs and pins to be visible through UE4.27 Python. | Connect low-level Blueprint graph pins by node id and pin name. |
-| `disconnect_nodes` | Partial | Requires Blueprint graphs and pins to be visible through UE4.27 Python. | Disconnect low-level Blueprint graph links for a pin or a specific pin-to-pin connection. |
-
-### Project / Input Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `create_input_mapping` | Supported | - | Create an Action or Axis mapping in DefaultInput.ini for the current project. |
-
-### World Building Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `create_town` | Supported | - | Create a procedural small town using UE basic shapes. |
-| `construct_house` | Supported | - | Construct a house preset from UE basic shapes. |
-| `construct_mansion` | Supported | - | Construct a mansion preset from UE basic shapes. |
-| `create_tower` | Supported | - | Create a tower preset from UE basic shapes. |
-| `create_arch` | Supported | - | Create an arch preset from UE basic shapes. |
-| `create_staircase` | Supported | - | Create a staircase preset from UE basic shapes. |
-
-### Epic Structures Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `create_castle_fortress` | Supported | - | Create a castle fortress preset from UE basic shapes. |
-| `create_suspension_bridge` | Supported | - | Create a suspension bridge preset from UE basic shapes. |
-| `create_bridge` | Supported | - | Create a simple bridge preset from UE basic shapes. |
-| `create_aqueduct` | Supported | - | Create an aqueduct preset from UE basic shapes. |
-
-### Level Design Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `create_maze` | Supported | - | Create a procedural maze from UE basic shapes. |
-| `create_pyramid` | Supported | - | Create a stepped pyramid from UE basic shapes. |
-| `create_wall` | Supported | - | Create a reusable wall segment preset from UE basic shapes. |
-
-### UMG Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `editor_umg_add_widget` | Partial | Widget tree edits work, but nested UserWidget subclasses are not supported and positioning is reliable only on CanvasPanel children. | Add a UMG widget to a Widget Blueprint |
-| `editor_umg_remove_widget` | Supported | - | Remove a UMG widget from a Widget Blueprint by widget name |
-| `editor_umg_set_widget_position` | Partial | Only widgets attached to CanvasPanel slots can be repositioned. | Set the position of a UMG widget inside a Widget Blueprint |
-| `editor_umg_reparent_widget` | Partial | Cannot reparent the current root widget, and CanvasPanel slot positioning rules still apply after reparenting. | Change the parent panel of an existing UMG widget inside a Widget Blueprint |
-| `editor_umg_add_child_widget` | Partial | Supports native widget classes; nested UserWidget subclasses are not supported, and positioning is reliable only on CanvasPanel children. | Add a child widget to a parent panel inside a Widget Blueprint |
-| `editor_umg_remove_child_widget` | Supported | - | Remove a direct child widget from a parent panel inside a Widget Blueprint. |
-| `editor_umg_set_child_widget_position` | Partial | Only direct children attached to CanvasPanel slots can be repositioned. | Set the position of a direct child widget on a parent panel inside a Widget Blueprint |
-| `create_umg_widget_blueprint` | Supported | - | Create a Widget Blueprint asset for UMG authoring. |
-| `add_text_block_to_widget` | Supported | - | Add a TextBlock to a Widget Blueprint and optionally position it on a CanvasPanel. |
-| `add_button_to_widget` | Supported | - | Add a Button to a Widget Blueprint and optionally place it on a CanvasPanel. |
-| `add_widget_to_viewport` | Partial | Requires an active PIE or game world and successful UserWidget instancing in the editor session. | Instantiate a Widget Blueprint and add it to the active PIE or game viewport. |
-
-### Source Control Tools
-
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `get_source_control_provider` | Supported | Reports provider name plus enabled or available status even when source control is disabled. | Report the current Unreal source-control provider and whether it is enabled or available. |
-| `query_source_control_state` | Supported | Returns structured state even when source control is disabled, but meaningful revision status requires a configured and available provider. | Query source-control state for one smart file string, asset path, or package name. |
-| `query_source_control_states` | Supported | Returns structured state even when source control is disabled, but meaningful revision status requires a configured and available provider. | Query source-control state for multiple smart file strings, asset paths, or package names. |
-| `check_out_file` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Check out one source-controlled file, asset path, or package name. |
-| `check_out_files` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Check out multiple source-controlled files, asset paths, or package names. |
-| `check_out_or_add_file` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Check out one file or mark it for add if it is new to source control. |
-| `check_out_or_add_files` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Check out multiple files or mark any new ones for add. |
-| `mark_file_for_add` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Mark one file, asset path, or package name for add in source control. |
-| `mark_files_for_add` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Mark multiple files, asset paths, or package names for add in source control. |
-| `mark_file_for_delete` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Mark one file, asset path, or package name for delete in source control. |
-| `mark_files_for_delete` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Mark multiple files, asset paths, or package names for delete in source control. |
-| `revert_file` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Revert one checked-out file, asset path, or package name. |
-| `revert_files` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Revert multiple checked-out files, asset paths, or package names. |
-| `revert_unchanged_files` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Revert multiple unchanged files, asset paths, or package names. |
-| `sync_file` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Sync one source-controlled file, asset path, or package name to the latest revision. |
-| `sync_files` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Sync multiple source-controlled files, asset paths, or package names to the latest revision. |
-| `check_in_files` | Supported | Requires a configured and available Unreal source-control provider in the active editor session. | Submit multiple files or packages through the active Unreal source-control provider. |
-| `revert_and_reload_packages` | Supported | Requires a configured and available Unreal source-control provider plus valid long package names to reload. | Revert Unreal packages and optionally reload the world after source-control revert completes. |
 
 ### Domain Tools
 

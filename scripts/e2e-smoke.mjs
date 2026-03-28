@@ -306,7 +306,10 @@ async function main() {
 
 	const safeDeleteActor = async (actorName) => {
 		try {
-			await callJsonTool("delete_actor", { name: actorName })
+			await callJsonTool("control_actor", {
+				action: "delete",
+				params: { name: actorName },
+			})
 		} catch {
 			// Best effort cleanup only.
 		}
@@ -318,7 +321,10 @@ async function main() {
 		}
 
 		try {
-			await callJsonTool("editor_run_python", { code: buildDeleteAssetsPython(assetPaths) })
+			await callJsonTool("control_editor", {
+				action: "run_python",
+				params: { code: buildDeleteAssetsPython(assetPaths) },
+			})
 		} catch {
 			// Best effort cleanup only.
 		}
@@ -332,14 +338,7 @@ async function main() {
 		const toolsResult = await runStep("List registered MCP tools", async () => client.listTools())
 		const toolNames = new Set(toolsResult.tools.map((tool) => tool.name))
 		const requiredTools = [
-			"editor_project_info",
-			"editor_get_map_info",
-			"editor_get_world_outliner",
-			"get_source_control_provider",
-			"query_source_control_state",
-			"spawn_actor",
-			"set_actor_transform",
-			"delete_actor",
+			"control_editor",
 			"control_actor",
 			"manage_source_control",
 			"manage_tools",
@@ -347,12 +346,7 @@ async function main() {
 
 		if (options.withAssets) {
 			requiredTools.push(
-				"create_blueprint",
-				"add_component_to_blueprint",
-				"set_static_mesh_properties",
-				"compile_blueprint",
-				"create_umg_widget_blueprint",
-				"add_text_block_to_widget",
+				"manage_blueprint",
 				"manage_widget_authoring",
 			)
 		}
@@ -363,32 +357,45 @@ async function main() {
 		})
 
 		await runStep("Read project info", async () => {
-			const projectInfo = await callJsonTool("editor_project_info")
+			const projectInfo = await callJsonTool("control_editor", {
+				action: "project_info",
+				params: {},
+			})
 			assert(typeof projectInfo.project_name === "string" && projectInfo.project_name.length > 0, "project_name is missing")
 			assert(typeof projectInfo.engine_version === "string" && projectInfo.engine_version.includes("4.27"), "engine_version does not look like UE4.27")
 		})
 
 		await runStep("Read current map info", async () => {
-			const mapInfo = await callJsonTool("editor_get_map_info")
+			const mapInfo = await callJsonTool("control_editor", {
+				action: "map_info",
+				params: {},
+			})
 			assert(typeof mapInfo.map_name === "string" && mapInfo.map_name.length > 0, "map_name is missing")
 			assert(Number.isFinite(mapInfo.total_actors), "total_actors is missing")
 		})
 
 		await runStep("Read current world outliner", async () => {
-			const outliner = await callJsonTool("editor_get_world_outliner")
+			const outliner = await callJsonTool("control_editor", {
+				action: "world_outliner",
+				params: {},
+			})
 			assert(Array.isArray(outliner.actors), "world outliner did not return an actor list")
 		})
 
 		await runStep("Read source control provider info", async () => {
-			const sourceControlInfo = await callJsonTool("get_source_control_provider")
+			const sourceControlInfo = await callJsonTool("manage_source_control", {
+				action: "provider_info",
+				params: {},
+			})
 			assert(typeof sourceControlInfo.provider === "string", "provider is missing")
 			assert(typeof sourceControlInfo.enabled === "boolean", "enabled is missing")
 			assert(typeof sourceControlInfo.available === "boolean", "available is missing")
 		})
 
 		await runStep("Query source control state", async () => {
-			const sourceControlState = await callJsonTool("query_source_control_state", {
-				file: "/Game",
+			const sourceControlState = await callJsonTool("manage_source_control", {
+				action: "query_state",
+				params: { file: "/Game" },
 			})
 			assert(typeof sourceControlState.state?.filename === "string", "state filename is missing")
 			assert(typeof sourceControlState.state?.is_valid === "boolean", "state validity is missing")
@@ -398,38 +405,53 @@ async function main() {
 		addCleanup(`Delete actor ${granularActorName}`, () => safeDeleteActor(granularActorName))
 
 		await runStep("Spawn a granular smoke-test actor", async () => {
-			const spawnResult = await callJsonTool("spawn_actor", {
-				type: "StaticMeshActor",
-				name: granularActorName,
-				location: { x: 0, y: 0, z: 150 },
+			const spawnResult = await callJsonTool("control_actor", {
+				action: "spawn",
+				params: {
+					type: "StaticMeshActor",
+					name: granularActorName,
+					location: { x: 0, y: 0, z: 150 },
+				},
 			})
-			assert(spawnResult.actor?.label === granularActorName, "spawn_actor did not create the expected label")
+			assert(spawnResult.actor?.label === granularActorName, "control_actor spawn did not create the expected label")
 		})
 
 		await runStep("Find the spawned actor by name", async () => {
-			const findResult = await callJsonTool("find_actors_by_name", { pattern: granularActorName })
-			assert(findResult.count >= 1, "find_actors_by_name did not locate the smoke actor")
+			const findResult = await callJsonTool("control_actor", {
+				action: "find",
+				params: { pattern: granularActorName },
+			})
+			assert(findResult.count >= 1, "control_actor find did not locate the smoke actor")
 		})
 
 		await runStep("Move the spawned actor", async () => {
-			const transformResult = await callJsonTool("set_actor_transform", {
-				name: granularActorName,
-				location: { x: 300, y: 0, z: 150 },
-				scale: { x: 1, y: 1, z: 1 },
+			const transformResult = await callJsonTool("control_actor", {
+				action: "transform",
+				params: {
+					name: granularActorName,
+					location: { x: 300, y: 0, z: 150 },
+					scale: { x: 1, y: 1, z: 1 },
+				},
 			})
 			assert(
 				Math.abs(Number(transformResult.actor?.location?.x ?? 0) - 300) < 0.1,
-				"set_actor_transform did not update the expected X location",
+				"control_actor transform did not update the expected X location",
 			)
 		})
 
 		await runStep("Inspect actor properties", async () => {
-			const propertyResult = await callJsonTool("get_actor_properties", { name: granularActorName })
-			assert(propertyResult.actor?.label === granularActorName, "get_actor_properties returned the wrong actor")
+			const propertyResult = await callJsonTool("control_actor", {
+				action: "get_properties",
+				params: { name: granularActorName },
+			})
+			assert(propertyResult.actor?.label === granularActorName, "control_actor get_properties returned the wrong actor")
 		})
 
 		await runStep("Delete the granular smoke-test actor", async () => {
-			await callJsonTool("delete_actor", { name: granularActorName })
+			await callJsonTool("control_actor", {
+				action: "delete",
+				params: { name: granularActorName },
+			})
 		})
 
 		const domainActorName = `${options.prefix}_DomainActor`
@@ -488,55 +510,67 @@ async function main() {
 				addCleanup(`Delete assets for ${options.prefix}`, () => safeDeleteAssets([widgetPath, blueprintPath]))
 			}
 
-				await runStep("Create a Blueprint asset", async () => {
-					const createResult = await callJsonTool("create_blueprint", {
+			await runStep("Create a Blueprint asset", async () => {
+				const createResult = await callJsonTool("manage_blueprint", {
+					action: "create_blueprint",
+					params: {
 						name: blueprintPath,
 						parent_class: "Actor",
-					})
-					assert(
-						createResult.asset_path === blueprintPath,
-						`create_blueprint returned an unexpected asset path: ${createResult.asset_path}`,
-					)
+					},
 				})
+				assert(
+					createResult.asset_path === blueprintPath,
+					`manage_blueprint create_blueprint returned an unexpected asset path: ${createResult.asset_path}`,
+				)
+			})
 
 			await runStep("Add a StaticMeshComponent to the Blueprint", async () => {
-				const componentResult = await callJsonTool("add_component_to_blueprint", {
-					blueprint_name: blueprintPath,
-					component_type: "StaticMeshComponent",
-					component_name: "SmokeMesh",
+				const componentResult = await callJsonTool("manage_blueprint", {
+					action: "add_component",
+					params: {
+						blueprint_name: blueprintPath,
+						component_type: "StaticMeshComponent",
+						component_name: "SmokeMesh",
+					},
 				})
 				assert(componentResult.component?.name === "SmokeMesh", "Blueprint component was not created")
 			})
 
 			await runStep("Assign a mesh to the Blueprint component", async () => {
-				await callJsonTool("set_static_mesh_properties", {
-					blueprint_name: blueprintPath,
-					component_name: "SmokeMesh",
-					static_mesh: "/Engine/BasicShapes/Cube",
+				await callJsonTool("manage_blueprint", {
+					action: "set_static_mesh",
+					params: {
+						blueprint_name: blueprintPath,
+						component_name: "SmokeMesh",
+						static_mesh: "/Engine/BasicShapes/Cube",
+					},
 				})
 			})
 
 			await runStep("Compile the Blueprint asset", async () => {
-				const compileResult = await callJsonTool("compile_blueprint", {
-					blueprint_name: blueprintPath,
+				const compileResult = await callJsonTool("manage_blueprint", {
+					action: "compile",
+					params: {
+						blueprint_name: blueprintPath,
+					},
 				})
-				assert(compileResult.blueprint === blueprintPath, "compile_blueprint returned an unexpected asset path")
+				assert(compileResult.blueprint === blueprintPath, "manage_blueprint compile returned an unexpected asset path")
 			})
 
 			if (options.keepAssets) {
 				console.log(`[INFO] Kept Blueprint asset: ${blueprintPath}`)
 			}
 
-				await runStep("Create a Widget Blueprint through the domain layer", async () => {
-					const createWidgetResult = await callJsonTool("manage_widget_authoring", {
-						action: "create_widget_blueprint",
-						params: { widget_name: widgetPath },
-					})
-					assert(
-						createWidgetResult.asset_path === widgetPath,
-						`Widget Blueprint was created at an unexpected path: ${createWidgetResult.asset_path}`,
-					)
+			await runStep("Create a Widget Blueprint through the domain layer", async () => {
+				const createWidgetResult = await callJsonTool("manage_widget_authoring", {
+					action: "create_widget_blueprint",
+					params: { widget_name: widgetPath },
 				})
+				assert(
+					createWidgetResult.asset_path === widgetPath,
+					`Widget Blueprint was created at an unexpected path: ${createWidgetResult.asset_path}`,
+				)
+			})
 
 			await runStep("Add a TextBlock to the Widget Blueprint", async () => {
 				try {
