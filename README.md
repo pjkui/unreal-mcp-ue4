@@ -5,6 +5,8 @@ Based on the original project: [runreal/unreal-mcp](https://github.com/runreal/u
 
 This fork was modified to support Unreal Engine 4.27 while preserving the original Unreal MCP workflow where possible.
 
+This UE4.27 port and the follow-up tool, documentation, and smoke-test extensions were developed with assistance from OpenAI Codex.
+
 ![hero](hero.png)
 
 ![gif](mcp.gif)
