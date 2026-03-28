@@ -9,9 +9,7 @@ This fork was modified to support Unreal Engine 4.27 while preserving the origin
 
 ![gif](mcp.gif)
 
-<div align="center">
-  <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/LICENSE-MIT-GREEN?style=flat-square"></a>
-</div>
+[![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)](https://github.com/conaman/unreal-mcp-ue4/blob/main/LICENSE)
 
 ## ⚡ Differences
 
