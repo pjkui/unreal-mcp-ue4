@@ -48,7 +48,7 @@ const sourceControlProviderDependentTools = [
 ] as const
 
 const categoryOrder = [
-	"Connection & Setup",
+	"Editor Session Paths",
 	"Actor / Level Tools",
 	"Core Tool Namespaces",
 	"World & Environment Tool Namespaces",
@@ -356,7 +356,7 @@ function fallbackCategory(toolName: string): string {
 	}
 
 	if (toolName.includes("path")) {
-		return "Connection & Setup"
+		return "Editor Session Paths"
 	}
 
 	return "Editor & Asset Tools"

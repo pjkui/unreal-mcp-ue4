@@ -261,7 +261,7 @@ The tool list below is generated from `server/index.ts` during build.
 
 Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
 
-### Connection & Setup
+### Editor Session Paths
 
 <table width="100%">
 	<colgroup>

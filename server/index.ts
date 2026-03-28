@@ -459,7 +459,7 @@ const sourceControlFilesCommand = (
 	return editorTools.UESourceControlTool(multiOperation ?? singleOperation!, { files })
 }
 
-/// Connection & Setup
+/// Editor Session Paths
 server.tool(
 	"get_unreal_engine_path",
 	"Get the active Unreal Engine root path from the connected editor session",
