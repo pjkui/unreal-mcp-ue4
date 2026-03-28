@@ -165,6 +165,13 @@ If you get an error similar to `MCP Unreal: Unexpected token 'C', Connection...`
 - Fully close/open your client (Claude, Cursor, etc.) to ensure it reconnects to the MCP server. (`File -> Exit` on windows).
 - Check your running processes and kill any zombie unreal-mcp Node.js processes.
 
+### 🧩 UMG Notes
+
+- The UMG tools work against Widget Blueprint assets such as `/Game/UI/WBP_MainMenu`.
+- The nested-widget commands use the UMG term `child widget` instead of `component`.
+- Position changes currently target `CanvasPanel` slots in UE4.27. Non-canvas panel layouts are not repositioned by these tools.
+- Creating nested `UserWidget` blueprint instances is not included in this UE4.27 port. Use native UMG widget classes such as `CanvasPanel`, `Border`, `Button`, `TextBlock`, and `Image`.
+- Reparenting the current root widget and editing named-slot content are not handled by the current UMG commands.
 
 ## 🛠️ Available Tools
 
@@ -190,6 +197,13 @@ If you get an error similar to `MCP Unreal: Unexpected token 'C', Connection...`
 | `editor_delete_object` | Delete an object/actor from the world |
 | `editor_take_screenshot` | Take a screenshot of the Unreal Editor |
 | `editor_move_camera` | Move the viewport camera to a specific location and rotation for positioning screenshots |
+| `editor_umg_add_widget` | Add a UMG widget to a Widget Blueprint |
+| `editor_umg_remove_widget` | Remove a UMG widget from a Widget Blueprint by widget name |
+| `editor_umg_set_widget_position` | Set the position of a UMG widget inside a Widget Blueprint |
+| `editor_umg_reparent_widget` | Change the parent panel of an existing UMG widget inside a Widget Blueprint |
+| `editor_umg_add_child_widget` | Add a child widget to a parent panel inside a Widget Blueprint |
+| `editor_umg_remove_child_widget` | Remove a direct child widget from a parent panel inside a Widget Blueprint. |
+| `editor_umg_set_child_widget_position` | Set the position of a direct child widget on a parent panel inside a Widget Blueprint |
 
 ## 🤝 Contributing
 

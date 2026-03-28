@@ -92,3 +92,97 @@ export const UEMoveCamera = (
 		rotation: JSON.stringify(rotation),
 	})
 }
+
+export const UEUMGAddWidget = (
+	widget_blueprint_path: string,
+	widget_class: string,
+	widget_name: string,
+	parent_widget_name?: string,
+	position?: { x: number; y: number },
+	z_order?: number,
+) =>
+	Template(readWithCompat("./scripts/ue_umg_add_widget.py"), {
+		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
+		widget_class: JSON.stringify(widget_class),
+		widget_name: JSON.stringify(widget_name),
+		parent_widget_name: parent_widget_name ? JSON.stringify(parent_widget_name) : "null",
+		position: position ? JSON.stringify(position) : "null",
+		z_order: z_order !== undefined ? JSON.stringify(z_order) : "null",
+	})
+
+export const UEUMGRemoveWidget = (widget_blueprint_path: string, widget_name: string) =>
+	Template(readWithCompat("./scripts/ue_umg_remove_widget.py"), {
+		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
+		widget_name: JSON.stringify(widget_name),
+	})
+
+export const UEUMGSetWidgetPosition = (
+	widget_blueprint_path: string,
+	widget_name: string,
+	position: { x: number; y: number },
+	z_order?: number,
+) =>
+	Template(readWithCompat("./scripts/ue_umg_set_widget_position.py"), {
+		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
+		widget_name: JSON.stringify(widget_name),
+		position: JSON.stringify(position),
+		z_order: z_order !== undefined ? JSON.stringify(z_order) : "null",
+	})
+
+export const UEUMGReparentWidget = (
+	widget_blueprint_path: string,
+	widget_name: string,
+	new_parent_widget_name: string,
+	position?: { x: number; y: number },
+	z_order?: number,
+) =>
+	Template(readWithCompat("./scripts/ue_umg_reparent_widget.py"), {
+		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
+		widget_name: JSON.stringify(widget_name),
+		new_parent_widget_name: JSON.stringify(new_parent_widget_name),
+		position: position ? JSON.stringify(position) : "null",
+		z_order: z_order !== undefined ? JSON.stringify(z_order) : "null",
+	})
+
+export const UEUMGAddChildWidget = (
+	widget_blueprint_path: string,
+	parent_widget_name: string,
+	child_widget_class: string,
+	child_widget_name: string,
+	position?: { x: number; y: number },
+	z_order?: number,
+) =>
+	Template(readWithCompat("./scripts/ue_umg_add_child_widget.py"), {
+		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
+		parent_widget_name: JSON.stringify(parent_widget_name),
+		child_widget_class: JSON.stringify(child_widget_class),
+		child_widget_name: JSON.stringify(child_widget_name),
+		position: position ? JSON.stringify(position) : "null",
+		z_order: z_order !== undefined ? JSON.stringify(z_order) : "null",
+	})
+
+export const UEUMGRemoveChildWidget = (
+	widget_blueprint_path: string,
+	parent_widget_name: string,
+	child_widget_name: string,
+) =>
+	Template(readWithCompat("./scripts/ue_umg_remove_child_widget.py"), {
+		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
+		parent_widget_name: JSON.stringify(parent_widget_name),
+		child_widget_name: JSON.stringify(child_widget_name),
+	})
+
+export const UEUMGSetChildWidgetPosition = (
+	widget_blueprint_path: string,
+	parent_widget_name: string,
+	child_widget_name: string,
+	position: { x: number; y: number },
+	z_order?: number,
+) =>
+	Template(readWithCompat("./scripts/ue_umg_set_child_widget_position.py"), {
+		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
+		parent_widget_name: JSON.stringify(parent_widget_name),
+		child_widget_name: JSON.stringify(child_widget_name),
+		position: JSON.stringify(position),
+		z_order: z_order !== undefined ? JSON.stringify(z_order) : "null",
+	})

@@ -524,6 +524,254 @@ server.tool(
 	},
 )
 
+server.tool(
+	"editor_umg_add_widget",
+	"Add a UMG widget to a Widget Blueprint. Without a parent, this creates the root widget. With a parent, this adds the widget under that parent panel. Position changes are only supported for CanvasPanel children.",
+	{
+		widget_blueprint_path: z
+			.string()
+			.describe("Widget Blueprint asset path such as '/Game/UI/WBP_MainMenu'"),
+		widget_class: z
+			.string()
+			.describe(
+				"Native UMG widget class name or class path such as 'CanvasPanel', 'Border', 'Button', 'TextBlock', or '/Script/UMG.CanvasPanel'",
+			),
+		widget_name: z.string().describe("Name to assign to the new widget inside the widget tree"),
+		parent_widget_name: z
+			.string()
+			.optional()
+			.describe("Optional parent panel widget name. Leave empty to create the root widget."),
+		position: z
+			.object({
+				x: z.number(),
+				y: z.number(),
+			})
+			.optional()
+			.describe("Optional CanvasPanel slot position for the new widget"),
+		z_order: z.number().int().optional().describe("Optional CanvasPanel z-order"),
+	},
+	async ({ widget_blueprint_path, widget_class, widget_name, parent_widget_name, position, z_order }) => {
+		const result = await tryRunCommand(
+			editorTools.UEUMGAddWidget(
+				widget_blueprint_path,
+				widget_class,
+				widget_name,
+				parent_widget_name,
+				position,
+				z_order,
+			),
+		)
+		return {
+			content: [
+				{
+					type: "text",
+					text: result,
+				},
+			],
+		}
+	},
+)
+
+server.tool(
+	"editor_umg_remove_widget",
+	"Remove a UMG widget from a Widget Blueprint by widget name. This can also remove the current root widget.",
+	{
+		widget_blueprint_path: z
+			.string()
+			.describe("Widget Blueprint asset path such as '/Game/UI/WBP_MainMenu'"),
+		widget_name: z.string().describe("Name of the widget to remove from the widget tree"),
+	},
+	async ({ widget_blueprint_path, widget_name }) => {
+		const result = await tryRunCommand(editorTools.UEUMGRemoveWidget(widget_blueprint_path, widget_name))
+		return {
+			content: [
+				{
+					type: "text",
+					text: result,
+				},
+			],
+		}
+	},
+)
+
+server.tool(
+	"editor_umg_set_widget_position",
+	"Set the position of a UMG widget inside a Widget Blueprint. This currently supports widgets attached to a CanvasPanel slot in UE4.27.",
+	{
+		widget_blueprint_path: z
+			.string()
+			.describe("Widget Blueprint asset path such as '/Game/UI/WBP_MainMenu'"),
+		widget_name: z.string().describe("Name of the widget to reposition"),
+		position: z
+			.object({
+				x: z.number(),
+				y: z.number(),
+			})
+			.describe("CanvasPanel slot position"),
+		z_order: z.number().int().optional().describe("Optional CanvasPanel z-order"),
+	},
+	async ({ widget_blueprint_path, widget_name, position, z_order }) => {
+		const result = await tryRunCommand(
+			editorTools.UEUMGSetWidgetPosition(widget_blueprint_path, widget_name, position, z_order),
+		)
+		return {
+			content: [
+				{
+					type: "text",
+					text: result,
+				},
+			],
+		}
+	},
+)
+
+server.tool(
+	"editor_umg_reparent_widget",
+	"Change the parent panel of an existing UMG widget inside a Widget Blueprint. The current root widget cannot be reparented by this tool.",
+	{
+		widget_blueprint_path: z
+			.string()
+			.describe("Widget Blueprint asset path such as '/Game/UI/WBP_MainMenu'"),
+		widget_name: z.string().describe("Name of the widget to move"),
+		new_parent_widget_name: z.string().describe("Name of the new parent panel widget"),
+		position: z
+			.object({
+				x: z.number(),
+				y: z.number(),
+			})
+			.optional()
+			.describe("Optional CanvasPanel slot position after reparenting"),
+		z_order: z.number().int().optional().describe("Optional CanvasPanel z-order after reparenting"),
+	},
+	async ({ widget_blueprint_path, widget_name, new_parent_widget_name, position, z_order }) => {
+		const result = await tryRunCommand(
+			editorTools.UEUMGReparentWidget(
+				widget_blueprint_path,
+				widget_name,
+				new_parent_widget_name,
+				position,
+				z_order,
+			),
+		)
+		return {
+			content: [
+				{
+					type: "text",
+					text: result,
+				},
+			],
+		}
+	},
+)
+
+server.tool(
+	"editor_umg_add_child_widget",
+	"Add a child widget to a parent panel inside a Widget Blueprint. This uses the UMG term 'child widget' instead of 'component'. Position changes are only supported for CanvasPanel children.",
+	{
+		widget_blueprint_path: z
+			.string()
+			.describe("Widget Blueprint asset path such as '/Game/UI/WBP_MainMenu'"),
+		parent_widget_name: z.string().describe("Name of the parent panel widget"),
+		child_widget_class: z
+			.string()
+			.describe(
+				"Native UMG widget class name or class path such as 'Border', 'Button', 'TextBlock', or '/Script/UMG.Border'",
+			),
+		child_widget_name: z.string().describe("Name to assign to the new child widget"),
+		position: z
+			.object({
+				x: z.number(),
+				y: z.number(),
+			})
+			.optional()
+			.describe("Optional CanvasPanel slot position for the new child widget"),
+		z_order: z.number().int().optional().describe("Optional CanvasPanel z-order"),
+	},
+	async ({ widget_blueprint_path, parent_widget_name, child_widget_class, child_widget_name, position, z_order }) => {
+		const result = await tryRunCommand(
+			editorTools.UEUMGAddChildWidget(
+				widget_blueprint_path,
+				parent_widget_name,
+				child_widget_class,
+				child_widget_name,
+				position,
+				z_order,
+			),
+		)
+		return {
+			content: [
+				{
+					type: "text",
+					text: result,
+				},
+			],
+		}
+	},
+)
+
+server.tool(
+	"editor_umg_remove_child_widget",
+	"Remove a direct child widget from a parent panel inside a Widget Blueprint.",
+	{
+		widget_blueprint_path: z
+			.string()
+			.describe("Widget Blueprint asset path such as '/Game/UI/WBP_MainMenu'"),
+		parent_widget_name: z.string().describe("Name of the parent panel widget"),
+		child_widget_name: z.string().describe("Name of the direct child widget to remove"),
+	},
+	async ({ widget_blueprint_path, parent_widget_name, child_widget_name }) => {
+		const result = await tryRunCommand(
+			editorTools.UEUMGRemoveChildWidget(widget_blueprint_path, parent_widget_name, child_widget_name),
+		)
+		return {
+			content: [
+				{
+					type: "text",
+					text: result,
+				},
+			],
+		}
+	},
+)
+
+server.tool(
+	"editor_umg_set_child_widget_position",
+	"Set the position of a direct child widget on a parent panel inside a Widget Blueprint. This currently supports CanvasPanel children in UE4.27.",
+	{
+		widget_blueprint_path: z
+			.string()
+			.describe("Widget Blueprint asset path such as '/Game/UI/WBP_MainMenu'"),
+		parent_widget_name: z.string().describe("Name of the parent panel widget"),
+		child_widget_name: z.string().describe("Name of the direct child widget to reposition"),
+		position: z
+			.object({
+				x: z.number(),
+				y: z.number(),
+			})
+			.describe("CanvasPanel slot position"),
+		z_order: z.number().int().optional().describe("Optional CanvasPanel z-order"),
+	},
+	async ({ widget_blueprint_path, parent_widget_name, child_widget_name, position, z_order }) => {
+		const result = await tryRunCommand(
+			editorTools.UEUMGSetChildWidgetPosition(
+				widget_blueprint_path,
+				parent_widget_name,
+				child_widget_name,
+				position,
+				z_order,
+			),
+		)
+		return {
+			content: [
+				{
+					type: "text",
+					text: result,
+				},
+			],
+		}
+	},
+)
+
 server.resource("docs", "docs://unreal_python", async () => {
 	return {
 		contents: [
