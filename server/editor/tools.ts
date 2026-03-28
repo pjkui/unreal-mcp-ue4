@@ -243,6 +243,12 @@ export const UESourceControlTool = (operation: string, args: Record<string, unkn
 		args: jsonArg(args),
 	})
 
+export const UEDataTool = (operation: string, args: Record<string, unknown> = {}) =>
+	renderScript("./scripts/ue_data_tools.py", {
+		operation: jsonArg(operation),
+		args: jsonArg(args),
+	})
+
 export const UEWorldBuildingTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_world_building_tools.py", {
 		operation: jsonArg(operation),

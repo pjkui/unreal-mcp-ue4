@@ -154,6 +154,7 @@ Useful first natural-language requests:
 - Read project, map, asset, and actor information from the open editor.
 - Spawn, inspect, move, and delete actors in the current level.
 - Search assets and inspect references or metadata.
+- Create common UE4 data assets such as `DataAsset` and `StringTable` assets.
 - Create and edit Blueprint assets where UE4.27 Python exposes the necessary editor APIs.
 - Create and edit Widget Blueprint trees with UE4.27-safe UMG helpers.
 - Run grouped tool namespaces that dispatch through `action` and `params`.
@@ -187,6 +188,8 @@ This adds:
 - Blueprint creation
 - Blueprint component editing
 - Blueprint compilation
+- DataAsset creation
+- StringTable creation
 - Widget Blueprint creation
 - UMG widget insertion
 - cleanup of temporary assets under `/Game/MCP/Tests`
@@ -206,7 +209,7 @@ npm run test:e2e -- --with-assets
 
 - The console prints `[PASS]` for every test step.
 - Actor tests visibly create and then remove temporary actors in the editor.
-- The asset-inclusive test creates temporary Blueprint and Widget Blueprint assets under `/Game/MCP/Tests` and then removes them before exit.
+- The asset-inclusive test creates temporary Blueprint, DataAsset, StringTable, and Widget Blueprint assets under `/Game/MCP/Tests` and then removes them before exit.
 
 ### Recommended test workflow
 
@@ -376,18 +379,8 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="30%">Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure.</td>
 	</tr>
 	<tr>
-		<td width="18%"><code>manage_pipeline</code></td>
-		<td width="52%">Pipeline tool namespace for asset validation, project inspection, and tool status reporting actions.</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
 		<td width="18%"><code>manage_tools</code></td>
 		<td width="52%">Tool-namespace registry for listing registered tool namespaces and describing supported actions.</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
-		<td width="18%"><code>manage_performance</code></td>
-		<td width="52%">Performance tool namespace for editor console commands and screenshot capture actions.</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
@@ -489,6 +482,11 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
+		<td width="18%"><code>manage_data</code></td>
+		<td width="52%">Data tool namespace for searching data assets, creating common data containers, and inspecting their asset metadata.</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
 		<td width="18%"><code>manage_blueprint</code></td>
 		<td width="52%">Blueprint tool namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions.</td>
 		<td width="30%">Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface.</td>
@@ -543,11 +541,6 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
-		<td width="18%"><code>manage_ai</code></td>
-		<td width="52%">AI tool namespace for searching AI-related assets through the existing asset registry and project inspection actions.</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
 		<td width="18%"><code>manage_gas</code></td>
 		<td width="52%">GAS tool namespace for searching gameplay-ability-related assets and inspecting their asset metadata.</td>
 		<td width="30%">&nbsp;</td>
@@ -573,18 +566,8 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="30%">Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python.</td>
 	</tr>
 	<tr>
-		<td width="18%"><code>manage_networking</code></td>
-		<td width="52%">Networking tool namespace for project inspection and console-command driven networking diagnostics.</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
 		<td width="18%"><code>manage_game_framework</code></td>
 		<td width="52%">Game-framework tool namespace for project inspection and gameplay Blueprint scaffolding actions.</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
-		<td width="18%"><code>manage_sessions</code></td>
-		<td width="52%">Sessions tool namespace for project inspection and console-command driven local session diagnostics.</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	</tbody>

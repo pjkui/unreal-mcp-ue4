@@ -341,6 +341,7 @@ async function main() {
 		const requiredTools = [
 			"manage_editor",
 			"manage_actor",
+			"manage_data",
 			"manage_source_control",
 			"manage_tools",
 		]
@@ -466,6 +467,7 @@ async function main() {
 				for (const requiredNamespace of [
 					"manage_actor",
 					"manage_asset",
+					"manage_data",
 					"manage_source_control",
 					"manage_widget_authoring",
 				]) {
@@ -508,10 +510,15 @@ async function main() {
 
 		if (options.withAssets) {
 			const blueprintPath = `/Game/MCP/Tests/BP_${options.prefix}`
+			const dataAssetPath = `/Game/MCP/Tests/DA_${options.prefix}`
+			const stringTablePath = `/Game/MCP/Tests/ST_${options.prefix}`
 			const widgetPath = `/Game/MCP/Tests/WBP_${options.prefix}`
 			let widgetAuthoringUnsupportedReason = ""
 			if (!options.keepAssets) {
-				addCleanup(`Delete assets for ${options.prefix}`, () => safeDeleteAssets([widgetPath, blueprintPath]))
+				addCleanup(
+					`Delete assets for ${options.prefix}`,
+					() => safeDeleteAssets([widgetPath, blueprintPath, dataAssetPath, stringTablePath]),
+				)
 			}
 
 			await runStep("Create a Blueprint asset", async () => {
@@ -561,8 +568,49 @@ async function main() {
 				assert(compileResult.blueprint === blueprintPath, "manage_blueprint compile returned an unexpected asset path")
 			})
 
+			await runStep("Create a DataAsset through the tool-namespace layer", async () => {
+				const dataAssetResult = await callJsonTool("manage_data", {
+					action: "create_data_asset",
+					params: {
+						name: dataAssetPath,
+						data_asset_class: "DataAsset",
+					},
+				})
+				assert(
+					dataAssetResult.asset_path === dataAssetPath,
+					`DataAsset was created at an unexpected path: ${dataAssetResult.asset_path}`,
+				)
+			})
+
+			await runStep("Read the DataAsset metadata", async () => {
+				const dataAssetInfo = await callJsonTool("manage_data", {
+					action: "asset_info",
+					params: { asset_path: dataAssetPath },
+				})
+				assert(Array.isArray(dataAssetInfo) && dataAssetInfo.length === 1, "manage_data asset_info did not return one asset record")
+				assert(
+					dataAssetInfo[0].package === dataAssetPath,
+					`manage_data asset_info returned an unexpected asset path: ${dataAssetInfo[0]?.package}`,
+				)
+			})
+
+			await runStep("Create a StringTable through the tool-namespace layer", async () => {
+				const stringTableResult = await callJsonTool("manage_data", {
+					action: "create_string_table",
+					params: {
+						name: stringTablePath,
+					},
+				})
+				assert(
+					stringTableResult.asset_path === stringTablePath,
+					`StringTable was created at an unexpected path: ${stringTableResult.asset_path}`,
+				)
+			})
+
 			if (options.keepAssets) {
 				console.log(`[INFO] Kept Blueprint asset: ${blueprintPath}`)
+				console.log(`[INFO] Kept DataAsset: ${dataAssetPath}`)
+				console.log(`[INFO] Kept StringTable: ${stringTablePath}`)
 			}
 
 			await runStep("Create a Widget Blueprint through the tool-namespace layer", async () => {

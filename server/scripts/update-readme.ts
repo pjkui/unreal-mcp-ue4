@@ -230,10 +230,8 @@ function fallbackCategory(toolName: string): string {
 		toolName === "manage_level" ||
 		toolName === "manage_system" ||
 		toolName === "manage_inspection" ||
-		toolName === "manage_pipeline" ||
 		toolName === "manage_tools" ||
-		toolName === "manage_source_control" ||
-		toolName === "manage_performance"
+		toolName === "manage_source_control"
 	) {
 		return "Core Tool Namespaces"
 	}
@@ -252,6 +250,7 @@ function fallbackCategory(toolName: string): string {
 	}
 
 	if (
+		toolName === "manage_data" ||
 		toolName === "manage_skeleton" ||
 		toolName === "manage_material_authoring" ||
 		toolName === "manage_texture" ||
@@ -267,15 +266,12 @@ function fallbackCategory(toolName: string): string {
 		toolName === "manage_animation_physics" ||
 		toolName === "manage_input" ||
 		toolName === "manage_behavior_tree" ||
-		toolName === "manage_ai" ||
 		toolName === "manage_gas" ||
 		toolName === "manage_character" ||
 		toolName === "manage_combat" ||
 		toolName === "manage_inventory" ||
 		toolName === "manage_interaction" ||
-		toolName === "manage_networking" ||
-		toolName === "manage_game_framework" ||
-		toolName === "manage_sessions"
+		toolName === "manage_game_framework"
 	) {
 		return "Gameplay & Systems Tool Namespaces"
 	}

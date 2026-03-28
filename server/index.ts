@@ -831,22 +831,6 @@ registerToolNamespace(
 )
 
 registerToolNamespace(
-	"manage_pipeline",
-	"Pipeline tool namespace for asset validation, project inspection, and tool status reporting actions.",
-	{
-		validate_assets: (params) =>
-			pythonDispatch(editorTools.UEValidateAssets(optionalStringParam(params, ["asset_paths", "paths"]))),
-		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
-		tool_status: () =>
-			directDispatch({
-				success: true,
-				tool_namespace_count: toolNamespaceRegistry.size,
-				tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
-			}),
-	},
-)
-
-registerToolNamespace(
 	"manage_tools",
 	"Tool-namespace registry for listing registered tool namespaces and describing supported actions.",
 	{
@@ -860,6 +844,12 @@ registerToolNamespace(
 						supported_actions: info.supportedActions,
 					}))
 					.sort((left, right) => left.tool_namespace.localeCompare(right.tool_namespace)),
+			}),
+		tool_status: () =>
+			directDispatch({
+				success: true,
+				tool_namespace_count: toolNamespaceRegistry.size,
+				tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
 			}),
 		describe_namespace: (params) => {
 			const toolName = requiredStringParam(params, ["tool_name", "namespace_name", "name"])
@@ -1298,6 +1288,48 @@ registerToolNamespace(
 )
 
 registerToolNamespace(
+	"manage_data",
+	"Data tool namespace for searching data assets, creating common data containers, and inspecting their asset metadata.",
+	{
+		search_data_assets: (params) =>
+			pythonDispatch(
+				editorTools.UEDataTool("search_data_assets", {
+					search_term: optionalStringParam(params, ["search_term", "query", "pattern", "name"]) ?? "",
+					include_engine: Boolean(params.include_engine),
+					limit: params.limit,
+				}),
+			),
+		asset_info: (params) =>
+			pythonDispatch(
+				editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
+			),
+		create_data_asset: (params) =>
+			pythonDispatch(
+				editorTools.UEDataTool("create_data_asset", {
+					name: requiredStringParam(params, ["name", "asset_name"]),
+					path: optionalStringParam(params, ["path"]),
+					data_asset_class: optionalStringParam(params, ["data_asset_class", "class_name"]),
+				}),
+			),
+		create_data_table: (params) =>
+			pythonDispatch(
+				editorTools.UEDataTool("create_data_table", {
+					name: requiredStringParam(params, ["name", "asset_name"]),
+					path: optionalStringParam(params, ["path"]),
+					row_struct: requiredStringParam(params, ["row_struct", "struct"]),
+				}),
+			),
+		create_string_table: (params) =>
+			pythonDispatch(
+				editorTools.UEDataTool("create_string_table", {
+					name: requiredStringParam(params, ["name", "asset_name"]),
+					path: optionalStringParam(params, ["path"]),
+				}),
+			),
+	},
+)
+
+registerToolNamespace(
 	"manage_blueprint",
 	"Blueprint tool namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions.",
 	{
@@ -1438,18 +1470,6 @@ registerToolNamespace(
 	},
 )
 
-registerToolNamespace(
-	"manage_performance",
-	"Performance tool namespace for editor console commands and screenshot capture actions.",
-	{
-		console_command: (params) =>
-			pythonDispatch(
-				editorTools.UEConsoleCommand(requiredStringParam(params, ["command"])),
-			),
-		screenshot: () => pythonDispatch(editorTools.UETakeScreenshot()),
-	},
-)
-
 /// Tool Namespaces
 registerToolNamespace(
 	"manage_audio",
@@ -1487,18 +1507,12 @@ registerToolNamespace(
 	{
 		search_behavior_trees: (params) =>
 			pythonDispatch(searchAssetsCommand(params, "BehaviorTree")),
+		search_ai_assets: (params) =>
+			pythonDispatch(searchAssetsCommand(params, "BehaviorTree")),
 		behavior_tree_info: (params) =>
 			pythonDispatch(
 				editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
 			),
-	},
-)
-
-registerToolNamespace(
-	"manage_ai",
-	"AI tool namespace for searching AI-related assets through the existing asset registry and project inspection actions.",
-	{
-		search_ai_assets: (params) => pythonDispatch(searchAssetsCommand(params, "BehaviorTree")),
 		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 	},
 )
@@ -1848,19 +1862,6 @@ registerToolNamespace(
 	},
 )
 
-/// Tool Namespaces
-registerToolNamespace(
-	"manage_networking",
-	"Networking tool namespace for project inspection and console-command driven networking diagnostics.",
-	{
-		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
-		console_command: (params) =>
-			pythonDispatch(
-				editorTools.UEConsoleCommand(requiredStringParam(params, ["command"])),
-			),
-	},
-)
-
 registerToolNamespace(
 	"manage_game_framework",
 	"Game-framework tool namespace for project inspection and gameplay Blueprint scaffolding actions.",
@@ -1873,18 +1874,6 @@ registerToolNamespace(
 					parent_class: optionalStringParam(params, ["parent_class"]) ?? "Actor",
 					path: optionalStringParam(params, ["path"]),
 				}),
-			),
-	},
-)
-
-registerToolNamespace(
-	"manage_sessions",
-	"Sessions tool namespace for project inspection and console-command driven local session diagnostics.",
-	{
-		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
-		console_command: (params) =>
-			pythonDispatch(
-				editorTools.UEConsoleCommand(requiredStringParam(params, ["command"])),
 			),
 	},
 )
