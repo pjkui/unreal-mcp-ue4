@@ -57,16 +57,25 @@ def create_umg_widget_blueprint(args):
             "message": "Widget parent class not found: {0}".format(parent_class_name),
         }
 
-    if not class_is_child_of(parent_class, unreal.UserWidget):
+    factory = unreal.WidgetBlueprintFactory()
+    parent_uclass = get_UClass(parent_class)
+    if not parent_uclass:
         return {
             "success": False,
-            "message": "Parent class must derive from UserWidget: {0}".format(
+            "message": "Could not resolve UClass for widget parent class: {0}".format(
                 parent_class_name
             ),
         }
 
-    factory = unreal.WidgetBlueprintFactory()
-    factory.set_editor_property("parent_class", get_UClass(parent_class))
+    try:
+        factory.set_editor_property("parent_class", parent_uclass)
+    except Exception as exc:
+        return {
+            "success": False,
+            "message": "Failed to assign widget blueprint parent class '{0}': {1}".format(
+                parent_class_name, exc
+            ),
+        }
     widget_blueprint = create_asset_with_factory(
         asset_name,
         package_path,
@@ -84,7 +93,7 @@ def create_umg_widget_blueprint(args):
         "success": True,
         "widget_name": asset_name,
         "asset_path": get_asset_package_name(widget_blueprint),
-        "parent_class": get_object_name(parent_class),
+        "parent_class": get_object_name(parent_uclass),
     }
 
 

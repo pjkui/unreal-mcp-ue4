@@ -513,6 +513,13 @@ def get_UClass(class_reference):
         return None
 
     try:
+        unreal_class_type = getattr(unreal, "Class", None)
+        if unreal_class_type and isinstance(class_reference, unreal_class_type):
+            return class_reference
+    except Exception:
+        pass
+
+    try:
         if hasattr(class_reference, "static_class"):
             return class_reference.static_class()
     except Exception:
@@ -521,17 +528,72 @@ def get_UClass(class_reference):
     return class_reference
 
 
+def get_super_UClass(class_reference):
+    class_object = get_UClass(class_reference)
+    if not class_object:
+        return None
+
+    for accessor_name in ("get_super_class", "get_super_struct"):
+        accessor = getattr(class_object, accessor_name, None)
+        if callable(accessor):
+            try:
+                super_class = accessor()
+                if super_class:
+                    return super_class
+            except Exception:
+                pass
+
+    for property_name in ("super_class", "super_struct"):
+        super_class = get_editor_property_value(class_object, property_name)
+        if super_class:
+            return super_class
+
+    return None
+
+
 def class_is_child_of(class_reference, parent_class_reference):
+    if not class_reference or not parent_class_reference:
+        return False
+
+    if class_reference == parent_class_reference:
+        return True
+
+    try:
+        if isinstance(class_reference, type) and isinstance(parent_class_reference, type):
+            return issubclass(class_reference, parent_class_reference)
+    except Exception:
+        pass
+
     class_object = get_UClass(class_reference)
     parent_class_object = get_UClass(parent_class_reference)
 
     if not class_object or not parent_class_object:
         return False
 
+    if class_object == parent_class_object:
+        return True
+
     try:
         return bool(class_object.is_child_of(parent_class_object))
     except Exception:
-        return False
+        pass
+
+    parent_name = get_object_name(parent_class_object)
+    current_class = class_object
+    visited_names = set()
+
+    while current_class:
+        current_name = get_object_name(current_class)
+        if not current_name or current_name in visited_names:
+            break
+
+        if current_class == parent_class_object or current_name == parent_name:
+            return True
+
+        visited_names.add(current_name)
+        current_class = get_super_UClass(current_class)
+
+    return False
 
 
 def load_widget_blueprint(widget_blueprint_path):

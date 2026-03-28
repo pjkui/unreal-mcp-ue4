@@ -54,16 +54,25 @@ def create_blueprint(args):
             "message": "Parent class not found: {0}".format(parent_class_name),
         }
 
-    if not class_is_child_of(parent_class, unreal.Object):
+    factory = unreal.BlueprintFactory()
+    parent_uclass = get_UClass(parent_class)
+    if not parent_uclass:
         return {
             "success": False,
-            "message": "Parent class is not a UObject-derived class: {0}".format(
+            "message": "Could not resolve UClass for parent class: {0}".format(
                 parent_class_name
             ),
         }
 
-    factory = unreal.BlueprintFactory()
-    factory.set_editor_property("parent_class", get_UClass(parent_class))
+    try:
+        factory.set_editor_property("parent_class", parent_uclass)
+    except Exception as exc:
+        return {
+            "success": False,
+            "message": "Failed to assign Blueprint parent class '{0}': {1}".format(
+                parent_class_name, exc
+            ),
+        }
 
     blueprint = create_asset_with_factory(
         asset_name,
@@ -82,7 +91,7 @@ def create_blueprint(args):
         "success": True,
         "blueprint_name": asset_name,
         "asset_path": get_asset_package_name(blueprint),
-        "parent_class": get_object_name(parent_class),
+        "parent_class": get_object_name(parent_uclass),
     }
 
 
