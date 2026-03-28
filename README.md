@@ -97,23 +97,6 @@ Generic MCP client example:
 
 If `node` is already on your `PATH`, you can use `"command": "node"` instead.
 
-### Windows client example
-
-```json
-{
-  "mcpServers": {
-    "unreal-ue4": {
-      "command": "C:\\Program Files\\nodejs\\node.exe",
-      "args": [
-        "C:\\Users\\YourName\\dev\\unreal-mcp-ue4\\dist\\bin.js"
-      ]
-    }
-  }
-}
-```
-
-In JSON on Windows, either escape backslashes or use forward slashes.
-
 ### Codex example
 
 ```bash
