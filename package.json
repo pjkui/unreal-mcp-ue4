@@ -18,6 +18,9 @@
   "author": "Seungjee Baek (conaman)",
   "license": "MIT",
   "packageManager": "npm@10.8.1",
+  "engines": {
+    "node": ">=18"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/conaman/unreal-mcp-ue4.git"

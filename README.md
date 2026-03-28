@@ -34,7 +34,7 @@ It can support the [Unreal Engine Python API for 4.27](https://dev.epicgames.com
 
 #### 📋 Requirements
 - 🔧 Unreal Engine 4.27.2 (verified)
-- 🟢 Node.js
+- 🟢 Node.js 18+ (`npm` is included with Node.js. You do not need `rpm` on Windows.)
 - 🟢 npm (recommended) or pnpm
 - 🤖 MCP Client (Claude, Cursor, etc.)
 
@@ -74,12 +74,54 @@ pnpm build
 }
 ```
 
+### 🪟 Windows Quick Start
+
+Open PowerShell in the repository folder and run:
+
+```powershell
+cd C:\dev\unreal-mcp-ue4
+npm install
+npm run build
+```
+
+For Windows MCP client configs, use `node` if it is on your `PATH`:
+
+```json
+{
+  "mcpServers": {
+    "unreal-ue4": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\YourName\\dev\\unreal-mcp-ue4\\dist\\bin.js"
+      ]
+    }
+  }
+}
+```
+
+If your client cannot find `node`, point directly to `node.exe`:
+
+```json
+{
+  "mcpServers": {
+    "unreal-ue4": {
+      "command": "C:\\Program Files\\nodejs\\node.exe",
+      "args": [
+        "C:\\Users\\YourName\\dev\\unreal-mcp-ue4\\dist\\bin.js"
+      ]
+    }
+  }
+}
+```
+
 ### 🔧 Troubleshooting
 
 If you get an error similar to `MCP Unreal: Unexpected token 'C', Connection...` it means that the mcp-server was not able to connect to the Unreal Editor.
 
 - Make sure that the Python Editor Script Plugin is enabled and that the Remote Execution option is checked in your project settings.
 - Make sure that the Editor Scripting Utilities plugin is also enabled for UE4.27.2.
+- On Windows, allow `UnrealEditor.exe` and `node.exe` through Windows Defender Firewall if node discovery fails. The bundled `unreal-remote-execution` package uses UDP multicast discovery on `239.0.0.1:6766` and a localhost command channel on `127.0.0.1:6776`.
+- In Windows JSON config files, either escape backslashes (`C:\\path\\to\\dist\\bin.js`) or use forward slashes (`C:/path/to/dist/bin.js`).
 - Try also changing your bind address from `127.0.0.1` to `0.0.0.0` but note that this will allow connections from your local network.
 - Restart your Unreal Editor fully.
 - Fully close/open your client (Claude, Cursor, etc.) to ensure it reconnects to the MCP server. (`File -> Exit` on windows).
