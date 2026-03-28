@@ -15,9 +15,9 @@ interface ToolSupportInfo {
 	status: SupportStatus
 }
 
-interface ExcludedFunctionInfo {
-	name: string
-	previousSurface: string
+interface ExcludedCapabilityInfo {
+	affectedSurface: string
+	capability: string
 	reason: string
 }
 
@@ -62,7 +62,7 @@ const categoryOrder = [
 	"Level Design Tools",
 	"UMG Tools",
 	"Source Control Tools",
-	"Domain Tools",
+	"Tool Namespaces",
 ]
 
 const toolSupport: Record<string, ToolSupportInfo> = {
@@ -151,7 +151,7 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 		status: "Partial",
 		note: "Requires an active PIE or game world and successful UserWidget instancing in the editor session.",
 	},
-	inspect: {
+	manage_inspection: {
 		status: "Partial",
 		note: "Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure.",
 	},
@@ -173,76 +173,41 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 }
 
-const excludedFunctions: ExcludedFunctionInfo[] = [
+const excludedCapabilities: ExcludedCapabilityInfo[] = [
 	{
-		name: "add_blueprint_event_node",
-		previousSurface: "Direct MCP tool",
-		reason: "Excluded because the current UE4.27 Python environment does not expose reliable event graph access or K2 event reference setup.",
+		capability: "Blueprint event-graph event insertion",
+		affectedSurface:
+			"Related event-node and input-action helpers are excluded from the MCP surface.",
+		reason:
+			"The current UE4.27 Python environment does not expose reliable event graph access or K2 event reference setup.",
 	},
 	{
-		name: "add_blueprint_input_action_node",
-		previousSurface: "Direct MCP tool",
-		reason: "Excluded because the current UE4.27 Python environment does not expose reliable Blueprint event graph node creation.",
+		capability: "Low-level Blueprint graph node creation",
+		affectedSurface:
+			"Generic graph-node helpers and related self or component reference insertion helpers are excluded from the MCP surface.",
+		reason:
+			"The current UE4.27 Python environment does not expose stable low-level graph node creation or member-reference wiring.",
 	},
 	{
-		name: "add_blueprint_function_node",
-		previousSurface: "Direct MCP tool",
-		reason: "Excluded because the current UE4.27 Python environment does not expose reliable function-call node reference setup.",
+		capability: "Blueprint function-call node authoring",
+		affectedSurface:
+			"Function-node helpers that depend on editor graph member-reference setup are excluded from the MCP surface.",
+		reason:
+			"The current UE4.27 Python environment does not expose reliable function-call node reference setup.",
 	},
 	{
-		name: "add_blueprint_variable",
-		previousSurface: "Direct MCP tool",
-		reason: "Excluded because BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment.",
+		capability: "Blueprint variable authoring",
+		affectedSurface:
+			"Variable-creation helpers are excluded from the MCP surface.",
+		reason:
+			"BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment.",
 	},
 	{
-		name: "add_blueprint_get_self_component_reference",
-		previousSurface: "Direct MCP tool",
-		reason: "Excluded because the current UE4.27 Python environment does not expose reliable Blueprint component-reference node setup.",
-	},
-	{
-		name: "add_blueprint_self_reference",
-		previousSurface: "Direct MCP tool",
-		reason: "Excluded because the current UE4.27 Python environment does not expose reliable low-level Blueprint graph node creation.",
-	},
-	{
-		name: "add_node",
-		previousSurface: "Direct MCP tool",
-		reason: "Excluded because low-level Blueprint graph node creation is not exposed in the current UE4.27 Python environment.",
-	},
-	{
-		name: "create_variable",
-		previousSurface: "Direct MCP tool",
-		reason: "Excluded because BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment.",
-	},
-	{
-		name: "bind_widget_event",
-		previousSurface: "Direct MCP tool",
-		reason: "Excluded because DelegateEditorBinding is not exposed in the current UE4.27 Python environment.",
-	},
-	{
-		name: "set_text_block_binding",
-		previousSurface: "Direct MCP tool",
-		reason: "Excluded because DelegateEditorBinding is not exposed in the current UE4.27 Python environment.",
-	},
-	{
-		name: "manage_blueprint.add_node",
-		previousSurface: "Domain action",
-		reason: "Excluded because it depends on the same unsupported low-level Blueprint graph node creation path as add_node.",
-	},
-	{
-		name: "manage_blueprint.create_variable",
-		previousSurface: "Domain action",
-		reason: "Excluded because it depends on the same unsupported Blueprint variable authoring path as create_variable.",
-	},
-	{
-		name: "manage_widget_authoring.bind_event",
-		previousSurface: "Domain action",
-		reason: "Excluded because it depends on DelegateEditorBinding, which is not exposed in the current UE4.27 Python environment.",
-	},
-	{
-		name: "manage_widget_authoring.set_text_binding",
-		previousSurface: "Domain action",
-		reason: "Excluded because it depends on DelegateEditorBinding, which is not exposed in the current UE4.27 Python environment.",
+		capability: "UMG delegate-binding authoring",
+		affectedSurface:
+			"Widget event-binding and text-binding helpers are excluded from the MCP surface.",
+		reason:
+			"DelegateEditorBinding is not exposed in the current UE4.27 Python environment.",
 	},
 ]
 
@@ -269,20 +234,20 @@ function extractCategoryMarkers(content: string) {
 function fallbackCategory(toolName: string): string {
 	if (
 		toolName === "manage_asset" ||
-		toolName === "control_actor" ||
-		toolName === "control_editor" ||
+		toolName === "manage_actor" ||
+		toolName === "manage_editor" ||
 		toolName === "manage_level" ||
-		toolName === "system_control" ||
-		toolName === "inspect" ||
+		toolName === "manage_system" ||
+		toolName === "manage_inspection" ||
 		toolName === "manage_pipeline" ||
 		toolName === "manage_tools" ||
 		toolName === "manage_lighting" ||
 		toolName === "manage_level_structure" ||
 		toolName === "manage_volumes" ||
 		toolName === "manage_navigation" ||
-		toolName === "build_environment" ||
+		toolName === "manage_environment" ||
 		toolName === "manage_splines" ||
-		toolName === "animation_physics" ||
+		toolName === "manage_animation_physics" ||
 		toolName === "manage_skeleton" ||
 		toolName === "manage_geometry" ||
 		toolName === "manage_effect" ||
@@ -306,7 +271,7 @@ function fallbackCategory(toolName: string): string {
 		toolName === "manage_game_framework" ||
 		toolName === "manage_sessions"
 	) {
-		return "Domain Tools"
+		return "Tool Namespaces"
 	}
 
 	if (toolName.includes("umg") || toolName.includes("widget")) {
@@ -426,7 +391,7 @@ function extractToolsFromSourceFile(): ToolInfo[] {
 	const content = fs.readFileSync(indexPath, "utf-8")
 	const markers = extractCategoryMarkers(content)
 	const toolRegex =
-		/(?:server\.tool|registerPythonTool|registerZeroArgPythonTool|registerDomainTool)\(\s*["']([^"']+)["']\s*,\s*["']([^"']+)["']/g
+		/(?:server\.tool|registerPythonTool|registerZeroArgPythonTool|registerToolNamespace)\(\s*["']([^"']+)["']\s*,\s*["']([^"']+)["']/g
 
 	const tools: ToolInfo[] = []
 	for (const match of content.matchAll(toolRegex)) {
@@ -481,12 +446,12 @@ function generateToolsSections(tools: ToolInfo[]): string {
 	return sections.join("\n\n")
 }
 
-function generateExcludedFunctionsTable(entries: ExcludedFunctionInfo[]): string {
+function generateExcludedCapabilitiesTable(entries: ExcludedCapabilityInfo[]): string {
 	const header =
-		"| Function | Previous Surface | Reason |\n|----------|------------------|--------|\n"
+		"| Capability Area | Effect on MCP Surface | Why It Is Excluded |\n|-----------------|-----------------------|---------------------|\n"
 	const rows = entries
 		.map((entry) => {
-			return `| \`${entry.name}\` | ${formatTableCell(entry.previousSurface)} | ${formatTableCell(entry.reason)} |`
+			return `| ${formatTableCell(entry.capability)} | ${formatTableCell(entry.affectedSurface)} | ${formatTableCell(entry.reason)} |`
 		})
 		.join("\n")
 	return header + rows
@@ -506,11 +471,11 @@ Status legend:
 
 ${generateToolsSections(tools)}
 
-### Excluded Functions
+### Excluded Capability Areas
 
-These actions are intentionally not exposed through the MCP surface in this UE4.27 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
+These capability areas are intentionally not exposed through the MCP surface in this UE4.27 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
 
-${generateExcludedFunctionsTable(excludedFunctions)}
+${generateExcludedCapabilitiesTable(excludedCapabilities)}
 
 `
 
@@ -518,7 +483,7 @@ ${generateExcludedFunctionsTable(excludedFunctions)}
 
 	fs.writeFileSync(readmePath, updatedContent)
 	console.log(
-		`Updated README.md with ${tools.length} tools and ${excludedFunctions.length} excluded functions`,
+		`Updated README.md with ${tools.length} tools and ${excludedCapabilities.length} excluded capability areas`,
 	)
 }
 

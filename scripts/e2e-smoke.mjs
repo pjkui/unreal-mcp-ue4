@@ -22,7 +22,7 @@ Usage:
 Options:
   --with-assets         Also test Blueprint and UMG asset creation/cleanup.
   --keep-assets         Keep temporary Blueprint and Widget assets after the run.
-  --skip-domain         Skip the domain-tool smoke phase.
+  --skip-namespace      Skip the tool-namespace smoke phase.
   --prefix <value>      Prefix used for temporary test actor and asset names.
   --timeout-ms <value>  Timeout for connect/tool calls. Default: 20000.
   --server-entry <path> Path to the built MCP server entry. Default: dist/bin.js.
@@ -37,7 +37,7 @@ function parseArgs(argv) {
 		nodePath: process.execPath,
 		prefix: `MCP_E2E_${Date.now()}`,
 		serverEntry: defaultServerEntry,
-		skipDomain: false,
+		skipNamespace: false,
 		timeoutMs: 20_000,
 		verbose: false,
 		withAssets: false,
@@ -54,8 +54,9 @@ function parseArgs(argv) {
 			case "--keep-assets":
 				options.keepAssets = true
 				break
+			case "--skip-namespace":
 			case "--skip-domain":
-				options.skipDomain = true
+				options.skipNamespace = true
 				break
 			case "--verbose":
 				options.verbose = true
@@ -306,7 +307,7 @@ async function main() {
 
 	const safeDeleteActor = async (actorName) => {
 		try {
-			await callJsonTool("control_actor", {
+			await callJsonTool("manage_actor", {
 				action: "delete",
 				params: { name: actorName },
 			})
@@ -321,7 +322,7 @@ async function main() {
 		}
 
 		try {
-			await callJsonTool("control_editor", {
+			await callJsonTool("manage_editor", {
 				action: "run_python",
 				params: { code: buildDeleteAssetsPython(assetPaths) },
 			})
@@ -338,8 +339,8 @@ async function main() {
 		const toolsResult = await runStep("List registered MCP tools", async () => client.listTools())
 		const toolNames = new Set(toolsResult.tools.map((tool) => tool.name))
 		const requiredTools = [
-			"control_editor",
-			"control_actor",
+			"manage_editor",
+			"manage_actor",
 			"manage_source_control",
 			"manage_tools",
 		]
@@ -357,7 +358,7 @@ async function main() {
 		})
 
 		await runStep("Read project info", async () => {
-			const projectInfo = await callJsonTool("control_editor", {
+			const projectInfo = await callJsonTool("manage_editor", {
 				action: "project_info",
 				params: {},
 			})
@@ -366,7 +367,7 @@ async function main() {
 		})
 
 		await runStep("Read current map info", async () => {
-			const mapInfo = await callJsonTool("control_editor", {
+			const mapInfo = await callJsonTool("manage_editor", {
 				action: "map_info",
 				params: {},
 			})
@@ -375,7 +376,7 @@ async function main() {
 		})
 
 		await runStep("Read current world outliner", async () => {
-			const outliner = await callJsonTool("control_editor", {
+			const outliner = await callJsonTool("manage_editor", {
 				action: "world_outliner",
 				params: {},
 			})
@@ -405,7 +406,7 @@ async function main() {
 		addCleanup(`Delete actor ${granularActorName}`, () => safeDeleteActor(granularActorName))
 
 		await runStep("Spawn a granular smoke-test actor", async () => {
-			const spawnResult = await callJsonTool("control_actor", {
+			const spawnResult = await callJsonTool("manage_actor", {
 				action: "spawn",
 				params: {
 					type: "StaticMeshActor",
@@ -413,19 +414,19 @@ async function main() {
 					location: { x: 0, y: 0, z: 150 },
 				},
 			})
-			assert(spawnResult.actor?.label === granularActorName, "control_actor spawn did not create the expected label")
+			assert(spawnResult.actor?.label === granularActorName, "manage_actor spawn did not create the expected label")
 		})
 
 		await runStep("Find the spawned actor by name", async () => {
-			const findResult = await callJsonTool("control_actor", {
+			const findResult = await callJsonTool("manage_actor", {
 				action: "find",
 				params: { pattern: granularActorName },
 			})
-			assert(findResult.count >= 1, "control_actor find did not locate the smoke actor")
+			assert(findResult.count >= 1, "manage_actor find did not locate the smoke actor")
 		})
 
 		await runStep("Move the spawned actor", async () => {
-			const transformResult = await callJsonTool("control_actor", {
+			const transformResult = await callJsonTool("manage_actor", {
 				action: "transform",
 				params: {
 					name: granularActorName,
@@ -435,44 +436,44 @@ async function main() {
 			})
 			assert(
 				Math.abs(Number(transformResult.actor?.location?.x ?? 0) - 300) < 0.1,
-				"control_actor transform did not update the expected X location",
+				"manage_actor transform did not update the expected X location",
 			)
 		})
 
 		await runStep("Inspect actor properties", async () => {
-			const propertyResult = await callJsonTool("control_actor", {
+			const propertyResult = await callJsonTool("manage_actor", {
 				action: "get_properties",
 				params: { name: granularActorName },
 			})
-			assert(propertyResult.actor?.label === granularActorName, "control_actor get_properties returned the wrong actor")
+			assert(propertyResult.actor?.label === granularActorName, "manage_actor get_properties returned the wrong actor")
 		})
 
 		await runStep("Delete the granular smoke-test actor", async () => {
-			await callJsonTool("control_actor", {
+			await callJsonTool("manage_actor", {
 				action: "delete",
 				params: { name: granularActorName },
 			})
 		})
 
-		const domainActorName = `${options.prefix}_DomainActor`
-		if (!options.skipDomain) {
-			addCleanup(`Delete actor ${domainActorName}`, () => safeDeleteActor(domainActorName))
+		const namespaceActorName = `${options.prefix}_NamespaceActor`
+		if (!options.skipNamespace) {
+			addCleanup(`Delete actor ${namespaceActorName}`, () => safeDeleteActor(namespaceActorName))
 
-			await runStep("Inspect registered domain tools", async () => {
-				const domainInfo = await callJsonTool("manage_tools", { action: "list_domains", params: {} })
-				assert(Array.isArray(domainInfo.domains), "manage_tools did not return a domain list")
-				const domainNames = new Set(domainInfo.domains.map((item) => item.tool))
-				for (const requiredDomain of [
-					"control_actor",
+			await runStep("Inspect registered tool namespaces", async () => {
+				const namespaceInfo = await callJsonTool("manage_tools", { action: "list_namespaces", params: {} })
+				assert(Array.isArray(namespaceInfo.namespaces), "manage_tools did not return a tool-namespace list")
+				const namespaceNames = new Set(namespaceInfo.namespaces.map((item) => item.tool_namespace))
+				for (const requiredNamespace of [
+					"manage_actor",
 					"manage_asset",
 					"manage_source_control",
 					"manage_widget_authoring",
 				]) {
-					assert(domainNames.has(requiredDomain), `Domain tool is missing: ${requiredDomain}`)
+					assert(namespaceNames.has(requiredNamespace), `Tool namespace is missing: ${requiredNamespace}`)
 				}
 			})
 
-			await runStep("Read source control provider info through the domain layer", async () => {
+			await runStep("Read source control provider info through the tool-namespace layer", async () => {
 				const providerInfo = await callJsonTool("manage_source_control", {
 					action: "provider_info",
 					params: {},
@@ -482,22 +483,25 @@ async function main() {
 				assert(typeof providerInfo.available === "boolean", "manage_source_control did not return available")
 			})
 
-			await runStep("Spawn an actor through the domain layer", async () => {
-				const spawnResult = await callJsonTool("control_actor", {
+			await runStep("Spawn an actor through the tool-namespace layer", async () => {
+				const spawnResult = await callJsonTool("manage_actor", {
 					action: "spawn",
 					params: {
 						type: "StaticMeshActor",
-						name: domainActorName,
+						name: namespaceActorName,
 						location: { x: 0, y: 300, z: 150 },
 					},
 				})
-				assert(spawnResult.actor?.label === domainActorName, "control_actor spawn did not create the expected label")
+				assert(
+					spawnResult.actor?.label === namespaceActorName,
+					"manage_actor spawn did not create the expected label",
+				)
 			})
 
-			await runStep("Delete the domain-layer actor", async () => {
-				await callJsonTool("control_actor", {
+			await runStep("Delete the tool-namespace actor", async () => {
+				await callJsonTool("manage_actor", {
 					action: "delete",
-					params: { name: domainActorName },
+					params: { name: namespaceActorName },
 				})
 			})
 		}
@@ -561,7 +565,7 @@ async function main() {
 				console.log(`[INFO] Kept Blueprint asset: ${blueprintPath}`)
 			}
 
-			await runStep("Create a Widget Blueprint through the domain layer", async () => {
+			await runStep("Create a Widget Blueprint through the tool-namespace layer", async () => {
 				const createWidgetResult = await callJsonTool("manage_widget_authoring", {
 					action: "create_widget_blueprint",
 					params: { widget_name: widgetPath },

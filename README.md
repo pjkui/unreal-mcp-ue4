@@ -1,7 +1,7 @@
 # unreal-mcp-ue4
 > UE4.27.2-focused MCP server for Unreal Engine using Unreal Python Remote Execution
 
-`unreal-mcp-ue4` is a UE4.27.2-compatible fork of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp). It keeps the original local Node.js MCP workflow, adapts the tool layer to Unreal Engine 4.27, and adds broader UE4-safe coverage for actors, assets, Blueprints, UMG, materials, world-building helpers, and domain-style namespace tools.
+`unreal-mcp-ue4` is a UE4.27.2-compatible fork of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp). It keeps the original local Node.js MCP workflow, adapts the tool layer to Unreal Engine 4.27, and adds broader UE4-safe coverage for actors, assets, Blueprints, UMG, materials, world-building helpers, and grouped tool namespaces.
 
 This port and the follow-up tool, documentation, and smoke-test work were developed with assistance from OpenAI Codex.
 
@@ -9,7 +9,7 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 
 - No custom Unreal C++ plugin from this repository is required.
 - The server talks to the editor through Unreal's built-in Python Remote Execution path.
-- The tool surface is organized into granular tools and higher-level domain tools.
+- The tool surface is organized into granular tools and higher-level tool namespaces.
 - UE5-only editor scripting features are not reintroduced; UE4.27-safe operations work normally, while unreliable graph or binding flows are either excluded from the MCP surface or return a clear message instead of silently failing.
 
 ## Origin
@@ -139,8 +139,8 @@ Official Copilot docs:
 
 Useful first commands:
 
-- `control_editor` with `action: "project_info"`
-- `control_editor` with `action: "map_info"`
+- `manage_editor` with `action: "project_info"`
+- `manage_editor` with `action: "map_info"`
 - `manage_level` with `action: "world_outliner"`
 
 Useful first natural-language requests:
@@ -156,7 +156,7 @@ Useful first natural-language requests:
 - Search assets and inspect references or metadata.
 - Create and edit Blueprint assets where UE4.27 Python exposes the necessary editor APIs.
 - Create and edit Widget Blueprint trees with UE4.27-safe UMG helpers.
-- Run grouped domain tools that dispatch through `action` and `params`.
+- Run grouped tool namespaces that dispatch through `action` and `params`.
 
 ## Testing
 
@@ -174,7 +174,7 @@ This checks:
 - tool discovery
 - project info, map info, and world outliner reads
 - actor spawn, search, transform, inspect, and delete
-- domain-tool dispatch for actor control
+- tool-namespace dispatch for actor control
 
 ### Asset-inclusive smoke test
 
@@ -239,7 +239,7 @@ npm run test:e2e -- --with-assets
 
 - Widget Blueprint creation and common widget-tree editing work in this fork; the main UMG gaps are delegate binding helpers and runtime-dependent viewport flows.
 - Blueprint asset creation, component editing, and compilation work; the main Blueprint gaps are editor-only graph node and variable authoring APIs that UE4.27 Python does not expose reliably.
-- Commands that are not reliable enough to keep in the MCP surface are listed under `Excluded Functions` in the tool section.
+- Capability areas that are not reliable enough to keep in the MCP surface are listed under `Excluded Capability Areas` in the tool section.
 
 ## Notes and Limitations
 
@@ -248,7 +248,7 @@ npm run test:e2e -- --with-assets
 - UMG positioning currently targets `CanvasPanel` slots in UE4.27.
 - Reparenting the current root widget and editing named-slot content are not currently handled.
 - Blueprint asset and component editing work, but advanced Blueprint graph node and variable authoring remain limited by what UE4.27 exposes through Python.
-- The tool surface includes both granular tools and action-based domain tools so different MCP clients can work at different abstraction levels.
+- The tool surface includes both granular tools and action-based tool namespaces so different MCP clients can work at different abstraction levels.
 
 The tool list below is generated from `server/index.ts` during build.
 
@@ -276,68 +276,59 @@ Status legend:
 | `editor_update_object` | Supported | - | Update an existing object/actor in the world |
 | `editor_delete_object` | Supported | - | Delete an object/actor from the world |
 
-### Domain Tools
+### Tool Namespaces
 
 | Tool | Status | Notes | Description |
 |------|--------|-------|-------------|
-| `manage_asset` | Supported | - | Domain asset namespace for list, search, info, references, export, and validation actions. |
-| `control_actor` | Supported | - | Domain actor namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors. |
-| `control_editor` | Supported | - | Domain editor namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control. |
-| `manage_level` | Supported | - | Domain level namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions. |
-| `system_control` | Supported | - | Domain system namespace for console commands, project state inspection, and asset validation actions. |
-| `inspect` | Partial | Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure. | Domain inspection namespace for asset, actor, project, map, and Blueprint analysis actions. |
-| `manage_pipeline` | Supported | - | Domain pipeline namespace for asset validation, project inspection, and tool status reporting actions. |
-| `manage_tools` | Supported | - | Domain tool-management namespace for listing registered domain tools and describing supported actions. |
-| `manage_lighting` | Supported | - | Domain lighting namespace for spawning common light actors, transforming them, and inspecting level lighting state. |
-| `manage_level_structure` | Supported | - | Domain level-structure namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions. |
-| `manage_volumes` | Supported | - | Domain volume namespace for spawning common engine volumes and applying delete or transform actions. |
-| `manage_navigation` | Supported | - | Domain navigation namespace for spawning navigation volumes and proxies plus basic map inspection actions. |
-| `build_environment` | Supported | - | Domain environment-building namespace for preset town, arch, staircase, pyramid, and maze generation actions. |
-| `manage_splines` | Supported | - | Domain spline namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it. |
-| `animation_physics` | Supported | - | Domain animation-and-physics namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions. |
-| `manage_skeleton` | Supported | - | Domain skeleton namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata. |
-| `manage_geometry` | Supported | - | Domain geometry namespace for wall, arch, staircase, and pyramid preset construction actions. |
-| `manage_effect` | Supported | - | Domain effects namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them. |
-| `manage_material_authoring` | Supported | - | Domain material namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances. |
-| `manage_texture` | Supported | - | Domain texture namespace for searching texture assets and reading their asset metadata. |
-| `manage_blueprint` | Partial | Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface. | Domain Blueprint namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions. |
-| `manage_sequence` | Supported | - | Domain sequence namespace for searching LevelSequence assets and inspecting their asset metadata. |
-| `manage_performance` | Supported | - | Domain performance namespace for editor console commands and screenshot capture actions. |
-| `manage_audio` | Supported | - | Domain audio namespace for searching audio assets and inspecting their asset metadata. |
-| `manage_input` | Supported | - | Domain input namespace for creating classic UE4 input mappings and inspecting project input settings. |
-| `manage_behavior_tree` | Supported | - | Domain behavior-tree namespace for searching BehaviorTree assets and inspecting their asset metadata. |
-| `manage_ai` | Supported | - | Domain AI namespace for searching AI-related assets through the existing asset registry and project inspection actions. |
-| `manage_gas` | Supported | - | Domain GAS namespace for searching gameplay-ability-related assets and inspecting their asset metadata. |
-| `manage_character` | Supported | - | Domain character namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data. |
-| `manage_combat` | Supported | - | Domain combat namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits. |
-| `manage_inventory` | Supported | - | Domain inventory namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions. |
-| `manage_interaction` | Partial | Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python. | Domain interaction namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions. |
-| `manage_widget_authoring` | Partial | create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface. | Domain widget namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. |
-| `manage_source_control` | Supported | provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider. | Domain source-control namespace for provider inspection and file or package source-control operations. |
-| `manage_networking` | Supported | - | Domain networking namespace for project inspection and console-command driven networking diagnostics. |
-| `manage_game_framework` | Supported | - | Domain game-framework namespace for project inspection and gameplay Blueprint scaffolding actions. |
-| `manage_sessions` | Supported | - | Domain sessions namespace for project inspection and console-command driven local session diagnostics. |
+| `manage_asset` | Supported | - | Asset tool namespace for list, search, info, references, export, and validation actions. |
+| `manage_actor` | Supported | - | Actor tool namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors. |
+| `manage_editor` | Supported | - | Editor tool namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control. |
+| `manage_level` | Supported | - | Level tool namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions. |
+| `manage_system` | Supported | - | System tool namespace for console commands, project state inspection, and asset validation actions. |
+| `manage_inspection` | Partial | Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure. | Inspection tool namespace for asset, actor, project, map, and Blueprint analysis actions. |
+| `manage_pipeline` | Supported | - | Pipeline tool namespace for asset validation, project inspection, and tool status reporting actions. |
+| `manage_tools` | Supported | - | Tool-namespace registry for listing registered tool namespaces and describing supported actions. |
+| `manage_lighting` | Supported | - | Lighting tool namespace for spawning common light actors, transforming them, and inspecting level lighting state. |
+| `manage_level_structure` | Supported | - | Level-structure tool namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions. |
+| `manage_volumes` | Supported | - | Volume tool namespace for spawning common engine volumes and applying delete or transform actions. |
+| `manage_navigation` | Supported | - | Navigation tool namespace for spawning navigation volumes and proxies plus basic map inspection actions. |
+| `manage_environment` | Supported | - | Environment-building tool namespace for preset town, arch, staircase, pyramid, and maze generation actions. |
+| `manage_splines` | Supported | - | Spline tool namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it. |
+| `manage_animation_physics` | Supported | - | Animation-and-physics tool namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions. |
+| `manage_skeleton` | Supported | - | Skeleton tool namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata. |
+| `manage_geometry` | Supported | - | Geometry tool namespace for wall, arch, staircase, and pyramid preset construction actions. |
+| `manage_effect` | Supported | - | Effects tool namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them. |
+| `manage_material_authoring` | Supported | - | Material tool namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances. |
+| `manage_texture` | Supported | - | Texture tool namespace for searching texture assets and reading their asset metadata. |
+| `manage_blueprint` | Partial | Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface. | Blueprint tool namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions. |
+| `manage_sequence` | Supported | - | Sequence tool namespace for searching LevelSequence assets and inspecting their asset metadata. |
+| `manage_performance` | Supported | - | Performance tool namespace for editor console commands and screenshot capture actions. |
+| `manage_audio` | Supported | - | Audio tool namespace for searching audio assets and inspecting their asset metadata. |
+| `manage_input` | Supported | - | Input tool namespace for creating classic UE4 input mappings and inspecting project input settings. |
+| `manage_behavior_tree` | Supported | - | Behavior-tree tool namespace for searching BehaviorTree assets and inspecting their asset metadata. |
+| `manage_ai` | Supported | - | AI tool namespace for searching AI-related assets through the existing asset registry and project inspection actions. |
+| `manage_gas` | Supported | - | GAS tool namespace for searching gameplay-ability-related assets and inspecting their asset metadata. |
+| `manage_character` | Supported | - | Character tool namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data. |
+| `manage_combat` | Supported | - | Combat tool namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits. |
+| `manage_inventory` | Supported | - | Inventory tool namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions. |
+| `manage_interaction` | Partial | Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python. | Interaction tool namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions. |
+| `manage_widget_authoring` | Partial | create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface. | Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. |
+| `manage_source_control` | Supported | provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider. | Source-control tool namespace for provider inspection and file or package source-control operations. |
+| `manage_networking` | Supported | - | Networking tool namespace for project inspection and console-command driven networking diagnostics. |
+| `manage_game_framework` | Supported | - | Game-framework tool namespace for project inspection and gameplay Blueprint scaffolding actions. |
+| `manage_sessions` | Supported | - | Sessions tool namespace for project inspection and console-command driven local session diagnostics. |
 
-### Excluded Functions
+### Excluded Capability Areas
 
-These actions are intentionally not exposed through the MCP surface in this UE4.27 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
+These capability areas are intentionally not exposed through the MCP surface in this UE4.27 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
 
-| Function | Previous Surface | Reason |
-|----------|------------------|--------|
-| `add_blueprint_event_node` | Direct MCP tool | Excluded because the current UE4.27 Python environment does not expose reliable event graph access or K2 event reference setup. |
-| `add_blueprint_input_action_node` | Direct MCP tool | Excluded because the current UE4.27 Python environment does not expose reliable Blueprint event graph node creation. |
-| `add_blueprint_function_node` | Direct MCP tool | Excluded because the current UE4.27 Python environment does not expose reliable function-call node reference setup. |
-| `add_blueprint_variable` | Direct MCP tool | Excluded because BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment. |
-| `add_blueprint_get_self_component_reference` | Direct MCP tool | Excluded because the current UE4.27 Python environment does not expose reliable Blueprint component-reference node setup. |
-| `add_blueprint_self_reference` | Direct MCP tool | Excluded because the current UE4.27 Python environment does not expose reliable low-level Blueprint graph node creation. |
-| `add_node` | Direct MCP tool | Excluded because low-level Blueprint graph node creation is not exposed in the current UE4.27 Python environment. |
-| `create_variable` | Direct MCP tool | Excluded because BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment. |
-| `bind_widget_event` | Direct MCP tool | Excluded because DelegateEditorBinding is not exposed in the current UE4.27 Python environment. |
-| `set_text_block_binding` | Direct MCP tool | Excluded because DelegateEditorBinding is not exposed in the current UE4.27 Python environment. |
-| `manage_blueprint.add_node` | Domain action | Excluded because it depends on the same unsupported low-level Blueprint graph node creation path as add_node. |
-| `manage_blueprint.create_variable` | Domain action | Excluded because it depends on the same unsupported Blueprint variable authoring path as create_variable. |
-| `manage_widget_authoring.bind_event` | Domain action | Excluded because it depends on DelegateEditorBinding, which is not exposed in the current UE4.27 Python environment. |
-| `manage_widget_authoring.set_text_binding` | Domain action | Excluded because it depends on DelegateEditorBinding, which is not exposed in the current UE4.27 Python environment. |
+| Capability Area | Effect on MCP Surface | Why It Is Excluded |
+|-----------------|-----------------------|---------------------|
+| Blueprint event-graph event insertion | Related event-node and input-action helpers are excluded from the MCP surface. | The current UE4.27 Python environment does not expose reliable event graph access or K2 event reference setup. |
+| Low-level Blueprint graph node creation | Generic graph-node helpers and related self or component reference insertion helpers are excluded from the MCP surface. | The current UE4.27 Python environment does not expose stable low-level graph node creation or member-reference wiring. |
+| Blueprint function-call node authoring | Function-node helpers that depend on editor graph member-reference setup are excluded from the MCP surface. | The current UE4.27 Python environment does not expose reliable function-call node reference setup. |
+| Blueprint variable authoring | Variable-creation helpers are excluded from the MCP surface. | BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment. |
+| UMG delegate-binding authoring | Widget event-binding and text-binding helpers are excluded from the MCP surface. | DelegateEditorBinding is not exposed in the current UE4.27 Python environment. |
 
 ## License
 

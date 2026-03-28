@@ -158,19 +158,19 @@ const colorInputSchema = z.union([
 const recordSchema = z.record(z.any())
 const stringListSchema = z.array(z.string().min(1)).min(1)
 
-type DomainDispatchResult =
+type NamespaceDispatchResult =
 	| { kind: "python"; command: string }
 	| { kind: "direct"; payload: unknown }
 
-type DomainActionHandler = (
+type NamespaceActionHandler = (
 	params: Record<string, any>,
-) => DomainDispatchResult | Promise<DomainDispatchResult>
+) => NamespaceDispatchResult | Promise<NamespaceDispatchResult>
 
-const chiR24DomainRegistry = new Map<string, { description: string; supportedActions: string[] }>()
+const toolNamespaceRegistry = new Map<string, { description: string; supportedActions: string[] }>()
 
-const pythonDispatch = (command: string): DomainDispatchResult => ({ kind: "python", command })
+const pythonDispatch = (command: string): NamespaceDispatchResult => ({ kind: "python", command })
 
-const directDispatch = (payload: unknown): DomainDispatchResult => ({ kind: "direct", payload })
+const directDispatch = (payload: unknown): NamespaceDispatchResult => ({ kind: "direct", payload })
 
 const normalizeActionName = (action: string) => action.trim().toLowerCase()
 
@@ -285,18 +285,18 @@ const toRotatorRecord = (value: any) => {
 	}
 }
 
-const unsupportedDomainAction = (
+const unsupportedNamespaceAction = (
 	toolName: string,
 	action: string,
 	supportedActions: string[],
-): DomainDispatchResult =>
+): NamespaceDispatchResult =>
 	directDispatch({
 		success: false,
 		message: `Action '${action}' is not supported by ${toolName} in this UE4.27 port.`,
 		supported_actions: supportedActions,
 	})
 
-const runDomainDispatch = async (result: DomainDispatchResult) => {
+const runNamespaceDispatch = async (result: NamespaceDispatchResult) => {
 	if (result.kind === "python") {
 		return textResponse(await tryRunCommand(result.command))
 	}
@@ -304,19 +304,19 @@ const runDomainDispatch = async (result: DomainDispatchResult) => {
 	return textResponse(JSON.stringify(result.payload, null, 2))
 }
 
-const registerDomainTool = (
+const registerToolNamespace = (
 	name: string,
 	description: string,
-	actions: Record<string, DomainActionHandler>,
+	actions: Record<string, NamespaceActionHandler>,
 ) => {
 	const supportedActions = Object.keys(actions).sort()
-	chiR24DomainRegistry.set(name, { description, supportedActions })
+	toolNamespaceRegistry.set(name, { description, supportedActions })
 
 	server.tool(
 		name,
 		description,
 		{
-			action: z.string().describe(`Domain action to execute inside ${name}`),
+			action: z.string().describe(`Action to execute inside tool namespace ${name}`),
 			params: recordSchema.optional().describe("Optional action parameter object"),
 		},
 		async ({ action, params }) => {
@@ -326,9 +326,9 @@ const registerDomainTool = (
 				const handler = actions[normalizedAction]
 				const result = handler
 					? await handler(params ?? {})
-					: unsupportedDomainAction(name, normalizedAction, supportedActions)
+					: unsupportedNamespaceAction(name, normalizedAction, supportedActions)
 
-				return await runDomainDispatch(result)
+				return await runNamespaceDispatch(result)
 			} catch (error) {
 				return textResponse(
 					JSON.stringify(
@@ -641,10 +641,10 @@ server.tool(
 	},
 )
 
-/// Domain Tools
-registerDomainTool(
+/// Tool Namespaces
+registerToolNamespace(
 	"manage_asset",
-	"Domain asset namespace for list, search, info, references, export, and validation actions.",
+	"Asset tool namespace for list, search, info, references, export, and validation actions.",
 	{
 		list: () => pythonDispatch(editorTools.UEListAssets()),
 		search: (params) => pythonDispatch(searchAssetsCommand(params)),
@@ -665,9 +665,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
-	"control_actor",
-	"Domain actor namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors.",
+registerToolNamespace(
+	"manage_actor",
+	"Actor tool namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors.",
 	{
 		list: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")),
 		find: (params) =>
@@ -734,9 +734,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
-	"control_editor",
-	"Domain editor namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control.",
+registerToolNamespace(
+	"manage_editor",
+	"Editor tool namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control.",
 	{
 		run_python: (params) => pythonDispatch(requiredStringParam(params, ["code"])),
 		console_command: (params) =>
@@ -757,9 +757,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_level",
-	"Domain level namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions.",
+	"Level tool namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions.",
 	{
 		info: () => pythonDispatch(editorTools.UEGetMapInfo()),
 		world_outliner: () => pythonDispatch(editorTools.UEGetWorldOutliner()),
@@ -772,9 +772,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
-	"system_control",
-	"Domain system namespace for console commands, project state inspection, and asset validation actions.",
+registerToolNamespace(
+	"manage_system",
+	"System tool namespace for console commands, project state inspection, and asset validation actions.",
 	{
 		console_command: (params) =>
 			pythonDispatch(
@@ -786,9 +786,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
-	"inspect",
-	"Domain inspection namespace for asset, actor, project, map, and Blueprint analysis actions.",
+registerToolNamespace(
+	"manage_inspection",
+	"Inspection tool namespace for asset, actor, project, map, and Blueprint analysis actions.",
 	{
 		asset: (params) =>
 			pythonDispatch(
@@ -830,9 +830,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_pipeline",
-	"Domain pipeline namespace for asset validation, project inspection, and tool status reporting actions.",
+	"Pipeline tool namespace for asset validation, project inspection, and tool status reporting actions.",
 	{
 		validate_assets: (params) =>
 			pythonDispatch(editorTools.UEValidateAssets(optionalStringParam(params, ["asset_paths", "paths"]))),
@@ -840,52 +840,52 @@ registerDomainTool(
 		tool_status: () =>
 			directDispatch({
 				success: true,
-				domain_tool_count: chiR24DomainRegistry.size,
-				domain_tools: Array.from(chiR24DomainRegistry.keys()).sort(),
+				tool_namespace_count: toolNamespaceRegistry.size,
+				tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
 			}),
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_tools",
-	"Domain tool-management namespace for listing registered domain tools and describing supported actions.",
+	"Tool-namespace registry for listing registered tool namespaces and describing supported actions.",
 	{
-		list_domains: () =>
+		list_namespaces: () =>
 			directDispatch({
 				success: true,
-				domains: Array.from(chiR24DomainRegistry.entries())
-					.map(([tool, info]) => ({
-						tool,
+				namespaces: Array.from(toolNamespaceRegistry.entries())
+					.map(([toolNamespace, info]) => ({
+						tool_namespace: toolNamespace,
 						description: info.description,
 						supported_actions: info.supportedActions,
 					}))
-					.sort((left, right) => left.tool.localeCompare(right.tool)),
+					.sort((left, right) => left.tool_namespace.localeCompare(right.tool_namespace)),
 			}),
-		describe_domain: (params) => {
-			const toolName = requiredStringParam(params, ["tool_name", "name"])
-			const info = chiR24DomainRegistry.get(toolName)
+		describe_namespace: (params) => {
+			const toolName = requiredStringParam(params, ["tool_name", "namespace_name", "name"])
+			const info = toolNamespaceRegistry.get(toolName)
 			return directDispatch(
 				info
 					? {
 							success: true,
-							tool: toolName,
+							tool_namespace: toolName,
 							description: info.description,
 							supported_actions: info.supportedActions,
 						}
 					: {
 							success: false,
-							message: `Unknown domain tool: ${toolName}`,
-							available_tools: Array.from(chiR24DomainRegistry.keys()).sort(),
+							message: `Unknown tool namespace: ${toolName}`,
+							available_tool_namespaces: Array.from(toolNamespaceRegistry.keys()).sort(),
 						},
 			)
 		},
 	},
 )
 
-/// Domain Tools
-registerDomainTool(
+/// Tool Namespaces
+registerToolNamespace(
 	"manage_lighting",
-	"Domain lighting namespace for spawning common light actors, transforming them, and inspecting level lighting state.",
+	"Lighting tool namespace for spawning common light actors, transforming them, and inspecting level lighting state.",
 	{
 		spawn_directional_light: (params) =>
 			pythonDispatch(
@@ -927,9 +927,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_level_structure",
-	"Domain level-structure namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions.",
+	"Level-structure tool namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions.",
 	{
 		world_outliner: () => pythonDispatch(editorTools.UEGetWorldOutliner()),
 		create_town: (params) => pythonDispatch(worldBuildCommand("create_town", params)),
@@ -947,9 +947,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_volumes",
-	"Domain volume namespace for spawning common engine volumes and applying delete or transform actions.",
+	"Volume tool namespace for spawning common engine volumes and applying delete or transform actions.",
 	{
 		spawn_trigger_volume: (params) =>
 			pythonDispatch(
@@ -1013,9 +1013,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_navigation",
-	"Domain navigation namespace for spawning navigation volumes and proxies plus basic map inspection actions.",
+	"Navigation tool namespace for spawning navigation volumes and proxies plus basic map inspection actions.",
 	{
 		spawn_nav_mesh_bounds_volume: (params) =>
 			pythonDispatch(
@@ -1054,9 +1054,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
-	"build_environment",
-	"Domain environment-building namespace for preset town, arch, staircase, pyramid, and maze generation actions.",
+registerToolNamespace(
+	"manage_environment",
+	"Environment-building tool namespace for preset town, arch, staircase, pyramid, and maze generation actions.",
 	{
 		create_town: (params) => pythonDispatch(worldBuildCommand("create_town", params)),
 		create_arch: (params) => pythonDispatch(worldBuildCommand("create_arch", params)),
@@ -1066,9 +1066,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_splines",
-	"Domain spline namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it.",
+	"Spline tool namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it.",
 	{
 		spawn_actor: (params) => {
 			const blueprintName = optionalStringParam(params, ["blueprint_name", "asset_path"])
@@ -1114,10 +1114,10 @@ registerDomainTool(
 	},
 )
 
-/// Domain Tools
-registerDomainTool(
-	"animation_physics",
-	"Domain animation-and-physics namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions.",
+/// Tool Namespaces
+registerToolNamespace(
+	"manage_animation_physics",
+	"Animation-and-physics tool namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions.",
 	{
 		spawn_physics_blueprint_actor: (params) =>
 			pythonDispatch(
@@ -1158,9 +1158,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_skeleton",
-	"Domain skeleton namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata.",
+	"Skeleton tool namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata.",
 	{
 		search_skeletons: (params) => pythonDispatch(searchAssetsCommand(params, "Skeleton")),
 		search_skeletal_meshes: (params) =>
@@ -1172,9 +1172,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_geometry",
-	"Domain geometry namespace for wall, arch, staircase, and pyramid preset construction actions.",
+	"Geometry tool namespace for wall, arch, staircase, and pyramid preset construction actions.",
 	{
 		create_wall: (params) => pythonDispatch(worldBuildCommand("create_wall", params)),
 		create_arch: (params) => pythonDispatch(worldBuildCommand("create_arch", params)),
@@ -1183,10 +1183,10 @@ registerDomainTool(
 	},
 )
 
-/// Domain Tools
-registerDomainTool(
+/// Tool Namespaces
+registerToolNamespace(
 	"manage_effect",
-	"Domain effects namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them.",
+	"Effects tool namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them.",
 	{
 		spawn_debug_shape: (params) => {
 			const shapeName = optionalStringParam(params, ["shape", "shape_type"]) ?? "cube"
@@ -1238,9 +1238,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_material_authoring",
-	"Domain material namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances.",
+	"Material tool namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances.",
 	{
 		list_materials: (params) =>
 			pythonDispatch(
@@ -1285,9 +1285,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_texture",
-	"Domain texture namespace for searching texture assets and reading their asset metadata.",
+	"Texture tool namespace for searching texture assets and reading their asset metadata.",
 	{
 		search_textures: (params) => pythonDispatch(searchAssetsCommand(params, "Texture")),
 		texture_info: (params) =>
@@ -1297,9 +1297,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_blueprint",
-	"Domain Blueprint namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions.",
+	"Blueprint tool namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -1426,9 +1426,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_sequence",
-	"Domain sequence namespace for searching LevelSequence assets and inspecting their asset metadata.",
+	"Sequence tool namespace for searching LevelSequence assets and inspecting their asset metadata.",
 	{
 		search_sequences: (params) => pythonDispatch(searchAssetsCommand(params, "LevelSequence")),
 		sequence_info: (params) =>
@@ -1438,9 +1438,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_performance",
-	"Domain performance namespace for editor console commands and screenshot capture actions.",
+	"Performance tool namespace for editor console commands and screenshot capture actions.",
 	{
 		console_command: (params) =>
 			pythonDispatch(
@@ -1450,10 +1450,10 @@ registerDomainTool(
 	},
 )
 
-/// Domain Tools
-registerDomainTool(
+/// Tool Namespaces
+registerToolNamespace(
 	"manage_audio",
-	"Domain audio namespace for searching audio assets and inspecting their asset metadata.",
+	"Audio tool namespace for searching audio assets and inspecting their asset metadata.",
 	{
 		search_audio_assets: (params) => pythonDispatch(searchAssetsCommand(params, "SoundCue")),
 		audio_info: (params) =>
@@ -1463,9 +1463,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_input",
-	"Domain input namespace for creating classic UE4 input mappings and inspecting project input settings.",
+	"Input tool namespace for creating classic UE4 input mappings and inspecting project input settings.",
 	{
 		create_input_mapping: (params) =>
 			pythonDispatch(
@@ -1480,10 +1480,10 @@ registerDomainTool(
 	},
 )
 
-/// Domain Tools
-registerDomainTool(
+/// Tool Namespaces
+registerToolNamespace(
 	"manage_behavior_tree",
-	"Domain behavior-tree namespace for searching BehaviorTree assets and inspecting their asset metadata.",
+	"Behavior-tree tool namespace for searching BehaviorTree assets and inspecting their asset metadata.",
 	{
 		search_behavior_trees: (params) =>
 			pythonDispatch(searchAssetsCommand(params, "BehaviorTree")),
@@ -1494,18 +1494,18 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_ai",
-	"Domain AI namespace for searching AI-related assets through the existing asset registry and project inspection actions.",
+	"AI tool namespace for searching AI-related assets through the existing asset registry and project inspection actions.",
 	{
 		search_ai_assets: (params) => pythonDispatch(searchAssetsCommand(params, "BehaviorTree")),
 		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_gas",
-	"Domain GAS namespace for searching gameplay-ability-related assets and inspecting their asset metadata.",
+	"GAS tool namespace for searching gameplay-ability-related assets and inspecting their asset metadata.",
 	{
 		search_gas_assets: (params) => pythonDispatch(searchAssetsCommand(params)),
 		asset_info: (params) =>
@@ -1515,9 +1515,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_character",
-	"Domain character namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data.",
+	"Character tool namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -1542,9 +1542,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_combat",
-	"Domain combat namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits.",
+	"Combat tool namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -1576,9 +1576,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_inventory",
-	"Domain inventory namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions.",
+	"Inventory tool namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -1605,9 +1605,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_interaction",
-	"Domain interaction namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions.",
+	"Interaction tool namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -1644,9 +1644,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_widget_authoring",
-	"Domain widget namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions.",
+	"Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions.",
 	{
 		create_widget_blueprint: (params) =>
 			pythonDispatch(
@@ -1757,9 +1757,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_source_control",
-	"Domain source-control namespace for provider inspection and file or package source-control operations.",
+	"Source-control tool namespace for provider inspection and file or package source-control operations.",
 	{
 		provider_info: () =>
 			pythonDispatch(editorTools.UESourceControlTool("get_source_control_provider")),
@@ -1848,10 +1848,10 @@ registerDomainTool(
 	},
 )
 
-/// Domain Tools
-registerDomainTool(
+/// Tool Namespaces
+registerToolNamespace(
 	"manage_networking",
-	"Domain networking namespace for project inspection and console-command driven networking diagnostics.",
+	"Networking tool namespace for project inspection and console-command driven networking diagnostics.",
 	{
 		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 		console_command: (params) =>
@@ -1861,9 +1861,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_game_framework",
-	"Domain game-framework namespace for project inspection and gameplay Blueprint scaffolding actions.",
+	"Game-framework tool namespace for project inspection and gameplay Blueprint scaffolding actions.",
 	{
 		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 		create_blueprint: (params) =>
@@ -1877,9 +1877,9 @@ registerDomainTool(
 	},
 )
 
-registerDomainTool(
+registerToolNamespace(
 	"manage_sessions",
-	"Domain sessions namespace for project inspection and console-command driven local session diagnostics.",
+	"Sessions tool namespace for project inspection and console-command driven local session diagnostics.",
 	{
 		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 		console_command: (params) =>
