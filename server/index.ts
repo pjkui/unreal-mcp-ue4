@@ -2135,10 +2135,10 @@ registerPythonTool(
 		}),
 )
 
-/// ChiR24 Core / System Domains
+/// Domain Tools
 registerDomainTool(
 	"manage_asset",
-	"ChiR24-style asset namespace for list, search, info, references, export, and validation actions.",
+	"Domain asset namespace for list, search, info, references, export, and validation actions.",
 	{
 		list: () => pythonDispatch(editorTools.UEListAssets()),
 		search: (params) => pythonDispatch(searchAssetsCommand(params)),
@@ -2161,7 +2161,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"control_actor",
-	"ChiR24-style actor namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors.",
+	"Domain actor namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors.",
 	{
 		list: () => pythonDispatch(editorTools.UEActorTool("get_actors_in_level")),
 		find: (params) =>
@@ -2230,7 +2230,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"control_editor",
-	"ChiR24-style editor namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control.",
+	"Domain editor namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control.",
 	{
 		run_python: (params) => pythonDispatch(requiredStringParam(params, ["code"])),
 		console_command: (params) =>
@@ -2253,7 +2253,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_level",
-	"ChiR24-style level namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions.",
+	"Domain level namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions.",
 	{
 		info: () => pythonDispatch(editorTools.UEGetMapInfo()),
 		world_outliner: () => pythonDispatch(editorTools.UEGetWorldOutliner()),
@@ -2268,7 +2268,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"system_control",
-	"ChiR24-style system namespace for console commands, project state inspection, and asset validation actions.",
+	"Domain system namespace for console commands, project state inspection, and asset validation actions.",
 	{
 		console_command: (params) =>
 			pythonDispatch(
@@ -2282,7 +2282,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"inspect",
-	"ChiR24-style inspection namespace for asset, actor, project, map, and Blueprint analysis actions.",
+	"Domain inspection namespace for asset, actor, project, map, and Blueprint analysis actions.",
 	{
 		asset: (params) =>
 			pythonDispatch(
@@ -2326,7 +2326,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_pipeline",
-	"ChiR24-style pipeline namespace for asset validation, project inspection, and tool status reporting actions.",
+	"Domain pipeline namespace for asset validation, project inspection, and tool status reporting actions.",
 	{
 		validate_assets: (params) =>
 			pythonDispatch(editorTools.UEValidateAssets(optionalStringParam(params, ["asset_paths", "paths"]))),
@@ -2342,7 +2342,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_tools",
-	"ChiR24-style tool-management namespace for listing registered domain tools and describing supported actions.",
+	"Domain tool-management namespace for listing registered domain tools and describing supported actions.",
 	{
 		list_domains: () =>
 			directDispatch({
@@ -2376,10 +2376,10 @@ registerDomainTool(
 	},
 )
 
-/// ChiR24 World / Level Domains
+/// Domain Tools
 registerDomainTool(
 	"manage_lighting",
-	"ChiR24-style lighting namespace for spawning common light actors, transforming them, and inspecting level lighting state.",
+	"Domain lighting namespace for spawning common light actors, transforming them, and inspecting level lighting state.",
 	{
 		spawn_directional_light: (params) =>
 			pythonDispatch(
@@ -2423,7 +2423,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_level_structure",
-	"ChiR24-style level-structure namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions.",
+	"Domain level-structure namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions.",
 	{
 		world_outliner: () => pythonDispatch(editorTools.UEGetWorldOutliner()),
 		create_town: (params) => pythonDispatch(worldBuildCommand("create_town", params)),
@@ -2440,7 +2440,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_volumes",
-	"ChiR24-style volume namespace for spawning common engine volumes and applying delete or transform actions.",
+	"Domain volume namespace for spawning common engine volumes and applying delete or transform actions.",
 	{
 		spawn_trigger_volume: (params) =>
 			pythonDispatch(
@@ -2506,7 +2506,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_navigation",
-	"ChiR24-style navigation namespace for spawning navigation volumes and proxies plus basic map inspection actions.",
+	"Domain navigation namespace for spawning navigation volumes and proxies plus basic map inspection actions.",
 	{
 		spawn_nav_mesh_bounds_volume: (params) =>
 			pythonDispatch(
@@ -2547,7 +2547,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"build_environment",
-	"ChiR24-style environment-building namespace for preset town, arch, staircase, pyramid, and maze generation actions.",
+	"Domain environment-building namespace for preset town, arch, staircase, pyramid, and maze generation actions.",
 	{
 		create_town: (params) => pythonDispatch(worldBuildCommand("create_town", params)),
 		create_arch: (params) => pythonDispatch(worldBuildCommand("create_arch", params)),
@@ -2559,7 +2559,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_splines",
-	"ChiR24-style spline namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it.",
+	"Domain spline namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it.",
 	{
 		spawn_actor: (params) => {
 			const blueprintName = optionalStringParam(params, ["blueprint_name", "asset_path"])
@@ -2605,10 +2605,10 @@ registerDomainTool(
 	},
 )
 
-/// ChiR24 Animation / Geometry Domains
+/// Domain Tools
 registerDomainTool(
 	"animation_physics",
-	"ChiR24-style animation-and-physics namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions.",
+	"Domain animation-and-physics namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions.",
 	{
 		spawn_physics_blueprint_actor: (params) =>
 			pythonDispatch(
@@ -2651,7 +2651,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_skeleton",
-	"ChiR24-style skeleton namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata.",
+	"Domain skeleton namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata.",
 	{
 		search_skeletons: (params) => pythonDispatch(searchAssetsCommand(params, "Skeleton")),
 		search_skeletal_meshes: (params) =>
@@ -2665,7 +2665,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_geometry",
-	"ChiR24-style geometry namespace for wall, arch, staircase, and pyramid preset construction actions.",
+	"Domain geometry namespace for wall, arch, staircase, and pyramid preset construction actions.",
 	{
 		create_wall: (params) => pythonDispatch(worldBuildCommand("create_wall", params)),
 		create_arch: (params) => pythonDispatch(worldBuildCommand("create_arch", params)),
@@ -2674,10 +2674,10 @@ registerDomainTool(
 	},
 )
 
-/// ChiR24 Visual / Rendering Domains
+/// Domain Tools
 registerDomainTool(
 	"manage_effect",
-	"ChiR24-style effects namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them.",
+	"Domain effects namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them.",
 	{
 		spawn_debug_shape: (params) => {
 			const shapeName = optionalStringParam(params, ["shape", "shape_type"]) ?? "cube"
@@ -2731,7 +2731,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_material_authoring",
-	"ChiR24-style material namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances.",
+	"Domain material namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances.",
 	{
 		list_materials: (params) =>
 			pythonDispatch(
@@ -2778,7 +2778,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_texture",
-	"ChiR24-style texture namespace for searching texture assets and reading their asset metadata.",
+	"Domain texture namespace for searching texture assets and reading their asset metadata.",
 	{
 		search_textures: (params) => pythonDispatch(searchAssetsCommand(params, "Texture")),
 		texture_info: (params) =>
@@ -2790,7 +2790,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_blueprint",
-	"ChiR24-style Blueprint namespace for Blueprint creation, component editing, graph editing, compilation, and Blueprint inspection actions.",
+	"Domain Blueprint namespace for Blueprint creation, component editing, graph editing, compilation, and Blueprint inspection actions.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -2924,7 +2924,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_sequence",
-	"ChiR24-style sequence namespace for searching LevelSequence assets and inspecting their asset metadata.",
+	"Domain sequence namespace for searching LevelSequence assets and inspecting their asset metadata.",
 	{
 		search_sequences: (params) => pythonDispatch(searchAssetsCommand(params, "LevelSequence")),
 		sequence_info: (params) =>
@@ -2936,7 +2936,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_performance",
-	"ChiR24-style performance namespace for editor console commands and screenshot capture actions.",
+	"Domain performance namespace for editor console commands and screenshot capture actions.",
 	{
 		console_command: (params) =>
 			pythonDispatch(
@@ -2946,10 +2946,10 @@ registerDomainTool(
 	},
 )
 
-/// ChiR24 Audio / Input Domains
+/// Domain Tools
 registerDomainTool(
 	"manage_audio",
-	"ChiR24-style audio namespace for searching audio assets and inspecting their asset metadata.",
+	"Domain audio namespace for searching audio assets and inspecting their asset metadata.",
 	{
 		search_audio_assets: (params) => pythonDispatch(searchAssetsCommand(params, "SoundCue")),
 		audio_info: (params) =>
@@ -2961,7 +2961,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_input",
-	"ChiR24-style input namespace for creating classic UE4 input mappings and inspecting project input settings.",
+	"Domain input namespace for creating classic UE4 input mappings and inspecting project input settings.",
 	{
 		create_input_mapping: (params) =>
 			pythonDispatch(
@@ -2976,10 +2976,10 @@ registerDomainTool(
 	},
 )
 
-/// ChiR24 Gameplay / UI Domains
+/// Domain Tools
 registerDomainTool(
 	"manage_behavior_tree",
-	"ChiR24-style behavior-tree namespace for searching BehaviorTree assets and inspecting their asset metadata.",
+	"Domain behavior-tree namespace for searching BehaviorTree assets and inspecting their asset metadata.",
 	{
 		search_behavior_trees: (params) =>
 			pythonDispatch(searchAssetsCommand(params, "BehaviorTree")),
@@ -2992,7 +2992,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_ai",
-	"ChiR24-style AI namespace for searching AI-related assets through the existing asset registry and project inspection actions.",
+	"Domain AI namespace for searching AI-related assets through the existing asset registry and project inspection actions.",
 	{
 		search_ai_assets: (params) => pythonDispatch(searchAssetsCommand(params, "BehaviorTree")),
 		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
@@ -3001,7 +3001,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_gas",
-	"ChiR24-style GAS namespace for searching gameplay-ability-related assets and inspecting their asset metadata.",
+	"Domain GAS namespace for searching gameplay-ability-related assets and inspecting their asset metadata.",
 	{
 		search_gas_assets: (params) => pythonDispatch(searchAssetsCommand(params)),
 		asset_info: (params) =>
@@ -3013,7 +3013,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_character",
-	"ChiR24-style character namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data.",
+	"Domain character namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -3040,7 +3040,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_combat",
-	"ChiR24-style combat namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits.",
+	"Domain combat namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -3074,7 +3074,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_inventory",
-	"ChiR24-style inventory namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions.",
+	"Domain inventory namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -3103,7 +3103,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_interaction",
-	"ChiR24-style interaction namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions.",
+	"Domain interaction namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -3142,7 +3142,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_widget_authoring",
-	"ChiR24-style widget namespace for UMG Blueprint creation, widget-tree edits, viewport spawning, and basic binding actions.",
+	"Domain widget namespace for UMG Blueprint creation, widget-tree edits, viewport spawning, and basic binding actions.",
 	{
 		create_widget_blueprint: (params) =>
 			pythonDispatch(
@@ -3272,10 +3272,10 @@ registerDomainTool(
 	},
 )
 
-/// ChiR24 Networking / Framework Domains
+/// Domain Tools
 registerDomainTool(
 	"manage_networking",
-	"ChiR24-style networking namespace for project inspection and console-command driven networking diagnostics.",
+	"Domain networking namespace for project inspection and console-command driven networking diagnostics.",
 	{
 		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 		console_command: (params) =>
@@ -3287,7 +3287,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_game_framework",
-	"ChiR24-style game-framework namespace for project inspection and gameplay Blueprint scaffolding actions.",
+	"Domain game-framework namespace for project inspection and gameplay Blueprint scaffolding actions.",
 	{
 		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 		create_blueprint: (params) =>
@@ -3303,7 +3303,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_sessions",
-	"ChiR24-style sessions namespace for project inspection and console-command driven local session diagnostics.",
+	"Domain sessions namespace for project inspection and console-command driven local session diagnostics.",
 	{
 		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 		console_command: (params) =>

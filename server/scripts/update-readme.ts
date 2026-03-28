@@ -22,13 +22,7 @@ const categoryOrder = [
 	"Epic Structures Tools",
 	"Level Design Tools",
 	"UMG Tools",
-	"ChiR24 Core / System Domains",
-	"ChiR24 World / Level Domains",
-	"ChiR24 Animation / Geometry Domains",
-	"ChiR24 Visual / Rendering Domains",
-	"ChiR24 Audio / Input Domains",
-	"ChiR24 Gameplay / UI Domains",
-	"ChiR24 Networking / Framework Domains",
+	"Domain Tools",
 ]
 
 function extractCategoryMarkers(content: string) {
@@ -46,6 +40,47 @@ function extractCategoryMarkers(content: string) {
 }
 
 function fallbackCategory(toolName: string): string {
+	if (
+		toolName === "manage_asset" ||
+		toolName === "control_actor" ||
+		toolName === "control_editor" ||
+		toolName === "manage_level" ||
+		toolName === "system_control" ||
+		toolName === "inspect" ||
+		toolName === "manage_pipeline" ||
+		toolName === "manage_tools" ||
+		toolName === "manage_lighting" ||
+		toolName === "manage_level_structure" ||
+		toolName === "manage_volumes" ||
+		toolName === "manage_navigation" ||
+		toolName === "build_environment" ||
+		toolName === "manage_splines" ||
+		toolName === "animation_physics" ||
+		toolName === "manage_skeleton" ||
+		toolName === "manage_geometry" ||
+		toolName === "manage_effect" ||
+		toolName === "manage_material_authoring" ||
+		toolName === "manage_texture" ||
+		toolName === "manage_blueprint" ||
+		toolName === "manage_sequence" ||
+		toolName === "manage_performance" ||
+		toolName === "manage_audio" ||
+		toolName === "manage_input" ||
+		toolName === "manage_behavior_tree" ||
+		toolName === "manage_ai" ||
+		toolName === "manage_gas" ||
+		toolName === "manage_character" ||
+		toolName === "manage_combat" ||
+		toolName === "manage_inventory" ||
+		toolName === "manage_interaction" ||
+		toolName === "manage_widget_authoring" ||
+		toolName === "manage_networking" ||
+		toolName === "manage_game_framework" ||
+		toolName === "manage_sessions"
+	) {
+		return "Domain Tools"
+	}
+
 	if (toolName.includes("umg") || toolName.includes("widget")) {
 		return "UMG Tools"
 	}
@@ -132,74 +167,6 @@ function fallbackCategory(toolName: string): string {
 
 	if (toolName.includes("path")) {
 		return "Connection & Setup"
-	}
-
-	if (
-		toolName === "manage_asset" ||
-		toolName === "control_actor" ||
-		toolName === "control_editor" ||
-		toolName === "manage_level" ||
-		toolName === "system_control" ||
-		toolName === "inspect" ||
-		toolName === "manage_pipeline" ||
-		toolName === "manage_tools"
-	) {
-		return "ChiR24 Core / System Domains"
-	}
-
-	if (
-		toolName === "manage_lighting" ||
-		toolName === "manage_level_structure" ||
-		toolName === "manage_volumes" ||
-		toolName === "manage_navigation" ||
-		toolName === "build_environment" ||
-		toolName === "manage_splines"
-	) {
-		return "ChiR24 World / Level Domains"
-	}
-
-	if (
-		toolName === "animation_physics" ||
-		toolName === "manage_skeleton" ||
-		toolName === "manage_geometry"
-	) {
-		return "ChiR24 Animation / Geometry Domains"
-	}
-
-	if (
-		toolName === "manage_effect" ||
-		toolName === "manage_material_authoring" ||
-		toolName === "manage_texture" ||
-		toolName === "manage_blueprint" ||
-		toolName === "manage_sequence" ||
-		toolName === "manage_performance"
-	) {
-		return "ChiR24 Visual / Rendering Domains"
-	}
-
-	if (toolName === "manage_audio" || toolName === "manage_input") {
-		return "ChiR24 Audio / Input Domains"
-	}
-
-	if (
-		toolName === "manage_behavior_tree" ||
-		toolName === "manage_ai" ||
-		toolName === "manage_gas" ||
-		toolName === "manage_character" ||
-		toolName === "manage_combat" ||
-		toolName === "manage_inventory" ||
-		toolName === "manage_interaction" ||
-		toolName === "manage_widget_authoring"
-	) {
-		return "ChiR24 Gameplay / UI Domains"
-	}
-
-	if (
-		toolName === "manage_networking" ||
-		toolName === "manage_game_framework" ||
-		toolName === "manage_sessions"
-	) {
-		return "ChiR24 Networking / Framework Domains"
 	}
 
 	return "Editor & Asset Tools"

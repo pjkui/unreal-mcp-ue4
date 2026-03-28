@@ -179,9 +179,9 @@ If you get an error similar to `MCP Unreal: Unexpected token 'C', Connection...`
 - The World Building, Epic Structures, and Level Design tools are UE4.27-friendly preset builders that assemble scenes from engine basic-shape assets rather than importing any UE5-only generation systems.
 - Several Blueprint graph and UMG binding commands rely on editor-only Python APIs that are only partially exposed in UE4.27. When Unreal does not expose a required editor type, the tool returns a clear unsupported message instead of failing silently.
 
-### 🧭 ChiR24 Domain Notes
+### 🧭 Domain Tool Notes
 
-- This port now also exposes ChiR24-style domain tools that use an `action` plus `params` dispatch shape on top of the granular UE4.27 tool set.
+- This port also exposes domain tools that use an `action` plus `params` dispatch shape on top of the granular UE4.27 tool set.
 - Domain tools reuse the existing UE4.27-safe editor scripting commands wherever possible instead of introducing a separate native C++ bridge layer.
 - Actions that depend on systems not covered by this UE4.27 Python port return a clear unsupported response instead of pretending to implement the original UE5/C++ feature set.
 
@@ -336,76 +336,46 @@ If you get an error similar to `MCP Unreal: Unexpected token 'C', Connection...`
 | `add_widget_to_viewport` | Instantiate a Widget Blueprint and add it to the active PIE or game viewport. |
 | `set_text_block_binding` | Configure a TextBlock binding when delegate editing is exposed by UE4.27 Python. |
 
-### ChiR24 Core / System Domains
+### Domain Tools
 
 | Tool | Description |
 |------|-------------|
-| `manage_asset` | ChiR24-style asset namespace for list, search, info, references, export, and validation actions. |
-| `control_actor` | ChiR24-style actor namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors. |
-| `control_editor` | ChiR24-style editor namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control. |
-| `manage_level` | ChiR24-style level namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions. |
-| `system_control` | ChiR24-style system namespace for console commands, project state inspection, and asset validation actions. |
-| `inspect` | ChiR24-style inspection namespace for asset, actor, project, map, and Blueprint analysis actions. |
-| `manage_pipeline` | ChiR24-style pipeline namespace for asset validation, project inspection, and tool status reporting actions. |
-| `manage_tools` | ChiR24-style tool-management namespace for listing registered domain tools and describing supported actions. |
-
-### ChiR24 World / Level Domains
-
-| Tool | Description |
-|------|-------------|
-| `manage_lighting` | ChiR24-style lighting namespace for spawning common light actors, transforming them, and inspecting level lighting state. |
-| `manage_level_structure` | ChiR24-style level-structure namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions. |
-| `manage_volumes` | ChiR24-style volume namespace for spawning common engine volumes and applying delete or transform actions. |
-| `manage_navigation` | ChiR24-style navigation namespace for spawning navigation volumes and proxies plus basic map inspection actions. |
-| `build_environment` | ChiR24-style environment-building namespace for preset town, arch, staircase, pyramid, and maze generation actions. |
-| `manage_splines` | ChiR24-style spline namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it. |
-
-### ChiR24 Animation / Geometry Domains
-
-| Tool | Description |
-|------|-------------|
-| `animation_physics` | ChiR24-style animation-and-physics namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions. |
-| `manage_skeleton` | ChiR24-style skeleton namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata. |
-| `manage_geometry` | ChiR24-style geometry namespace for wall, arch, staircase, and pyramid preset construction actions. |
-
-### ChiR24 Visual / Rendering Domains
-
-| Tool | Description |
-|------|-------------|
-| `manage_effect` | ChiR24-style effects namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them. |
-| `manage_material_authoring` | ChiR24-style material namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances. |
-| `manage_texture` | ChiR24-style texture namespace for searching texture assets and reading their asset metadata. |
-| `manage_blueprint` | ChiR24-style Blueprint namespace for Blueprint creation, component editing, graph editing, compilation, and Blueprint inspection actions. |
-| `manage_sequence` | ChiR24-style sequence namespace for searching LevelSequence assets and inspecting their asset metadata. |
-| `manage_performance` | ChiR24-style performance namespace for editor console commands and screenshot capture actions. |
-
-### ChiR24 Audio / Input Domains
-
-| Tool | Description |
-|------|-------------|
-| `manage_audio` | ChiR24-style audio namespace for searching audio assets and inspecting their asset metadata. |
-| `manage_input` | ChiR24-style input namespace for creating classic UE4 input mappings and inspecting project input settings. |
-
-### ChiR24 Gameplay / UI Domains
-
-| Tool | Description |
-|------|-------------|
-| `manage_behavior_tree` | ChiR24-style behavior-tree namespace for searching BehaviorTree assets and inspecting their asset metadata. |
-| `manage_ai` | ChiR24-style AI namespace for searching AI-related assets through the existing asset registry and project inspection actions. |
-| `manage_gas` | ChiR24-style GAS namespace for searching gameplay-ability-related assets and inspecting their asset metadata. |
-| `manage_character` | ChiR24-style character namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data. |
-| `manage_combat` | ChiR24-style combat namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits. |
-| `manage_inventory` | ChiR24-style inventory namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions. |
-| `manage_interaction` | ChiR24-style interaction namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions. |
-| `manage_widget_authoring` | ChiR24-style widget namespace for UMG Blueprint creation, widget-tree edits, viewport spawning, and basic binding actions. |
-
-### ChiR24 Networking / Framework Domains
-
-| Tool | Description |
-|------|-------------|
-| `manage_networking` | ChiR24-style networking namespace for project inspection and console-command driven networking diagnostics. |
-| `manage_game_framework` | ChiR24-style game-framework namespace for project inspection and gameplay Blueprint scaffolding actions. |
-| `manage_sessions` | ChiR24-style sessions namespace for project inspection and console-command driven local session diagnostics. |
+| `manage_asset` | Domain asset namespace for list, search, info, references, export, and validation actions. |
+| `control_actor` | Domain actor namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors. |
+| `control_editor` | Domain editor namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control. |
+| `manage_level` | Domain level namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions. |
+| `system_control` | Domain system namespace for console commands, project state inspection, and asset validation actions. |
+| `inspect` | Domain inspection namespace for asset, actor, project, map, and Blueprint analysis actions. |
+| `manage_pipeline` | Domain pipeline namespace for asset validation, project inspection, and tool status reporting actions. |
+| `manage_tools` | Domain tool-management namespace for listing registered domain tools and describing supported actions. |
+| `manage_lighting` | Domain lighting namespace for spawning common light actors, transforming them, and inspecting level lighting state. |
+| `manage_level_structure` | Domain level-structure namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions. |
+| `manage_volumes` | Domain volume namespace for spawning common engine volumes and applying delete or transform actions. |
+| `manage_navigation` | Domain navigation namespace for spawning navigation volumes and proxies plus basic map inspection actions. |
+| `build_environment` | Domain environment-building namespace for preset town, arch, staircase, pyramid, and maze generation actions. |
+| `manage_splines` | Domain spline namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it. |
+| `animation_physics` | Domain animation-and-physics namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions. |
+| `manage_skeleton` | Domain skeleton namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata. |
+| `manage_geometry` | Domain geometry namespace for wall, arch, staircase, and pyramid preset construction actions. |
+| `manage_effect` | Domain effects namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them. |
+| `manage_material_authoring` | Domain material namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances. |
+| `manage_texture` | Domain texture namespace for searching texture assets and reading their asset metadata. |
+| `manage_blueprint` | Domain Blueprint namespace for Blueprint creation, component editing, graph editing, compilation, and Blueprint inspection actions. |
+| `manage_sequence` | Domain sequence namespace for searching LevelSequence assets and inspecting their asset metadata. |
+| `manage_performance` | Domain performance namespace for editor console commands and screenshot capture actions. |
+| `manage_audio` | Domain audio namespace for searching audio assets and inspecting their asset metadata. |
+| `manage_input` | Domain input namespace for creating classic UE4 input mappings and inspecting project input settings. |
+| `manage_behavior_tree` | Domain behavior-tree namespace for searching BehaviorTree assets and inspecting their asset metadata. |
+| `manage_ai` | Domain AI namespace for searching AI-related assets through the existing asset registry and project inspection actions. |
+| `manage_gas` | Domain GAS namespace for searching gameplay-ability-related assets and inspecting their asset metadata. |
+| `manage_character` | Domain character namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data. |
+| `manage_combat` | Domain combat namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits. |
+| `manage_inventory` | Domain inventory namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions. |
+| `manage_interaction` | Domain interaction namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions. |
+| `manage_widget_authoring` | Domain widget namespace for UMG Blueprint creation, widget-tree edits, viewport spawning, and basic binding actions. |
+| `manage_networking` | Domain networking namespace for project inspection and console-command driven networking diagnostics. |
+| `manage_game_framework` | Domain game-framework namespace for project inspection and gameplay Blueprint scaffolding actions. |
+| `manage_sessions` | Domain sessions namespace for project inspection and console-command driven local session diagnostics. |
 
 ## 🤝 Contributing
 
