@@ -414,9 +414,9 @@ function formatTableCell(value?: string): string {
 	return value && value.trim() ? value.replace(/\|/g, "\\|") : "-"
 }
 
-function escapeHtml(value?: string): string {
+function escapeHtml(value?: string, emptyValue: string = "-"): string {
 	if (!value || !value.trim()) {
-		return "-"
+		return emptyValue
 	}
 
 	return value
@@ -432,9 +432,8 @@ function generateToolsTable(tools: ToolInfo[]): string {
 			return [
 				"\t<tr>",
 				`\t\t<td width="18%"><code>${escapeHtml(tool.name)}</code></td>`,
-				`\t\t<td width="10%">${escapeHtml(support.status)}</td>`,
-				`\t\t<td width="46%">${escapeHtml(tool.description)}</td>`,
-				`\t\t<td width="26%">${escapeHtml(support.note)}</td>`,
+				`\t\t<td width="52%">${escapeHtml(tool.description)}</td>`,
+				`\t\t<td width="30%">${escapeHtml(support.note, "&nbsp;")}</td>`,
 				"\t</tr>",
 			].join("\n")
 		})
@@ -444,10 +443,9 @@ function generateToolsTable(tools: ToolInfo[]): string {
 		'<table>',
 		'\t<thead>',
 		'\t\t<tr>',
-		'\t\t\t<th width="18%">Tool</th>',
-		'\t\t\t<th width="10%">Status</th>',
-		'\t\t\t<th width="46%">Description</th>',
-		'\t\t\t<th width="26%">Notes</th>',
+			'\t\t\t<th width="18%">Tool</th>',
+			'\t\t\t<th width="52%">Description</th>',
+			'\t\t\t<th width="30%">Notes</th>',
 		'\t\t</tr>',
 		'\t</thead>',
 		'\t<tbody>',
@@ -495,10 +493,7 @@ function updateReadmeWithTools() {
 	const tools = extractToolsFromSourceFile()
 	const toolsSection = `## Available Tools
 
-Status legend:
-
-- \`Supported\`: implemented and expected to work in this UE4.27.2 fork.
-- \`Partial\`: implemented, but limited by UE4.27 Python exposure or runtime requirements.
+Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
 
 ${generateToolsSections(tools)}
 

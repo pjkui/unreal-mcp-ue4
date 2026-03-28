@@ -254,10 +254,7 @@ The tool list below is generated from `server/index.ts` during build.
 
 ## Available Tools
 
-Status legend:
-
-- `Supported`: implemented and expected to work in this UE4.27.2 fork.
-- `Partial`: implemented, but limited by UE4.27 Python exposure or runtime requirements.
+Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
 
 ### Connection & Setup
 
@@ -265,35 +262,30 @@ Status legend:
 	<thead>
 		<tr>
 			<th width="18%">Tool</th>
-			<th width="10%">Status</th>
-			<th width="46%">Description</th>
-			<th width="26%">Notes</th>
+			<th width="52%">Description</th>
+			<th width="30%">Notes</th>
 		</tr>
 	</thead>
 	<tbody>
 	<tr>
 		<td width="18%"><code>set_unreal_engine_path</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Set the Unreal Engine path</td>
-		<td width="26%">-</td>
+		<td width="52%">Set the Unreal Engine path</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>set_unreal_project_path</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Set the Project path</td>
-		<td width="26%">-</td>
+		<td width="52%">Set the Project path</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>get_unreal_engine_path</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Get the current Unreal Engine path</td>
-		<td width="26%">-</td>
+		<td width="52%">Get the current Unreal Engine path</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>get_unreal_project_path</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Get the current Unreal Project path</td>
-		<td width="26%">-</td>
+		<td width="52%">Get the current Unreal Project path</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	</tbody>
 </table>
@@ -304,29 +296,25 @@ Status legend:
 	<thead>
 		<tr>
 			<th width="18%">Tool</th>
-			<th width="10%">Status</th>
-			<th width="46%">Description</th>
-			<th width="26%">Notes</th>
+			<th width="52%">Description</th>
+			<th width="30%">Notes</th>
 		</tr>
 	</thead>
 	<tbody>
 	<tr>
 		<td width="18%"><code>editor_create_object</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Create a new object/actor in the world</td>
-		<td width="26%">-</td>
+		<td width="52%">Create a new object/actor in the world</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>editor_update_object</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Update an existing object/actor in the world</td>
-		<td width="26%">-</td>
+		<td width="52%">Update an existing object/actor in the world</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>editor_delete_object</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Delete an object/actor from the world</td>
-		<td width="26%">-</td>
+		<td width="52%">Delete an object/actor from the world</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	</tbody>
 </table>
@@ -337,233 +325,195 @@ Status legend:
 	<thead>
 		<tr>
 			<th width="18%">Tool</th>
-			<th width="10%">Status</th>
-			<th width="46%">Description</th>
-			<th width="26%">Notes</th>
+			<th width="52%">Description</th>
+			<th width="30%">Notes</th>
 		</tr>
 	</thead>
 	<tbody>
 	<tr>
 		<td width="18%"><code>manage_asset</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Asset tool namespace for list, search, info, references, export, and validation actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Asset tool namespace for list, search, info, references, export, and validation actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_actor</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Actor tool namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors.</td>
-		<td width="26%">-</td>
+		<td width="52%">Actor tool namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_editor</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Editor tool namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control.</td>
-		<td width="26%">-</td>
+		<td width="52%">Editor tool namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_level</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Level tool namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Level tool namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_system</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">System tool namespace for console commands, project state inspection, and asset validation actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">System tool namespace for console commands, project state inspection, and asset validation actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_inspection</code></td>
-		<td width="10%">Partial</td>
-		<td width="46%">Inspection tool namespace for asset, actor, project, map, and Blueprint analysis actions.</td>
-		<td width="26%">Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure.</td>
+		<td width="52%">Inspection tool namespace for asset, actor, project, map, and Blueprint analysis actions.</td>
+		<td width="30%">Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_pipeline</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Pipeline tool namespace for asset validation, project inspection, and tool status reporting actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Pipeline tool namespace for asset validation, project inspection, and tool status reporting actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_tools</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Tool-namespace registry for listing registered tool namespaces and describing supported actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Tool-namespace registry for listing registered tool namespaces and describing supported actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_lighting</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Lighting tool namespace for spawning common light actors, transforming them, and inspecting level lighting state.</td>
-		<td width="26%">-</td>
+		<td width="52%">Lighting tool namespace for spawning common light actors, transforming them, and inspecting level lighting state.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_level_structure</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Level-structure tool namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Level-structure tool namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_volumes</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Volume tool namespace for spawning common engine volumes and applying delete or transform actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Volume tool namespace for spawning common engine volumes and applying delete or transform actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_navigation</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Navigation tool namespace for spawning navigation volumes and proxies plus basic map inspection actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Navigation tool namespace for spawning navigation volumes and proxies plus basic map inspection actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_environment</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Environment-building tool namespace for preset town, arch, staircase, pyramid, and maze generation actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Environment-building tool namespace for preset town, arch, staircase, pyramid, and maze generation actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_splines</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Spline tool namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it.</td>
-		<td width="26%">-</td>
+		<td width="52%">Spline tool namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_animation_physics</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Animation-and-physics tool namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Animation-and-physics tool namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_skeleton</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Skeleton tool namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata.</td>
-		<td width="26%">-</td>
+		<td width="52%">Skeleton tool namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_geometry</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Geometry tool namespace for wall, arch, staircase, and pyramid preset construction actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Geometry tool namespace for wall, arch, staircase, and pyramid preset construction actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_effect</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Effects tool namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them.</td>
-		<td width="26%">-</td>
+		<td width="52%">Effects tool namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_material_authoring</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Material tool namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances.</td>
-		<td width="26%">-</td>
+		<td width="52%">Material tool namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_texture</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Texture tool namespace for searching texture assets and reading their asset metadata.</td>
-		<td width="26%">-</td>
+		<td width="52%">Texture tool namespace for searching texture assets and reading their asset metadata.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_blueprint</code></td>
-		<td width="10%">Partial</td>
-		<td width="46%">Blueprint tool namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions.</td>
-		<td width="26%">Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface.</td>
+		<td width="52%">Blueprint tool namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions.</td>
+		<td width="30%">Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_sequence</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Sequence tool namespace for searching LevelSequence assets and inspecting their asset metadata.</td>
-		<td width="26%">-</td>
+		<td width="52%">Sequence tool namespace for searching LevelSequence assets and inspecting their asset metadata.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_performance</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Performance tool namespace for editor console commands and screenshot capture actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Performance tool namespace for editor console commands and screenshot capture actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_audio</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Audio tool namespace for searching audio assets and inspecting their asset metadata.</td>
-		<td width="26%">-</td>
+		<td width="52%">Audio tool namespace for searching audio assets and inspecting their asset metadata.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_input</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Input tool namespace for creating classic UE4 input mappings and inspecting project input settings.</td>
-		<td width="26%">-</td>
+		<td width="52%">Input tool namespace for creating classic UE4 input mappings and inspecting project input settings.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_behavior_tree</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Behavior-tree tool namespace for searching BehaviorTree assets and inspecting their asset metadata.</td>
-		<td width="26%">-</td>
+		<td width="52%">Behavior-tree tool namespace for searching BehaviorTree assets and inspecting their asset metadata.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_ai</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">AI tool namespace for searching AI-related assets through the existing asset registry and project inspection actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">AI tool namespace for searching AI-related assets through the existing asset registry and project inspection actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_gas</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">GAS tool namespace for searching gameplay-ability-related assets and inspecting their asset metadata.</td>
-		<td width="26%">-</td>
+		<td width="52%">GAS tool namespace for searching gameplay-ability-related assets and inspecting their asset metadata.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_character</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Character tool namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data.</td>
-		<td width="26%">-</td>
+		<td width="52%">Character tool namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_combat</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Combat tool namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits.</td>
-		<td width="26%">-</td>
+		<td width="52%">Combat tool namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_inventory</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Inventory tool namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Inventory tool namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_interaction</code></td>
-		<td width="10%">Partial</td>
-		<td width="46%">Interaction tool namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions.</td>
-		<td width="26%">Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python.</td>
+		<td width="52%">Interaction tool namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions.</td>
+		<td width="30%">Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_widget_authoring</code></td>
-		<td width="10%">Partial</td>
-		<td width="46%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions.</td>
-		<td width="26%">create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.</td>
+		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions.</td>
+		<td width="30%">create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_source_control</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Source-control tool namespace for provider inspection and file or package source-control operations.</td>
-		<td width="26%">provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider.</td>
+		<td width="52%">Source-control tool namespace for provider inspection and file or package source-control operations.</td>
+		<td width="30%">provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_networking</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Networking tool namespace for project inspection and console-command driven networking diagnostics.</td>
-		<td width="26%">-</td>
+		<td width="52%">Networking tool namespace for project inspection and console-command driven networking diagnostics.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_game_framework</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Game-framework tool namespace for project inspection and gameplay Blueprint scaffolding actions.</td>
-		<td width="26%">-</td>
+		<td width="52%">Game-framework tool namespace for project inspection and gameplay Blueprint scaffolding actions.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_sessions</code></td>
-		<td width="10%">Supported</td>
-		<td width="46%">Sessions tool namespace for project inspection and console-command driven local session diagnostics.</td>
-		<td width="26%">-</td>
+		<td width="52%">Sessions tool namespace for project inspection and console-command driven local session diagnostics.</td>
+		<td width="30%">&nbsp;</td>
 	</tr>
 	</tbody>
 </table>
