@@ -401,13 +401,16 @@ async function main() {
 			const widgetPath = `/Game/MCP/Tests/WBP_${options.prefix}`
 			addCleanup(`Delete assets for ${options.prefix}`, () => safeDeleteAssets([widgetPath, blueprintPath]))
 
-			await runStep("Create a Blueprint asset", async () => {
-				const createResult = await callJsonTool("create_blueprint", {
-					name: blueprintPath,
-					parent_class: "Actor",
+				await runStep("Create a Blueprint asset", async () => {
+					const createResult = await callJsonTool("create_blueprint", {
+						name: blueprintPath,
+						parent_class: "Actor",
+					})
+					assert(
+						createResult.asset_path === blueprintPath,
+						`create_blueprint returned an unexpected asset path: ${createResult.asset_path}`,
+					)
 				})
-				assert(createResult.asset_path === blueprintPath, "create_blueprint returned an unexpected asset path")
-			})
 
 			await runStep("Add a StaticMeshComponent to the Blueprint", async () => {
 				const componentResult = await callJsonTool("add_component_to_blueprint", {
@@ -433,13 +436,16 @@ async function main() {
 				assert(compileResult.blueprint === blueprintPath, "compile_blueprint returned an unexpected asset path")
 			})
 
-			await runStep("Create a Widget Blueprint through the domain layer", async () => {
-				const createWidgetResult = await callJsonTool("manage_widget_authoring", {
-					action: "create_widget_blueprint",
-					params: { widget_name: widgetPath },
+				await runStep("Create a Widget Blueprint through the domain layer", async () => {
+					const createWidgetResult = await callJsonTool("manage_widget_authoring", {
+						action: "create_widget_blueprint",
+						params: { widget_name: widgetPath },
+					})
+					assert(
+						createWidgetResult.asset_path === widgetPath,
+						`Widget Blueprint was created at an unexpected path: ${createWidgetResult.asset_path}`,
+					)
 				})
-				assert(createWidgetResult.asset_path === widgetPath, "Widget Blueprint was not created at the expected path")
-			})
 
 			await runStep("Add a TextBlock to the Widget Blueprint", async () => {
 				const textResult = await callJsonTool("manage_widget_authoring", {

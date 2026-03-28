@@ -86,11 +86,12 @@ def create_blueprint(args):
             "message": "Failed to create blueprint asset '{0}'".format(asset_name),
         }
 
+    asset_path = "{0}/{1}".format(package_path, asset_name)
     finalize_blueprint_change(blueprint, structural=True)
     return {
         "success": True,
         "blueprint_name": asset_name,
-        "asset_path": get_asset_package_name(blueprint),
+        "asset_path": asset_path,
         "parent_class": get_object_name(parent_uclass),
     }
 

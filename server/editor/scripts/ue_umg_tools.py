@@ -88,11 +88,12 @@ def create_umg_widget_blueprint(args):
             "message": "Failed to create widget blueprint asset '{0}'".format(asset_name),
         }
 
+    asset_path = "{0}/{1}".format(package_path, asset_name)
     save_widget_blueprint(widget_blueprint)
     return {
         "success": True,
         "widget_name": asset_name,
-        "asset_path": get_asset_package_name(widget_blueprint),
+        "asset_path": asset_path,
         "parent_class": get_object_name(parent_uclass),
     }
 

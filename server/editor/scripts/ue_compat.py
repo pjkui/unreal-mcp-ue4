@@ -168,19 +168,56 @@ def get_asset_object_path(asset_or_data):
         return ""
 
 
+def normalize_asset_reference_path(path_value):
+    if not path_value:
+        return ""
+
+    normalized = str(path_value).strip()
+    if not normalized:
+        return ""
+
+    if ":" in normalized:
+        normalized = normalized.split(":", 1)[0]
+
+    if "." in normalized:
+        package_name, object_name = normalized.rsplit(".", 1)
+        if package_name.rsplit("/", 1)[-1] == object_name:
+            return package_name
+
+    return normalized
+
+
 def get_asset_package_name(asset_or_data):
-    try:
-        if hasattr(asset_or_data, "package_name"):
-            return str(asset_or_data.package_name)
-    except Exception:
-        pass
+    candidates = []
 
     try:
         package = asset_or_data.get_package()
         if package:
-            return package.get_name()
+            normalized_package_name = normalize_asset_reference_path(package.get_name())
+            if normalized_package_name:
+                candidates.append(normalized_package_name)
     except Exception:
         pass
+
+    try:
+        if hasattr(asset_or_data, "package_name"):
+            normalized_package_name = normalize_asset_reference_path(
+                asset_or_data.package_name
+            )
+            if normalized_package_name:
+                candidates.append(normalized_package_name)
+    except Exception:
+        pass
+
+    try:
+        object_path = normalize_asset_reference_path(get_asset_object_path(asset_or_data))
+        if object_path:
+            candidates.append(object_path)
+    except Exception:
+        pass
+
+    if candidates:
+        return max(candidates, key=len)
 
     return ""
 
