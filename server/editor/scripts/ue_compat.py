@@ -1421,6 +1421,19 @@ def find_blueprint_component_template(blueprint, component_name):
     return None
 
 
+def blueprint_has_component(blueprint, component_name):
+    if not component_name:
+        return False
+
+    try:
+        if blueprint_supports_scs_editing(blueprint):
+            return find_scs_node(blueprint, component_name) is not None
+    except Exception:
+        pass
+
+    return find_blueprint_component_template(blueprint, component_name) is not None
+
+
 def get_blueprint_construction_graph(blueprint):
     for graph in get_blueprint_graphs(blueprint):
         graph_name = get_object_name(graph).lower()

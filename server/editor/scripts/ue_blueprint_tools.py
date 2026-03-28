@@ -124,7 +124,7 @@ def add_component_to_blueprint(args):
             "message": "Class is not an ActorComponent: {0}".format(component_type),
         }
 
-    if find_scs_node(blueprint, component_name):
+    if blueprint_has_component(blueprint, component_name):
         return {
             "success": False,
             "message": "Blueprint component already exists: {0}".format(component_name),
