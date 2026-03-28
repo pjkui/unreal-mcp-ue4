@@ -256,6 +256,8 @@ The tool list below is generated from `server/index.ts` during build.
 
 Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
 
+### Connection & Setup
+
 <table width="100%">
 	<colgroup>
 		<col width="18%">
@@ -270,9 +272,6 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		</tr>
 	</thead>
 	<tbody>
-	<tr>
-		<td colspan="3"><strong>Connection &amp; Setup</strong></td>
-	</tr>
 	<tr>
 		<td width="18%"><code>set_unreal_engine_path</code></td>
 		<td width="52%">Set the Unreal Engine path</td>
@@ -293,9 +292,25 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="52%">Get the current Unreal Project path</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
-	<tr>
-		<td colspan="3"><strong>Actor / Level Tools</strong></td>
-	</tr>
+	</tbody>
+</table>
+
+### Actor / Level Tools
+
+<table width="100%">
+	<colgroup>
+		<col width="18%">
+		<col width="52%">
+		<col width="30%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th width="18%">Tool</th>
+			<th width="52%">Description</th>
+			<th width="30%">Notes</th>
+		</tr>
+	</thead>
+	<tbody>
 	<tr>
 		<td width="18%"><code>editor_create_object</code></td>
 		<td width="52%">Create a new object/actor in the world</td>
@@ -311,9 +326,25 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="52%">Delete an object/actor from the world</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
-	<tr>
-		<td colspan="3"><strong>Tool Namespaces</strong></td>
-	</tr>
+	</tbody>
+</table>
+
+### Core Tool Namespaces
+
+<table width="100%">
+	<colgroup>
+		<col width="18%">
+		<col width="52%">
+		<col width="30%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th width="18%">Tool</th>
+			<th width="52%">Description</th>
+			<th width="30%">Notes</th>
+		</tr>
+	</thead>
+	<tbody>
 	<tr>
 		<td width="18%"><code>manage_asset</code></td>
 		<td width="52%">Asset tool namespace for list, search, info, references, export, and validation actions.</td>
@@ -355,6 +386,35 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
+		<td width="18%"><code>manage_performance</code></td>
+		<td width="52%">Performance tool namespace for editor console commands and screenshot capture actions.</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="18%"><code>manage_source_control</code></td>
+		<td width="52%">Source-control tool namespace for provider inspection and file or package source-control operations.</td>
+		<td width="30%">provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider.</td>
+	</tr>
+	</tbody>
+</table>
+
+### World & Environment Tool Namespaces
+
+<table width="100%">
+	<colgroup>
+		<col width="18%">
+		<col width="52%">
+		<col width="30%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th width="18%">Tool</th>
+			<th width="52%">Description</th>
+			<th width="30%">Notes</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr>
 		<td width="18%"><code>manage_lighting</code></td>
 		<td width="52%">Lighting tool namespace for spawning common light actors, transforming them, and inspecting level lighting state.</td>
 		<td width="30%">&nbsp;</td>
@@ -385,16 +445,6 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
-		<td width="18%"><code>manage_animation_physics</code></td>
-		<td width="52%">Animation-and-physics tool namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions.</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
-		<td width="18%"><code>manage_skeleton</code></td>
-		<td width="52%">Skeleton tool namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata.</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
 		<td width="18%"><code>manage_geometry</code></td>
 		<td width="52%">Geometry tool namespace for wall, arch, staircase, and pyramid preset construction actions.</td>
 		<td width="30%">&nbsp;</td>
@@ -402,6 +452,30 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 	<tr>
 		<td width="18%"><code>manage_effect</code></td>
 		<td width="52%">Effects tool namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them.</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	</tbody>
+</table>
+
+### Content & Authoring Tool Namespaces
+
+<table width="100%">
+	<colgroup>
+		<col width="18%">
+		<col width="52%">
+		<col width="30%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th width="18%">Tool</th>
+			<th width="52%">Description</th>
+			<th width="30%">Notes</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td width="18%"><code>manage_skeleton</code></td>
+		<td width="52%">Skeleton tool namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata.</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
@@ -425,13 +499,37 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
-		<td width="18%"><code>manage_performance</code></td>
-		<td width="52%">Performance tool namespace for editor console commands and screenshot capture actions.</td>
+		<td width="18%"><code>manage_audio</code></td>
+		<td width="52%">Audio tool namespace for searching audio assets and inspecting their asset metadata.</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
-		<td width="18%"><code>manage_audio</code></td>
-		<td width="52%">Audio tool namespace for searching audio assets and inspecting their asset metadata.</td>
+		<td width="18%"><code>manage_widget_authoring</code></td>
+		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions.</td>
+		<td width="30%">create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.</td>
+	</tr>
+	</tbody>
+</table>
+
+### Gameplay & Systems Tool Namespaces
+
+<table width="100%">
+	<colgroup>
+		<col width="18%">
+		<col width="52%">
+		<col width="30%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th width="18%">Tool</th>
+			<th width="52%">Description</th>
+			<th width="30%">Notes</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td width="18%"><code>manage_animation_physics</code></td>
+		<td width="52%">Animation-and-physics tool namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions.</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
@@ -473,16 +571,6 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 		<td width="18%"><code>manage_interaction</code></td>
 		<td width="52%">Interaction tool namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions.</td>
 		<td width="30%">Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python.</td>
-	</tr>
-	<tr>
-		<td width="18%"><code>manage_widget_authoring</code></td>
-		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions.</td>
-		<td width="30%">create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.</td>
-	</tr>
-	<tr>
-		<td width="18%"><code>manage_source_control</code></td>
-		<td width="52%">Source-control tool namespace for provider inspection and file or package source-control operations.</td>
-		<td width="30%">provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_networking</code></td>

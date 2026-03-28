@@ -49,20 +49,11 @@ const sourceControlProviderDependentTools = [
 
 const categoryOrder = [
 	"Connection & Setup",
-	"Editor & Asset Tools",
 	"Actor / Level Tools",
-	"Physics & Materials Tools",
-	"Blueprint Analysis Tools",
-	"Blueprint Asset / Component Tools",
-	"Blueprint Node Graph Tools",
-	"Blueprint Graph Editing Tools",
-	"Project / Input Tools",
-	"World Building Tools",
-	"Epic Structures Tools",
-	"Level Design Tools",
-	"UMG Tools",
-	"Source Control Tools",
-	"Tool Namespaces",
+	"Core Tool Namespaces",
+	"World & Environment Tool Namespaces",
+	"Content & Authoring Tool Namespaces",
+	"Gameplay & Systems Tool Namespaces",
 ]
 
 const toolSupport: Record<string, ToolSupportInfo> = {
@@ -241,22 +232,39 @@ function fallbackCategory(toolName: string): string {
 		toolName === "manage_inspection" ||
 		toolName === "manage_pipeline" ||
 		toolName === "manage_tools" ||
+		toolName === "manage_source_control" ||
+		toolName === "manage_performance"
+	) {
+		return "Core Tool Namespaces"
+	}
+
+	if (
 		toolName === "manage_lighting" ||
 		toolName === "manage_level_structure" ||
 		toolName === "manage_volumes" ||
 		toolName === "manage_navigation" ||
 		toolName === "manage_environment" ||
 		toolName === "manage_splines" ||
-		toolName === "manage_animation_physics" ||
-		toolName === "manage_skeleton" ||
 		toolName === "manage_geometry" ||
-		toolName === "manage_effect" ||
+		toolName === "manage_effect"
+	) {
+		return "World & Environment Tool Namespaces"
+	}
+
+	if (
+		toolName === "manage_skeleton" ||
 		toolName === "manage_material_authoring" ||
 		toolName === "manage_texture" ||
 		toolName === "manage_blueprint" ||
 		toolName === "manage_sequence" ||
-		toolName === "manage_performance" ||
 		toolName === "manage_audio" ||
+		toolName === "manage_widget_authoring"
+	) {
+		return "Content & Authoring Tool Namespaces"
+	}
+
+	if (
+		toolName === "manage_animation_physics" ||
 		toolName === "manage_input" ||
 		toolName === "manage_behavior_tree" ||
 		toolName === "manage_ai" ||
@@ -265,13 +273,11 @@ function fallbackCategory(toolName: string): string {
 		toolName === "manage_combat" ||
 		toolName === "manage_inventory" ||
 		toolName === "manage_interaction" ||
-		toolName === "manage_widget_authoring" ||
-		toolName === "manage_source_control" ||
 		toolName === "manage_networking" ||
 		toolName === "manage_game_framework" ||
 		toolName === "manage_sessions"
 	) {
-		return "Tool Namespaces"
+		return "Gameplay & Systems Tool Namespaces"
 	}
 
 	if (toolName.includes("umg") || toolName.includes("widget")) {
@@ -383,6 +389,10 @@ function categoryForIndex(
 		activeCategory = marker.category
 	}
 
+	if (activeCategory === "Tool Namespaces") {
+		return fallbackCategory(toolName)
+	}
+
 	return activeCategory ?? fallbackCategory(toolName)
 }
 
@@ -425,43 +435,19 @@ function escapeHtml(value?: string, emptyValue: string = "-"): string {
 		.replace(/>/g, "&gt;")
 }
 
-function generateToolRow(tool: ToolInfo): string {
-	const support = supportForTool(tool.name)
-	return [
-		"\t<tr>",
-		`\t\t<td width="18%"><code>${escapeHtml(tool.name)}</code></td>`,
-		`\t\t<td width="52%">${escapeHtml(tool.description)}</td>`,
-		`\t\t<td width="30%">${escapeHtml(support.note, "&nbsp;")}</td>`,
-		"\t</tr>",
-	].join("\n")
-}
-
-function generateCategoryDividerRow(category: string): string {
-	return [
-		"\t<tr>",
-		`\t\t<td colspan="3"><strong>${escapeHtml(category)}</strong></td>`,
-		"\t</tr>",
-	].join("\n")
-}
-
-function generateToolsCatalog(tools: ToolInfo[]): string {
-	const rows: string[] = []
-
-	for (const category of categoryOrder) {
-		const categoryTools = tools.filter((tool) => tool.category === category)
-		if (categoryTools.length === 0) {
-			continue
-		}
-
-		rows.push(generateCategoryDividerRow(category))
-		rows.push(...categoryTools.map((tool) => generateToolRow(tool)))
-	}
-
-	const uncategorizedTools = tools.filter((tool) => !categoryOrder.includes(tool.category))
-	if (uncategorizedTools.length > 0) {
-		rows.push(generateCategoryDividerRow("Other Tools"))
-		rows.push(...uncategorizedTools.map((tool) => generateToolRow(tool)))
-	}
+function generateToolsTable(tools: ToolInfo[]): string {
+	const rows = tools
+		.map((tool) => {
+			const support = supportForTool(tool.name)
+			return [
+				"\t<tr>",
+				`\t\t<td width="18%"><code>${escapeHtml(tool.name)}</code></td>`,
+				`\t\t<td width="52%">${escapeHtml(tool.description)}</td>`,
+				`\t\t<td width="30%">${escapeHtml(support.note, "&nbsp;")}</td>`,
+				"\t</tr>",
+			].join("\n")
+		})
+		.join("\n")
 
 	return [
 		'<table width="100%">',
@@ -478,10 +464,30 @@ function generateToolsCatalog(tools: ToolInfo[]): string {
 		'\t\t</tr>',
 		'\t</thead>',
 		'\t<tbody>',
-		rows.join("\n"),
+		rows,
 		'\t</tbody>',
 		'</table>',
 	].join("\n")
+}
+
+function generateToolsSections(tools: ToolInfo[]): string {
+	const sections: string[] = []
+
+	for (const category of categoryOrder) {
+		const categoryTools = tools.filter((tool) => tool.category === category)
+		if (categoryTools.length === 0) {
+			continue
+		}
+
+		sections.push(`### ${category}\n\n${generateToolsTable(categoryTools)}`)
+	}
+
+	const uncategorizedTools = tools.filter((tool) => !categoryOrder.includes(tool.category))
+	if (uncategorizedTools.length > 0) {
+		sections.push(`### Other Tools\n\n${generateToolsTable(uncategorizedTools)}`)
+	}
+
+	return sections.join("\n\n")
 }
 
 function generateExcludedCapabilitiesTable(entries: ExcludedCapabilityInfo[]): string {
@@ -504,7 +510,7 @@ function updateReadmeWithTools() {
 
 Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
 
-${generateToolsCatalog(tools)}
+${generateToolsSections(tools)}
 
 ### Excluded Capability Areas
 
