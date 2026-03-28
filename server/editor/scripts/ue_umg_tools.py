@@ -1,6 +1,18 @@
 import json
 
 
+def _format_widget_authoring_error(exc):
+    message = str(exc)
+    if "editable widget tree in UE4.27 Python" in message:
+        return {
+            "success": False,
+            "message": message,
+            "unsupported_capability": "widget_tree_authoring",
+        }
+
+    return {"success": False, "message": message}
+
+
 def _linear_color_from_list(color_values, default=None):
     values = color_values or default or [1.0, 1.0, 1.0, 1.0]
     return unreal.LinearColor(
@@ -130,7 +142,7 @@ def add_text_block_to_widget(args):
             },
         }
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return _format_widget_authoring_error(exc)
 
 
 def add_button_to_widget(args):
@@ -174,7 +186,7 @@ def add_button_to_widget(args):
             },
         }
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return _format_widget_authoring_error(exc)
 
 
 def _apply_delegate_binding(widget_blueprint, object_name, property_name, function_name=None, source_property=None):
@@ -234,7 +246,7 @@ def bind_widget_event(args):
             "function_name": function_name,
         }
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return _format_widget_authoring_error(exc)
 
 
 def add_widget_to_viewport(args):
@@ -298,7 +310,7 @@ def add_widget_to_viewport(args):
     try:
         widget_instance.add_to_viewport(z_order)
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return _format_widget_authoring_error(exc)
 
     return {
         "success": True,
@@ -339,7 +351,7 @@ def set_text_block_binding(args):
             "source_property": source_property,
         }
     except Exception as exc:
-        return {"success": False, "message": str(exc)}
+        return _format_widget_authoring_error(exc)
 
 
 OPERATIONS = {

@@ -91,6 +91,14 @@ const tryRunCommand = async (command: string): Promise<string> => {
 
 		return result.output.map((line) => line.output).join("\n")
 	} catch (error) {
+		try {
+			if (remoteExecution.hasCommandConnection()) {
+				remoteExecution.closeCommandConnection()
+			}
+		} catch (closeError) {
+			console.error("Failed to close stale Unreal command connection:", closeError)
+		}
+
 		remoteNode = undefined
 		remoteConnectionPromise = undefined
 		await ensureRemoteConnection()

@@ -98,6 +98,21 @@ function fail(message) {
 	throw new Error(message)
 }
 
+class ToolFailureError extends Error {
+	constructor(message, parsed = undefined) {
+		super(message)
+		this.name = "ToolFailureError"
+		this.parsed = parsed
+	}
+}
+
+class StepSkipError extends Error {
+	constructor(message) {
+		super(message)
+		this.name = "StepSkipError"
+	}
+}
+
 function assert(condition, message) {
 	if (!condition) {
 		fail(message)
@@ -143,15 +158,22 @@ function parseToolJson(toolName, result) {
 		const parsed = JSON.parse(text)
 		if (parsed && typeof parsed === "object") {
 			if (parsed.success === false) {
-				fail(parsed.message ?? `Tool ${toolName} reported success=false`)
+				throw new ToolFailureError(
+					parsed.message ?? `Tool ${toolName} reported success=false`,
+					parsed,
+				)
 			}
 
 			if (typeof parsed.error === "string" && parsed.error) {
-				fail(parsed.error)
+				throw new ToolFailureError(parsed.error, parsed)
 			}
 		}
 		return parsed
 	} catch (error) {
+		if (error instanceof ToolFailureError) {
+			throw error
+		}
+
 		fail(
 			`Tool ${toolName} returned non-JSON content: ${text.slice(0, 400)}${
 				text.length > 400 ? "..." : ""
@@ -236,12 +258,23 @@ async function main() {
 		summary.push({ name, status: "passed", detail })
 	}
 
+	const logSkip = (name, detail = "") => {
+		const suffix = detail ? `: ${detail}` : ""
+		console.log(`[SKIP] ${name}${suffix}`)
+		summary.push({ name, status: "skipped", detail })
+	}
+
 	const runStep = async (name, fn) => {
 		try {
 			const result = await fn()
 			logPass(name)
 			return result
 		} catch (error) {
+			if (error instanceof StepSkipError) {
+				logSkip(name, error.message)
+				return undefined
+			}
+
 			const message = error instanceof Error ? error.message : String(error)
 			console.error(`[FAIL] ${name}: ${message}`)
 			summary.push({ name, status: "failed", detail: message })
@@ -256,6 +289,19 @@ async function main() {
 			toolName,
 		)
 		return parseToolJson(toolName, result)
+	}
+
+	const isUnsupportedWidgetTreeAuthoring = (error) => {
+		if (error instanceof ToolFailureError) {
+			if (error.parsed?.unsupported_capability === "widget_tree_authoring") {
+				return true
+			}
+		}
+
+		return (
+			error instanceof Error &&
+			error.message.includes("Widget blueprint does not expose an editable widget tree in UE4.27 Python.")
+		)
 	}
 
 	const safeDeleteActor = async (actorName) => {
@@ -404,6 +450,7 @@ async function main() {
 		if (options.withAssets) {
 			const blueprintPath = `/Game/MCP/Tests/BP_${options.prefix}`
 			const widgetPath = `/Game/MCP/Tests/WBP_${options.prefix}`
+			let widgetAuthoringUnsupportedReason = ""
 			if (!options.keepAssets) {
 				addCleanup(`Delete assets for ${options.prefix}`, () => safeDeleteAssets([widgetPath, blueprintPath]))
 			}
@@ -459,30 +506,54 @@ async function main() {
 				})
 
 			await runStep("Add a TextBlock to the Widget Blueprint", async () => {
-				const textResult = await callJsonTool("manage_widget_authoring", {
-					action: "add_text_block",
-					params: {
-						widget_name: widgetPath,
-						text_block_name: "SmokeText",
-						text: "UE4 smoke test",
-						position: { x: 32, y: 32 },
-					},
-				})
-				assert(textResult.widget?.name === "SmokeText", "TextBlock was not added to the widget blueprint")
+				try {
+					const textResult = await callJsonTool("manage_widget_authoring", {
+						action: "add_text_block",
+						params: {
+							widget_name: widgetPath,
+							text_block_name: "SmokeText",
+							text: "UE4 smoke test",
+							position: { x: 32, y: 32 },
+						},
+					})
+					assert(textResult.widget?.name === "SmokeText", "TextBlock was not added to the widget blueprint")
+				} catch (error) {
+					if (isUnsupportedWidgetTreeAuthoring(error)) {
+						widgetAuthoringUnsupportedReason =
+							error instanceof Error ? error.message : "Widget tree authoring is unavailable in this UE4.27 Python environment."
+						throw new StepSkipError(widgetAuthoringUnsupportedReason)
+					}
+
+					throw error
+				}
 			})
 
-			await runStep("Add a Button to the Widget Blueprint", async () => {
-				const buttonResult = await callJsonTool("manage_widget_authoring", {
-					action: "add_button",
-					params: {
-						widget_name: widgetPath,
-						button_name: "SmokeButton",
-						text: "Smoke",
-						position: { x: 32, y: 96 },
-					},
+			if (widgetAuthoringUnsupportedReason) {
+				logSkip("Add a Button to the Widget Blueprint", widgetAuthoringUnsupportedReason)
+			} else {
+				await runStep("Add a Button to the Widget Blueprint", async () => {
+					try {
+						const buttonResult = await callJsonTool("manage_widget_authoring", {
+							action: "add_button",
+							params: {
+								widget_name: widgetPath,
+								button_name: "SmokeButton",
+								text: "Smoke",
+								position: { x: 32, y: 96 },
+							},
+						})
+						assert(buttonResult.widget?.name === "SmokeButton", "Button was not added to the widget blueprint")
+					} catch (error) {
+						if (isUnsupportedWidgetTreeAuthoring(error)) {
+							widgetAuthoringUnsupportedReason =
+								error instanceof Error ? error.message : "Widget tree authoring is unavailable in this UE4.27 Python environment."
+							throw new StepSkipError(widgetAuthoringUnsupportedReason)
+						}
+
+						throw error
+					}
 				})
-				assert(buttonResult.widget?.name === "SmokeButton", "Button was not added to the widget blueprint")
-			})
+			}
 
 			if (options.keepAssets) {
 				console.log(`[INFO] Kept Widget Blueprint asset: ${widgetPath}`)
@@ -490,7 +561,9 @@ async function main() {
 		}
 
 		console.log("")
-		console.log(`Smoke test completed successfully with ${summary.length} checks.`)
+		const skippedChecks = summary.filter((item) => item.status === "skipped").length
+		const skipSuffix = skippedChecks > 0 ? ` (${skippedChecks} skipped)` : ""
+		console.log(`Smoke test completed successfully with ${summary.length} checks${skipSuffix}.`)
 	} catch (error) {
 		const message = error instanceof Error ? error.message : String(error)
 		console.error("")
