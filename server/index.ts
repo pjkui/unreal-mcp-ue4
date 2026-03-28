@@ -1262,12 +1262,23 @@ registerToolNamespace(
 
 registerToolNamespace(
 	"manage_texture",
-	"Texture tool namespace for searching texture assets and reading their asset metadata.",
+	"Texture tool namespace for searching texture assets, importing image files as textures, and reading their asset metadata.",
 	{
 		search_textures: (params) => pythonDispatch(searchAssetsCommand(params, "Texture")),
 		texture_info: (params) =>
 			pythonDispatch(
 				editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
+			),
+		import_texture: (params) =>
+			pythonDispatch(
+				editorTools.UETextureTool("import_texture", {
+					source_file: requiredStringParam(params, ["source_file", "file_path", "local_path"]),
+					destination_path: optionalStringParam(params, ["destination_path", "content_path", "path"]),
+					asset_name: optionalStringParam(params, ["asset_name", "name"]),
+					replace_existing:
+						typeof params.replace_existing === "boolean" ? params.replace_existing : true,
+					save: typeof params.save === "boolean" ? params.save : true,
+				}),
 			),
 	},
 )

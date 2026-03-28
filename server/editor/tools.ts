@@ -231,6 +231,12 @@ export const UEMaterialTool = (operation: string, args: Record<string, unknown> 
 		args: jsonArg(args),
 	})
 
+export const UETextureTool = (operation: string, args: Record<string, unknown> = {}) =>
+	renderScript("./scripts/ue_texture_tools.py", {
+		operation: jsonArg(operation),
+		args: jsonArg(args),
+	})
+
 export const UEUMGTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_umg_tools.py", {
 		operation: jsonArg(operation),

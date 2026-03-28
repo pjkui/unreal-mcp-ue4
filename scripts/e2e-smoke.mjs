@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import fs from "node:fs"
+import os from "node:os"
 import path from "node:path"
 import process from "node:process"
 import { fileURLToPath } from "node:url"
@@ -512,13 +513,25 @@ async function main() {
 			const blueprintPath = `/Game/MCP/Tests/BP_${options.prefix}`
 			const dataAssetPath = `/Game/MCP/Tests/DA_${options.prefix}`
 			const stringTablePath = `/Game/MCP/Tests/ST_${options.prefix}`
+			const texturePath = `/Game/MCP/Tests/T_${options.prefix}`
 			const widgetPath = `/Game/MCP/Tests/WBP_${options.prefix}`
+			const tempTextureFile = path.join(os.tmpdir(), `${options.prefix}_Texture.png`)
 			let widgetAuthoringUnsupportedReason = ""
+			const texturePixelBase64 =
+				"iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZSURBVBhXY/jPAEQNIAoO/oMBlEMQMDAAAO2DCXg4buGUAAAAAElFTkSuQmCC"
+			fs.writeFileSync(tempTextureFile, Buffer.from(texturePixelBase64, "base64"))
 			if (!options.keepAssets) {
 				addCleanup(
 					`Delete assets for ${options.prefix}`,
-					() => safeDeleteAssets([widgetPath, blueprintPath, dataAssetPath, stringTablePath]),
+					() => safeDeleteAssets([widgetPath, texturePath, blueprintPath, dataAssetPath, stringTablePath]),
 				)
+				addCleanup(`Delete temp image ${tempTextureFile}`, async () => {
+					try {
+						fs.unlinkSync(tempTextureFile)
+					} catch {
+						// Best effort only.
+					}
+				})
 			}
 
 			await runStep("Create a Blueprint asset", async () => {
@@ -607,10 +620,39 @@ async function main() {
 				)
 			})
 
+			await runStep("Import a Texture through the tool-namespace layer", async () => {
+				const textureImportResult = await callJsonTool("manage_texture", {
+					action: "import_texture",
+					params: {
+						source_file: tempTextureFile,
+						destination_path: "/Game/MCP/Tests",
+						asset_name: path.basename(texturePath),
+					},
+				})
+				assert(
+					textureImportResult.asset_path === texturePath,
+					`Texture was imported at an unexpected path: ${textureImportResult.asset_path}`,
+				)
+			})
+
+			await runStep("Read the Texture metadata", async () => {
+				const textureInfo = await callJsonTool("manage_texture", {
+					action: "texture_info",
+					params: { asset_path: texturePath },
+				})
+				assert(Array.isArray(textureInfo) && textureInfo.length === 1, "manage_texture texture_info did not return one asset record")
+				assert(
+					textureInfo[0].package === texturePath,
+					`manage_texture texture_info returned an unexpected asset path: ${textureInfo[0]?.package}`,
+				)
+			})
+
 			if (options.keepAssets) {
 				console.log(`[INFO] Kept Blueprint asset: ${blueprintPath}`)
 				console.log(`[INFO] Kept DataAsset: ${dataAssetPath}`)
 				console.log(`[INFO] Kept StringTable: ${stringTablePath}`)
+				console.log(`[INFO] Kept Texture asset: ${texturePath}`)
+				console.log(`[INFO] Kept temp texture file: ${tempTextureFile}`)
 			}
 
 			await runStep("Create a Widget Blueprint through the tool-namespace layer", async () => {

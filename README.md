@@ -470,8 +470,8 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_texture</code></td>
-		<td width="52%">Texture tool namespace for searching texture assets and reading their asset metadata.</td>
-		<td width="30%">&nbsp;</td>
+		<td width="52%">Texture tool namespace for searching texture assets, importing image files as textures, and reading their asset metadata.</td>
+		<td width="30%">import_texture requires a local image file path that is accessible from the machine running the Unreal Editor session.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_data</code></td>
