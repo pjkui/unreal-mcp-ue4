@@ -10,7 +10,7 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 - No custom Unreal C++ plugin from this repository is required.
 - The server talks to the editor through Unreal's built-in Python Remote Execution path.
 - The tool surface is organized into granular tools and higher-level domain tools.
-- UE5-only editor scripting features are not reintroduced; unsupported operations return a clear message instead of silently failing.
+- UE5-only editor scripting features are not reintroduced; UE4.27-safe operations work normally, while unreliable graph or binding flows are either excluded from the MCP surface or return a clear message instead of silently failing.
 
 ## Origin
 
@@ -235,17 +235,19 @@ npm run test:e2e -- --with-assets
 
 - Use an absolute path to `node` or `node.exe` in the MCP config instead of relying on `PATH`.
 
-### Blueprint or UMG commands return `unsupported`
+### Some Blueprint graph or UMG binding commands are unavailable
 
-- Some editor-only Blueprint graph and UMG binding APIs are only partially exposed in UE4.27 Python.
-- In those cases this fork returns a clear unsupported response instead of pretending the operation succeeded.
+- Widget Blueprint creation and common widget-tree editing work in this fork; the main UMG gaps are delegate binding helpers and runtime-dependent viewport flows.
+- Blueprint asset creation, component editing, and compilation work; the main Blueprint gaps are editor-only graph node and variable authoring APIs that UE4.27 Python does not expose reliably.
+- Commands that are not reliable enough to keep in the MCP surface are listed under `Excluded Functions` in the tool section.
 
 ## Notes and Limitations
 
 - World-building and structure-generation tools use UE4.27-friendly preset builders based on engine basic-shape assets.
+- Common UMG widget-tree editing works well with CanvasPanel-based layouts, but delegate binding helpers remain unavailable in stock UE4.27 Python.
 - UMG positioning currently targets `CanvasPanel` slots in UE4.27.
 - Reparenting the current root widget and editing named-slot content are not currently handled.
-- Some advanced Blueprint graph editing flows are limited by what UE4.27 exposes through Python.
+- Blueprint asset and component editing work, but advanced Blueprint graph node and variable authoring remain limited by what UE4.27 exposes through Python.
 - The tool surface includes both granular tools and action-based domain tools so different MCP clients can work at different abstraction levels.
 
 The tool list below is generated from `server/index.ts` during build.
@@ -458,6 +460,6 @@ These actions are intentionally not exposed through the MCP surface in this UE4.
 | `manage_widget_authoring.bind_event` | Domain action | Excluded because it depends on DelegateEditorBinding, which is not exposed in the current UE4.27 Python environment. |
 | `manage_widget_authoring.set_text_binding` | Domain action | Excluded because it depends on DelegateEditorBinding, which is not exposed in the current UE4.27 Python environment. |
 
-## 📄 License
+## License
 
 Licensed under the [MIT License](LICENSE).
