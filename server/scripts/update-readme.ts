@@ -414,16 +414,47 @@ function formatTableCell(value?: string): string {
 	return value && value.trim() ? value.replace(/\|/g, "\\|") : "-"
 }
 
+function escapeHtml(value?: string): string {
+	if (!value || !value.trim()) {
+		return "-"
+	}
+
+	return value
+		.replace(/&/g, "&amp;")
+		.replace(/</g, "&lt;")
+		.replace(/>/g, "&gt;")
+}
+
 function generateToolsTable(tools: ToolInfo[]): string {
-	const header =
-		"| Tool | Status | Description | Notes |\n|------|--------|-------------|-------|\n"
 	const rows = tools
 		.map((tool) => {
 			const support = supportForTool(tool.name)
-			return `| \`${tool.name}\` | ${formatTableCell(support.status)} | ${formatTableCell(tool.description)} | ${formatTableCell(support.note)} |`
+			return [
+				"\t<tr>",
+				`\t\t<td width="18%"><code>${escapeHtml(tool.name)}</code></td>`,
+				`\t\t<td width="10%">${escapeHtml(support.status)}</td>`,
+				`\t\t<td width="46%">${escapeHtml(tool.description)}</td>`,
+				`\t\t<td width="26%">${escapeHtml(support.note)}</td>`,
+				"\t</tr>",
+			].join("\n")
 		})
 		.join("\n")
-	return header + rows
+
+	return [
+		'<table>',
+		'\t<thead>',
+		'\t\t<tr>',
+		'\t\t\t<th width="18%">Tool</th>',
+		'\t\t\t<th width="10%">Status</th>',
+		'\t\t\t<th width="46%">Description</th>',
+		'\t\t\t<th width="26%">Notes</th>',
+		'\t\t</tr>',
+		'\t</thead>',
+		'\t<tbody>',
+		rows,
+		'\t</tbody>',
+		'</table>',
+	].join("\n")
 }
 
 function generateToolsSections(tools: ToolInfo[]): string {
