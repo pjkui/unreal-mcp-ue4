@@ -52,12 +52,18 @@ ${toolsTable}
 }
 
 function insertToolsSection(content: string, toolsSection: string): string {
-	const insertPoints = [
-		{ marker: "## Contributing", found: content.indexOf("## Contributing") },
-		{ marker: "### License MIT", found: content.indexOf("### License MIT") },
+	const insertMarkers = [
+		"## 🤝 Contributing",
+		"## Contributing",
+		"## 📄 License",
+		"## License",
 	]
+	const insertPoints = insertMarkers
+		.map((marker) => ({ marker, found: content.indexOf(marker) }))
+		.filter((point) => point.found !== -1)
+		.sort((a, b) => a.found - b.found)
 
-	const insertPoint = insertPoints.find((point) => point.found !== -1)
+	const insertPoint = insertPoints[0]
 	return insertPoint
 		? content.slice(0, insertPoint.found) + toolsSection + content.slice(insertPoint.found)
 		: content + "\n" + toolsSection

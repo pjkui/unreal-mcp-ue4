@@ -115,4 +115,6 @@ If you get an error similar to `MCP Unreal: Unexpected token 'C', Connection...`
 
 Please feel free to open issues or pull requests. Contributions are welcome, especially new tools/commands.
 
-### License MIT
+## 📄 License
+
+Licensed under the [MIT License](LICENSE).
