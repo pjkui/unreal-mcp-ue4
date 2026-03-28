@@ -70,7 +70,7 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 		sourceControlProviderDependentTools.map((name) => [
 			name,
 			{
-				status: "Partial" as const,
+				status: "Supported" as const,
 				note: sourceControlProviderNote,
 			},
 		]),
@@ -80,15 +80,15 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 		note: "Reports provider name plus enabled or available status even when source control is disabled.",
 	},
 	query_source_control_state: {
-		status: "Partial",
+		status: "Supported",
 		note: sourceControlQueryNote,
 	},
 	query_source_control_states: {
-		status: "Partial",
+		status: "Supported",
 		note: sourceControlQueryNote,
 	},
 	revert_and_reload_packages: {
-		status: "Partial",
+		status: "Supported",
 		note: sourceControlPackageReloadNote,
 	},
 	read_blueprint_content: {
@@ -168,7 +168,7 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 		note: "create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.",
 	},
 	manage_source_control: {
-		status: "Partial",
+		status: "Supported",
 		note: "provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider.",
 	},
 }
