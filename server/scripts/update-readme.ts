@@ -440,7 +440,12 @@ function generateToolsTable(tools: ToolInfo[]): string {
 		.join("\n")
 
 	return [
-		'<table>',
+		'<table width="100%">',
+		'\t<colgroup>',
+		'\t\t<col width="18%">',
+		'\t\t<col width="52%">',
+		'\t\t<col width="30%">',
+		'\t</colgroup>',
 		'\t<thead>',
 		'\t\t<tr>',
 			'\t\t\t<th width="18%">Tool</th>',

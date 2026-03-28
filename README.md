@@ -258,7 +258,12 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 
 ### Connection & Setup
 
-<table>
+<table width="100%">
+	<colgroup>
+		<col width="18%">
+		<col width="52%">
+		<col width="30%">
+	</colgroup>
 	<thead>
 		<tr>
 			<th width="18%">Tool</th>
@@ -292,7 +297,12 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 
 ### Actor / Level Tools
 
-<table>
+<table width="100%">
+	<colgroup>
+		<col width="18%">
+		<col width="52%">
+		<col width="30%">
+	</colgroup>
 	<thead>
 		<tr>
 			<th width="18%">Tool</th>
@@ -321,7 +331,12 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 
 ### Tool Namespaces
 
-<table>
+<table width="100%">
+	<colgroup>
+		<col width="18%">
+		<col width="52%">
+		<col width="30%">
+	</colgroup>
 	<thead>
 		<tr>
 			<th width="18%">Tool</th>
