@@ -8,11 +8,17 @@ interface ToolInfo {
 	name: string
 }
 
-type SupportStatus = "Supported" | "Partial" | "Unsupported"
+type SupportStatus = "Supported" | "Partial"
 
 interface ToolSupportInfo {
 	note?: string
 	status: SupportStatus
+}
+
+interface ExcludedFunctionInfo {
+	name: string
+	previousSurface: string
+	reason: string
 }
 
 const categoryOrder = [
@@ -53,41 +59,13 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 		status: "Partial",
 		note: "Basic component adds work; parent_component_name and some hierarchy edits require SimpleConstructionScript exposure.",
 	},
-	add_blueprint_event_node: {
-		status: "Unsupported",
-		note: "The current UE4.27 Python environment does not expose reliable event graph editing and K2 event reference setup.",
-	},
-	add_blueprint_input_action_node: {
-		status: "Unsupported",
-		note: "The current UE4.27 Python environment does not expose reliable event graph node creation.",
-	},
-	add_blueprint_function_node: {
-		status: "Unsupported",
-		note: "The current UE4.27 Python environment does not expose reliable function node reference setup.",
-	},
 	connect_blueprint_nodes: {
 		status: "Partial",
 		note: "Requires Blueprint graphs and pins to be visible through UE4.27 Python.",
 	},
-	add_blueprint_variable: {
-		status: "Unsupported",
-		note: "BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment.",
-	},
-	add_blueprint_get_self_component_reference: {
-		status: "Unsupported",
-		note: "The current UE4.27 Python environment does not expose reliable Blueprint component reference node setup.",
-	},
-	add_blueprint_self_reference: {
-		status: "Unsupported",
-		note: "The current UE4.27 Python environment does not expose reliable graph node creation.",
-	},
 	find_blueprint_nodes: {
 		status: "Partial",
 		note: "Searches only the Blueprint graphs that UE4.27 Python exposes.",
-	},
-	add_node: {
-		status: "Unsupported",
-		note: "Low-level graph node creation is not exposed in the current UE4.27 Python environment.",
 	},
 	connect_nodes: {
 		status: "Partial",
@@ -96,10 +74,6 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 	disconnect_nodes: {
 		status: "Partial",
 		note: "Requires Blueprint graphs and pins to be visible through UE4.27 Python.",
-	},
-	create_variable: {
-		status: "Unsupported",
-		note: "BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment.",
 	},
 	editor_umg_add_widget: {
 		status: "Partial",
@@ -121,17 +95,9 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 		status: "Partial",
 		note: "Only direct children attached to CanvasPanel slots can be repositioned.",
 	},
-	bind_widget_event: {
-		status: "Unsupported",
-		note: "DelegateEditorBinding is not exposed in the current UE4.27 Python environment.",
-	},
 	add_widget_to_viewport: {
 		status: "Partial",
 		note: "Requires an active PIE or game world and successful UserWidget instancing in the editor session.",
-	},
-	set_text_block_binding: {
-		status: "Unsupported",
-		note: "DelegateEditorBinding is not exposed in the current UE4.27 Python environment.",
 	},
 	inspect: {
 		status: "Partial",
@@ -139,7 +105,7 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_blueprint: {
 		status: "Partial",
-		note: "Blueprint asset and component edits work; graph editing and variable creation remain limited by UE4.27 Python exposure.",
+		note: "Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface.",
 	},
 	manage_interaction: {
 		status: "Partial",
@@ -147,9 +113,82 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_widget_authoring: {
 		status: "Partial",
-		note: "create_widget_blueprint, add_text_block, and add_button work; bind_event and set_text_binding are unsupported; add_to_viewport requires PIE.",
+		note: "create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.",
 	},
 }
+
+const excludedFunctions: ExcludedFunctionInfo[] = [
+	{
+		name: "add_blueprint_event_node",
+		previousSurface: "Direct MCP tool",
+		reason: "Excluded because the current UE4.27 Python environment does not expose reliable event graph access or K2 event reference setup.",
+	},
+	{
+		name: "add_blueprint_input_action_node",
+		previousSurface: "Direct MCP tool",
+		reason: "Excluded because the current UE4.27 Python environment does not expose reliable Blueprint event graph node creation.",
+	},
+	{
+		name: "add_blueprint_function_node",
+		previousSurface: "Direct MCP tool",
+		reason: "Excluded because the current UE4.27 Python environment does not expose reliable function-call node reference setup.",
+	},
+	{
+		name: "add_blueprint_variable",
+		previousSurface: "Direct MCP tool",
+		reason: "Excluded because BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment.",
+	},
+	{
+		name: "add_blueprint_get_self_component_reference",
+		previousSurface: "Direct MCP tool",
+		reason: "Excluded because the current UE4.27 Python environment does not expose reliable Blueprint component-reference node setup.",
+	},
+	{
+		name: "add_blueprint_self_reference",
+		previousSurface: "Direct MCP tool",
+		reason: "Excluded because the current UE4.27 Python environment does not expose reliable low-level Blueprint graph node creation.",
+	},
+	{
+		name: "add_node",
+		previousSurface: "Direct MCP tool",
+		reason: "Excluded because low-level Blueprint graph node creation is not exposed in the current UE4.27 Python environment.",
+	},
+	{
+		name: "create_variable",
+		previousSurface: "Direct MCP tool",
+		reason: "Excluded because BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment.",
+	},
+	{
+		name: "bind_widget_event",
+		previousSurface: "Direct MCP tool",
+		reason: "Excluded because DelegateEditorBinding is not exposed in the current UE4.27 Python environment.",
+	},
+	{
+		name: "set_text_block_binding",
+		previousSurface: "Direct MCP tool",
+		reason: "Excluded because DelegateEditorBinding is not exposed in the current UE4.27 Python environment.",
+	},
+	{
+		name: "manage_blueprint.add_node",
+		previousSurface: "Domain action",
+		reason: "Excluded because it depends on the same unsupported low-level Blueprint graph node creation path as add_node.",
+	},
+	{
+		name: "manage_blueprint.create_variable",
+		previousSurface: "Domain action",
+		reason: "Excluded because it depends on the same unsupported Blueprint variable authoring path as create_variable.",
+	},
+	{
+		name: "manage_widget_authoring.bind_event",
+		previousSurface: "Domain action",
+		reason: "Excluded because it depends on DelegateEditorBinding, which is not exposed in the current UE4.27 Python environment.",
+	},
+	{
+		name: "manage_widget_authoring.set_text_binding",
+		previousSurface: "Domain action",
+		reason: "Excluded because it depends on DelegateEditorBinding, which is not exposed in the current UE4.27 Python environment.",
+	},
+]
 
 function supportForTool(name: string): ToolSupportInfo {
 	return toolSupport[name] ?? {
@@ -381,6 +420,17 @@ function generateToolsSections(tools: ToolInfo[]): string {
 	return sections.join("\n\n")
 }
 
+function generateExcludedFunctionsTable(entries: ExcludedFunctionInfo[]): string {
+	const header =
+		"| Function | Previous Surface | Reason |\n|----------|------------------|--------|\n"
+	const rows = entries
+		.map((entry) => {
+			return `| \`${entry.name}\` | ${formatTableCell(entry.previousSurface)} | ${formatTableCell(entry.reason)} |`
+		})
+		.join("\n")
+	return header + rows
+}
+
 function updateReadmeWithTools() {
 	const readmePath = path.join(__dirname, "../../README.md")
 	const readmeContent = fs.readFileSync(readmePath, "utf-8")
@@ -392,16 +442,23 @@ Status legend:
 
 - \`Supported\`: implemented and expected to work in this UE4.27.2 fork.
 - \`Partial\`: implemented, but limited by UE4.27 Python exposure or runtime requirements.
-- \`Unsupported\`: exposed for compatibility, but not currently available in this UE4.27 Python environment.
 
 ${generateToolsSections(tools)}
+
+### Excluded Functions
+
+These actions are intentionally not exposed through the MCP surface in this UE4.27 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
+
+${generateExcludedFunctionsTable(excludedFunctions)}
 
 `
 
 	const updatedContent = replaceToolsSection(readmeContent, toolsSection)
 
 	fs.writeFileSync(readmePath, updatedContent)
-	console.log(`Updated README.md with ${tools.length} tools`)
+	console.log(
+		`Updated README.md with ${tools.length} tools and ${excludedFunctions.length} excluded functions`,
+	)
 }
 
 function replaceToolsSection(content: string, toolsSection: string): string {

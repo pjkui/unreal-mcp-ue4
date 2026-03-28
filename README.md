@@ -256,7 +256,6 @@ Status legend:
 
 - `Supported`: implemented and expected to work in this UE4.27.2 fork.
 - `Partial`: implemented, but limited by UE4.27 Python exposure or runtime requirements.
-- `Unsupported`: exposed for compatibility, but not currently available in this UE4.27 Python environment.
 
 ### Connection & Setup
 
@@ -337,23 +336,15 @@ Status legend:
 
 | Tool | Status | Notes | Description |
 |------|--------|-------|-------------|
-| `add_blueprint_event_node` | Unsupported | The current UE4.27 Python environment does not expose reliable event graph editing and K2 event reference setup. | Add an event node to a Blueprint event graph. |
-| `add_blueprint_input_action_node` | Unsupported | The current UE4.27 Python environment does not expose reliable event graph node creation. | Add an input action event node to a Blueprint event graph. |
-| `add_blueprint_function_node` | Unsupported | The current UE4.27 Python environment does not expose reliable function node reference setup. | Add a function call node to a Blueprint graph. |
 | `connect_blueprint_nodes` | Partial | Requires Blueprint graphs and pins to be visible through UE4.27 Python. | Connect two Blueprint graph pins by node id and pin name. |
-| `add_blueprint_variable` | Unsupported | BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment. | Add a variable declaration to a Blueprint asset. |
-| `add_blueprint_get_self_component_reference` | Unsupported | The current UE4.27 Python environment does not expose reliable Blueprint component reference node setup. | Add a Blueprint node that gets a component reference from self. |
-| `add_blueprint_self_reference` | Unsupported | The current UE4.27 Python environment does not expose reliable graph node creation. | Add a self reference node to a Blueprint graph. |
 | `find_blueprint_nodes` | Partial | Searches only the Blueprint graphs that UE4.27 Python exposes. | Search Blueprint graphs for matching node titles, names, or classes. |
 
 ### Blueprint Graph Editing Tools
 
 | Tool | Status | Notes | Description |
 |------|--------|-------|-------------|
-| `add_node` | Unsupported | Low-level graph node creation is not exposed in the current UE4.27 Python environment. | Add a low-level Blueprint graph node using a helper node_type or raw node_class. |
 | `connect_nodes` | Partial | Requires Blueprint graphs and pins to be visible through UE4.27 Python. | Connect low-level Blueprint graph pins by node id and pin name. |
 | `disconnect_nodes` | Partial | Requires Blueprint graphs and pins to be visible through UE4.27 Python. | Disconnect low-level Blueprint graph links for a pin or a specific pin-to-pin connection. |
-| `create_variable` | Unsupported | BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment. | Create a low-level Blueprint variable declaration. |
 
 ### Project / Input Tools
 
@@ -403,9 +394,7 @@ Status legend:
 | `create_umg_widget_blueprint` | Supported | - | Create a Widget Blueprint asset for UMG authoring. |
 | `add_text_block_to_widget` | Supported | - | Add a TextBlock to a Widget Blueprint and optionally position it on a CanvasPanel. |
 | `add_button_to_widget` | Supported | - | Add a Button to a Widget Blueprint and optionally place it on a CanvasPanel. |
-| `bind_widget_event` | Unsupported | DelegateEditorBinding is not exposed in the current UE4.27 Python environment. | Bind a widget event to a Blueprint function when delegate editing is exposed by UE4.27 Python. |
 | `add_widget_to_viewport` | Partial | Requires an active PIE or game world and successful UserWidget instancing in the editor session. | Instantiate a Widget Blueprint and add it to the active PIE or game viewport. |
-| `set_text_block_binding` | Unsupported | DelegateEditorBinding is not exposed in the current UE4.27 Python environment. | Configure a TextBlock binding when delegate editing is exposed by UE4.27 Python. |
 
 ### Domain Tools
 
@@ -431,7 +420,7 @@ Status legend:
 | `manage_effect` | Supported | - | Domain effects namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them. |
 | `manage_material_authoring` | Supported | - | Domain material namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances. |
 | `manage_texture` | Supported | - | Domain texture namespace for searching texture assets and reading their asset metadata. |
-| `manage_blueprint` | Partial | Blueprint asset and component edits work; graph editing and variable creation remain limited by UE4.27 Python exposure. | Domain Blueprint namespace for Blueprint creation, component editing, graph editing, compilation, and Blueprint inspection actions. |
+| `manage_blueprint` | Partial | Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface. | Domain Blueprint namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions. |
 | `manage_sequence` | Supported | - | Domain sequence namespace for searching LevelSequence assets and inspecting their asset metadata. |
 | `manage_performance` | Supported | - | Domain performance namespace for editor console commands and screenshot capture actions. |
 | `manage_audio` | Supported | - | Domain audio namespace for searching audio assets and inspecting their asset metadata. |
@@ -443,10 +432,31 @@ Status legend:
 | `manage_combat` | Supported | - | Domain combat namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits. |
 | `manage_inventory` | Supported | - | Domain inventory namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions. |
 | `manage_interaction` | Partial | Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python. | Domain interaction namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions. |
-| `manage_widget_authoring` | Partial | create_widget_blueprint, add_text_block, and add_button work; bind_event and set_text_binding are unsupported; add_to_viewport requires PIE. | Domain widget namespace for UMG Blueprint creation, widget-tree edits, viewport spawning, and basic binding actions. |
+| `manage_widget_authoring` | Partial | create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface. | Domain widget namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. |
 | `manage_networking` | Supported | - | Domain networking namespace for project inspection and console-command driven networking diagnostics. |
 | `manage_game_framework` | Supported | - | Domain game-framework namespace for project inspection and gameplay Blueprint scaffolding actions. |
 | `manage_sessions` | Supported | - | Domain sessions namespace for project inspection and console-command driven local session diagnostics. |
+
+### Excluded Functions
+
+These actions are intentionally not exposed through the MCP surface in this UE4.27 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
+
+| Function | Previous Surface | Reason |
+|----------|------------------|--------|
+| `add_blueprint_event_node` | Direct MCP tool | Excluded because the current UE4.27 Python environment does not expose reliable event graph access or K2 event reference setup. |
+| `add_blueprint_input_action_node` | Direct MCP tool | Excluded because the current UE4.27 Python environment does not expose reliable Blueprint event graph node creation. |
+| `add_blueprint_function_node` | Direct MCP tool | Excluded because the current UE4.27 Python environment does not expose reliable function-call node reference setup. |
+| `add_blueprint_variable` | Direct MCP tool | Excluded because BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment. |
+| `add_blueprint_get_self_component_reference` | Direct MCP tool | Excluded because the current UE4.27 Python environment does not expose reliable Blueprint component-reference node setup. |
+| `add_blueprint_self_reference` | Direct MCP tool | Excluded because the current UE4.27 Python environment does not expose reliable low-level Blueprint graph node creation. |
+| `add_node` | Direct MCP tool | Excluded because low-level Blueprint graph node creation is not exposed in the current UE4.27 Python environment. |
+| `create_variable` | Direct MCP tool | Excluded because BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment. |
+| `bind_widget_event` | Direct MCP tool | Excluded because DelegateEditorBinding is not exposed in the current UE4.27 Python environment. |
+| `set_text_block_binding` | Direct MCP tool | Excluded because DelegateEditorBinding is not exposed in the current UE4.27 Python environment. |
+| `manage_blueprint.add_node` | Domain action | Excluded because it depends on the same unsupported low-level Blueprint graph node creation path as add_node. |
+| `manage_blueprint.create_variable` | Domain action | Excluded because it depends on the same unsupported Blueprint variable authoring path as create_variable. |
+| `manage_widget_authoring.bind_event` | Domain action | Excluded because it depends on DelegateEditorBinding, which is not exposed in the current UE4.27 Python environment. |
+| `manage_widget_authoring.set_text_binding` | Domain action | Excluded because it depends on DelegateEditorBinding, which is not exposed in the current UE4.27 Python environment. |
 
 ## 📄 License
 

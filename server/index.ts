@@ -1142,64 +1142,6 @@ registerPythonTool(
 
 /// Blueprint Node Graph Tools
 registerPythonTool(
-	"add_blueprint_event_node",
-	"Add an event node to a Blueprint event graph.",
-	{
-		blueprint_name: z.string().describe("Blueprint asset name or path"),
-		event_name: z.string().describe("Event name such as ReceiveBeginPlay"),
-		graph_name: z.string().optional().describe("Optional graph name"),
-		node_position: vector2InputSchema.optional().describe("Optional graph position"),
-	},
-	({ blueprint_name, event_name, graph_name, node_position }) =>
-		editorTools.UEBlueprintGraphTool("add_blueprint_event_node", {
-			blueprint_name,
-			event_name,
-			graph_name,
-			node_position: toVector2Array(node_position),
-		}),
-)
-
-registerPythonTool(
-	"add_blueprint_input_action_node",
-	"Add an input action event node to a Blueprint event graph.",
-	{
-		blueprint_name: z.string().describe("Blueprint asset name or path"),
-		action_name: z.string().describe("Input action name"),
-		graph_name: z.string().optional().describe("Optional graph name"),
-		node_position: vector2InputSchema.optional().describe("Optional graph position"),
-	},
-	({ blueprint_name, action_name, graph_name, node_position }) =>
-		editorTools.UEBlueprintGraphTool("add_blueprint_input_action_node", {
-			blueprint_name,
-			action_name,
-			graph_name,
-			node_position: toVector2Array(node_position),
-		}),
-)
-
-registerPythonTool(
-	"add_blueprint_function_node",
-	"Add a function call node to a Blueprint graph.",
-	{
-		blueprint_name: z.string().describe("Blueprint asset name or path"),
-		function_name: z.string().describe("Function name to call"),
-		target: z.string().optional().describe("Call target, such as self or a component name"),
-		params: recordSchema.optional().describe("Optional pin default values"),
-		graph_name: z.string().optional().describe("Optional graph name"),
-		node_position: vector2InputSchema.optional().describe("Optional graph position"),
-	},
-	({ blueprint_name, function_name, target, params, graph_name, node_position }) =>
-		editorTools.UEBlueprintGraphTool("add_blueprint_function_node", {
-			blueprint_name,
-			function_name,
-			target,
-			params,
-			graph_name,
-			node_position: toVector2Array(node_position),
-		}),
-)
-
-registerPythonTool(
 	"connect_blueprint_nodes",
 	"Connect two Blueprint graph pins by node id and pin name.",
 	{
@@ -1216,58 +1158,6 @@ registerPythonTool(
 			source_pin,
 			target_node_id,
 			target_pin,
-		}),
-)
-
-registerPythonTool(
-	"add_blueprint_variable",
-	"Add a variable declaration to a Blueprint asset.",
-	{
-		blueprint_name: z.string().describe("Blueprint asset name or path"),
-		variable_name: z.string().describe("New Blueprint variable name"),
-		variable_type: z.string().describe("Variable type such as bool, float, vector, or object:Actor"),
-		is_exposed: z.boolean().optional().describe("Whether the variable should be exposed"),
-	},
-	({ blueprint_name, variable_name, variable_type, is_exposed }) =>
-		editorTools.UEBlueprintGraphTool("add_blueprint_variable", {
-			blueprint_name,
-			variable_name,
-			variable_type,
-			is_exposed,
-		}),
-)
-
-registerPythonTool(
-	"add_blueprint_get_self_component_reference",
-	"Add a Blueprint node that gets a component reference from self.",
-	{
-		blueprint_name: z.string().describe("Blueprint asset name or path"),
-		component_name: z.string().describe("Blueprint component name"),
-		graph_name: z.string().optional().describe("Optional graph name"),
-		node_position: vector2InputSchema.optional().describe("Optional graph position"),
-	},
-	({ blueprint_name, component_name, graph_name, node_position }) =>
-		editorTools.UEBlueprintGraphTool("add_blueprint_get_self_component_reference", {
-			blueprint_name,
-			component_name,
-			graph_name,
-			node_position: toVector2Array(node_position),
-		}),
-)
-
-registerPythonTool(
-	"add_blueprint_self_reference",
-	"Add a self reference node to a Blueprint graph.",
-	{
-		blueprint_name: z.string().describe("Blueprint asset name or path"),
-		graph_name: z.string().optional().describe("Optional graph name"),
-		node_position: vector2InputSchema.optional().describe("Optional graph position"),
-	},
-	({ blueprint_name, graph_name, node_position }) =>
-		editorTools.UEBlueprintGraphTool("add_blueprint_self_reference", {
-			blueprint_name,
-			graph_name,
-			node_position: toVector2Array(node_position),
 		}),
 )
 
@@ -1290,38 +1180,6 @@ registerPythonTool(
 )
 
 /// Blueprint Graph Editing Tools
-registerPythonTool(
-	"add_node",
-	"Add a low-level Blueprint graph node using a helper node_type or raw node_class.",
-	{
-		blueprint_name: z.string().describe("Blueprint asset name or path"),
-		node_type: z.string().optional().describe("Helper node type such as event, input_action, function, self, component_reference"),
-		node_class: z.string().optional().describe("Raw BlueprintGraph node class name or /Script path"),
-		graph_name: z.string().optional().describe("Optional graph name"),
-		node_position: vector2InputSchema.optional().describe("Optional graph position"),
-		event_name: z.string().optional(),
-		action_name: z.string().optional(),
-		function_name: z.string().optional(),
-		target: z.string().optional(),
-		component_name: z.string().optional(),
-		params: recordSchema.optional(),
-	},
-	({ blueprint_name, node_type, node_class, graph_name, node_position, event_name, action_name, function_name, target, component_name, params }) =>
-		editorTools.UEBlueprintGraphTool("add_node", {
-			blueprint_name,
-			node_type,
-			node_class,
-			graph_name,
-			node_position: toVector2Array(node_position),
-			event_name,
-			action_name,
-			function_name,
-			target,
-			component_name,
-			params,
-		}),
-)
-
 registerPythonTool(
 	"connect_nodes",
 	"Connect low-level Blueprint graph pins by node id and pin name.",
@@ -1359,30 +1217,6 @@ registerPythonTool(
 			source_pin,
 			target_node,
 			target_pin,
-		}),
-)
-
-registerPythonTool(
-	"create_variable",
-	"Create a low-level Blueprint variable declaration.",
-	{
-		blueprint_name: z.string().describe("Blueprint asset name or path"),
-		variable_name: z.string().describe("New Blueprint variable name"),
-		variable_type: z.string().describe("Variable type such as bool, int, float, string, vector, rotator"),
-		default_value: z.any().optional().describe("Optional default value"),
-		is_public: z.boolean().optional().describe("Whether the variable should be public/editable"),
-		tooltip: z.string().optional().describe("Optional tooltip"),
-		category: z.string().optional().describe("Optional variable category"),
-	},
-	({ blueprint_name, variable_name, variable_type, default_value, is_public, tooltip, category }) =>
-		editorTools.UEBlueprintGraphTool("create_variable", {
-			blueprint_name,
-			variable_name,
-			variable_type,
-			default_value,
-			is_public,
-			tooltip,
-			category,
 		}),
 )
 
@@ -2125,24 +1959,6 @@ registerPythonTool(
 )
 
 registerPythonTool(
-	"bind_widget_event",
-	"Bind a widget event to a Blueprint function when delegate editing is exposed by UE4.27 Python.",
-	{
-		widget_name: z.string().describe("Widget Blueprint asset name or path"),
-		widget_member_name: z.string().describe("Widget name inside the widget tree"),
-		event_name: z.string().describe("Widget delegate property name"),
-		function_name: z.string().optional().describe("Optional function name to bind"),
-	},
-	({ widget_name, widget_member_name, event_name, function_name }) =>
-		editorTools.UEUMGTool("bind_widget_event", {
-			widget_name,
-			widget_member_name,
-			event_name,
-			function_name,
-		}),
-)
-
-registerPythonTool(
 	"add_widget_to_viewport",
 	"Instantiate a Widget Blueprint and add it to the active PIE or game viewport.",
 	{
@@ -2153,26 +1969,6 @@ registerPythonTool(
 		editorTools.UEUMGTool("add_widget_to_viewport", {
 			widget_name,
 			z_order,
-		}),
-)
-
-registerPythonTool(
-	"set_text_block_binding",
-	"Configure a TextBlock binding when delegate editing is exposed by UE4.27 Python.",
-	{
-		widget_name: z.string().describe("Widget Blueprint asset name or path"),
-		text_block_name: z.string().describe("TextBlock widget name"),
-		binding_property: z.string().optional().describe("Binding property name such as TextDelegate"),
-		function_name: z.string().optional().describe("Optional function name"),
-		source_property: z.string().optional().describe("Optional source property name"),
-	},
-	({ widget_name, text_block_name, binding_property, function_name, source_property }) =>
-		editorTools.UEUMGTool("set_text_block_binding", {
-			widget_name,
-			text_block_name,
-			binding_property,
-			function_name,
-			source_property,
 		}),
 )
 
@@ -2831,7 +2627,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_blueprint",
-	"Domain Blueprint namespace for Blueprint creation, component editing, graph editing, compilation, and Blueprint inspection actions.",
+	"Domain Blueprint namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -2912,22 +2708,6 @@ registerDomainTool(
 					include_nodes: params.include_nodes ?? true,
 				}),
 			),
-		add_node: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintGraphTool("add_node", {
-					blueprint_name: blueprintNameParam(params),
-					node_type: optionalStringParam(params, ["node_type"]),
-					node_class: optionalStringParam(params, ["node_class"]),
-					graph_name: optionalStringParam(params, ["graph_name"]),
-					node_position: toVector2Array(params.node_position as any),
-					event_name: optionalStringParam(params, ["event_name"]),
-					action_name: optionalStringParam(params, ["action_name"]),
-					function_name: optionalStringParam(params, ["function_name"]),
-					target: optionalStringParam(params, ["target"]),
-					component_name: optionalStringParam(params, ["component_name"]),
-					params: params.params,
-				}),
-			),
 		connect_nodes: (params) =>
 			pythonDispatch(
 				editorTools.UEBlueprintGraphTool("connect_nodes", {
@@ -2946,18 +2726,6 @@ registerDomainTool(
 					source_pin: requiredStringParam(params, ["source_pin"]),
 					target_node: optionalStringParam(params, ["target_node"]),
 					target_pin: optionalStringParam(params, ["target_pin"]),
-				}),
-			),
-		create_variable: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintGraphTool("create_variable", {
-					blueprint_name: blueprintNameParam(params),
-					variable_name: requiredStringParam(params, ["variable_name", "name"]),
-					variable_type: requiredStringParam(params, ["variable_type"]),
-					default_value: params.default_value,
-					is_public: params.is_public,
-					tooltip: optionalStringParam(params, ["tooltip"]),
-					category: optionalStringParam(params, ["category"]),
 				}),
 			),
 	},
@@ -3183,7 +2951,7 @@ registerDomainTool(
 
 registerDomainTool(
 	"manage_widget_authoring",
-	"Domain widget namespace for UMG Blueprint creation, widget-tree edits, viewport spawning, and basic binding actions.",
+	"Domain widget namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions.",
 	{
 		create_widget_blueprint: (params) =>
 			pythonDispatch(
@@ -3218,30 +2986,11 @@ registerDomainTool(
 					background_color: toColorArray(params.background_color as any),
 				}),
 			),
-		bind_event: (params) =>
-			pythonDispatch(
-				editorTools.UEUMGTool("bind_widget_event", {
-					widget_name: widgetBlueprintParam(params),
-					widget_member_name: requiredStringParam(params, ["widget_member_name", "widget_name_in_tree"]),
-					event_name: requiredStringParam(params, ["event_name"]),
-					function_name: optionalStringParam(params, ["function_name"]),
-				}),
-			),
 		add_to_viewport: (params) =>
 			pythonDispatch(
 				editorTools.UEUMGTool("add_widget_to_viewport", {
 					widget_name: widgetBlueprintParam(params),
 					z_order: params.z_order,
-				}),
-			),
-		set_text_binding: (params) =>
-			pythonDispatch(
-				editorTools.UEUMGTool("set_text_block_binding", {
-					widget_name: widgetBlueprintParam(params),
-					text_block_name: requiredStringParam(params, ["text_block_name"]),
-					binding_property: optionalStringParam(params, ["binding_property"]),
-					function_name: optionalStringParam(params, ["function_name"]),
-					source_property: optionalStringParam(params, ["source_property"]),
 				}),
 			),
 		add_widget: (params) =>
