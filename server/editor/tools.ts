@@ -110,18 +110,18 @@ export const UEUMGAddWidget = (
 	z_order?: number,
 ) =>
 	renderScript("./scripts/ue_umg_add_widget.py", {
-		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
-		widget_class: JSON.stringify(widget_class),
-		widget_name: JSON.stringify(widget_name),
-		parent_widget_name: parent_widget_name ? JSON.stringify(parent_widget_name) : "null",
-		position: position ? JSON.stringify(position) : "null",
-		z_order: z_order !== undefined ? JSON.stringify(z_order) : "null",
+		widget_blueprint_path: jsonArg(widget_blueprint_path),
+		widget_class: jsonArg(widget_class),
+		widget_name: jsonArg(widget_name),
+		parent_widget_name: jsonArg(parent_widget_name),
+		position: jsonArg(position),
+		z_order: jsonArg(z_order),
 	})
 
 export const UEUMGRemoveWidget = (widget_blueprint_path: string, widget_name: string) =>
 	renderScript("./scripts/ue_umg_remove_widget.py", {
-		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
-		widget_name: JSON.stringify(widget_name),
+		widget_blueprint_path: jsonArg(widget_blueprint_path),
+		widget_name: jsonArg(widget_name),
 	})
 
 export const UEUMGSetWidgetPosition = (
@@ -131,10 +131,10 @@ export const UEUMGSetWidgetPosition = (
 	z_order?: number,
 ) =>
 	renderScript("./scripts/ue_umg_set_widget_position.py", {
-		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
-		widget_name: JSON.stringify(widget_name),
-		position: JSON.stringify(position),
-		z_order: z_order !== undefined ? JSON.stringify(z_order) : "null",
+		widget_blueprint_path: jsonArg(widget_blueprint_path),
+		widget_name: jsonArg(widget_name),
+		position: jsonArg(position),
+		z_order: jsonArg(z_order),
 	})
 
 export const UEUMGReparentWidget = (
@@ -145,11 +145,11 @@ export const UEUMGReparentWidget = (
 	z_order?: number,
 ) =>
 	renderScript("./scripts/ue_umg_reparent_widget.py", {
-		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
-		widget_name: JSON.stringify(widget_name),
-		new_parent_widget_name: JSON.stringify(new_parent_widget_name),
-		position: position ? JSON.stringify(position) : "null",
-		z_order: z_order !== undefined ? JSON.stringify(z_order) : "null",
+		widget_blueprint_path: jsonArg(widget_blueprint_path),
+		widget_name: jsonArg(widget_name),
+		new_parent_widget_name: jsonArg(new_parent_widget_name),
+		position: jsonArg(position),
+		z_order: jsonArg(z_order),
 	})
 
 export const UEUMGAddChildWidget = (
@@ -161,12 +161,12 @@ export const UEUMGAddChildWidget = (
 	z_order?: number,
 ) =>
 	renderScript("./scripts/ue_umg_add_child_widget.py", {
-		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
-		parent_widget_name: JSON.stringify(parent_widget_name),
-		child_widget_class: JSON.stringify(child_widget_class),
-		child_widget_name: JSON.stringify(child_widget_name),
-		position: position ? JSON.stringify(position) : "null",
-		z_order: z_order !== undefined ? JSON.stringify(z_order) : "null",
+		widget_blueprint_path: jsonArg(widget_blueprint_path),
+		parent_widget_name: jsonArg(parent_widget_name),
+		child_widget_class: jsonArg(child_widget_class),
+		child_widget_name: jsonArg(child_widget_name),
+		position: jsonArg(position),
+		z_order: jsonArg(z_order),
 	})
 
 export const UEUMGRemoveChildWidget = (
@@ -175,9 +175,9 @@ export const UEUMGRemoveChildWidget = (
 	child_widget_name: string,
 ) =>
 	renderScript("./scripts/ue_umg_remove_child_widget.py", {
-		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
-		parent_widget_name: JSON.stringify(parent_widget_name),
-		child_widget_name: JSON.stringify(child_widget_name),
+		widget_blueprint_path: jsonArg(widget_blueprint_path),
+		parent_widget_name: jsonArg(parent_widget_name),
+		child_widget_name: jsonArg(child_widget_name),
 	})
 
 export const UEUMGSetChildWidgetPosition = (
@@ -188,11 +188,11 @@ export const UEUMGSetChildWidgetPosition = (
 	z_order?: number,
 ) =>
 	renderScript("./scripts/ue_umg_set_child_widget_position.py", {
-		widget_blueprint_path: JSON.stringify(widget_blueprint_path),
-		parent_widget_name: JSON.stringify(parent_widget_name),
-		child_widget_name: JSON.stringify(child_widget_name),
-		position: JSON.stringify(position),
-		z_order: z_order !== undefined ? JSON.stringify(z_order) : "null",
+		widget_blueprint_path: jsonArg(widget_blueprint_path),
+		parent_widget_name: jsonArg(parent_widget_name),
+		child_widget_name: jsonArg(child_widget_name),
+		position: jsonArg(position),
+		z_order: jsonArg(z_order),
 	})
 
 export const UEActorTool = (operation: string, args: Record<string, unknown> = {}) =>

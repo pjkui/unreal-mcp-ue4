@@ -672,6 +672,122 @@ async function main() {
 						throw error
 					}
 				})
+
+				await runStep("Move the TextBlock through advanced widget tooling", async () => {
+					const moveTextResult = await callJsonTool("manage_widget_authoring", {
+						action: "position_widget",
+						params: {
+							widget_blueprint_path: widgetPath,
+							widget_name: "SmokeText",
+							position: { x: 48, y: 40 },
+							z_order: 1,
+						},
+					})
+					assert(
+						Math.abs(Number(moveTextResult.layout?.position?.x ?? 0) - 48) < 0.1,
+						"Advanced widget move did not update the TextBlock X position",
+					)
+				})
+
+				await runStep("Move the Button through advanced widget tooling", async () => {
+					const moveButtonResult = await callJsonTool("manage_widget_authoring", {
+						action: "position_widget",
+						params: {
+							widget_blueprint_path: widgetPath,
+							widget_name: "SmokeButton",
+							position: { x: 48, y: 112 },
+							z_order: 2,
+						},
+					})
+					assert(
+						Math.abs(Number(moveButtonResult.layout?.position?.x ?? 0) - 48) < 0.1,
+						"Advanced widget move did not update the Button X position",
+					)
+				})
+
+				await runStep("Add a CanvasPanel through advanced widget tooling", async () => {
+					const panelResult = await callJsonTool("manage_widget_authoring", {
+						action: "add_widget",
+						params: {
+							widget_blueprint_path: widgetPath,
+							widget_class: "CanvasPanel",
+							widget_name: "SmokePanel",
+							parent_widget_name: "CanvasPanel_0",
+							position: { x: 160, y: 24 },
+						},
+					})
+					assert(panelResult.widget_name === "SmokePanel", "CanvasPanel was not added through advanced widget tooling")
+				})
+
+				await runStep("Move the CanvasPanel through advanced widget tooling", async () => {
+					const movePanelResult = await callJsonTool("manage_widget_authoring", {
+						action: "position_widget",
+						params: {
+							widget_blueprint_path: widgetPath,
+							widget_name: "SmokePanel",
+							position: { x: 196, y: 40 },
+							z_order: 1,
+						},
+					})
+					assert(
+						Math.abs(Number(movePanelResult.layout?.position?.x ?? 0) - 196) < 0.1,
+						"Advanced widget move did not update the CanvasPanel X position",
+					)
+				})
+
+				await runStep("Add a child widget through advanced widget tooling", async () => {
+					const childResult = await callJsonTool("manage_widget_authoring", {
+						action: "add_child_widget",
+						params: {
+							widget_blueprint_path: widgetPath,
+							parent_widget_name: "SmokePanel",
+							child_widget_class: "TextBlock",
+							child_widget_name: "SmokeChildText",
+							position: { x: 12, y: 18 },
+						},
+					})
+					assert(childResult.child_widget_name === "SmokeChildText", "Child widget was not added through advanced widget tooling")
+				})
+
+				await runStep("Move the child widget through advanced widget tooling", async () => {
+					const moveChildResult = await callJsonTool("manage_widget_authoring", {
+						action: "position_child_widget",
+						params: {
+							widget_blueprint_path: widgetPath,
+							parent_widget_name: "SmokePanel",
+							child_widget_name: "SmokeChildText",
+							position: { x: 48, y: 72 },
+							z_order: 2,
+						},
+					})
+					assert(
+						Math.abs(Number(moveChildResult.layout?.position?.x ?? 0) - 48) < 0.1,
+						"Advanced child widget move did not update the expected X position",
+					)
+				})
+
+				await runStep("Remove the child widget through advanced widget tooling", async () => {
+					const removeChildResult = await callJsonTool("manage_widget_authoring", {
+						action: "remove_child_widget",
+						params: {
+							widget_blueprint_path: widgetPath,
+							parent_widget_name: "SmokePanel",
+							child_widget_name: "SmokeChildText",
+						},
+					})
+					assert(removeChildResult.child_widget_name === "SmokeChildText", "Child widget was not removed through advanced widget tooling")
+				})
+
+				await runStep("Remove the CanvasPanel through advanced widget tooling", async () => {
+					const removePanelResult = await callJsonTool("manage_widget_authoring", {
+						action: "remove_widget",
+						params: {
+							widget_blueprint_path: widgetPath,
+							widget_name: "SmokePanel",
+						},
+					})
+					assert(removePanelResult.widget_name === "SmokePanel", "CanvasPanel was not removed through advanced widget tooling")
+				})
 			}
 
 			if (options.keepAssets) {

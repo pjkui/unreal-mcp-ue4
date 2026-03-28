@@ -2,12 +2,6 @@ from typing import Dict, Optional
 import json
 
 
-def parse_json_value(value_str):
-    if value_str and value_str != "null" and value_str.strip():
-        return json.loads(value_str)
-    return None
-
-
 def set_widget_position(
     widget_blueprint_path: str,
     widget_name: str,
@@ -40,10 +34,10 @@ def set_widget_position(
 
 
 def main():
-    widget_blueprint_path = parse_json_value("""${widget_blueprint_path}""")
-    widget_name = parse_json_value("""${widget_name}""")
-    position = parse_json_value("""${position}""")
-    z_order = parse_json_value("""${z_order}""")
+    widget_blueprint_path = decode_template_json("""${widget_blueprint_path}""")
+    widget_name = decode_template_json("""${widget_name}""")
+    position = decode_template_json("""${position}""")
+    z_order = decode_template_json("""${z_order}""")
 
     result = set_widget_position(
         widget_blueprint_path=widget_blueprint_path,

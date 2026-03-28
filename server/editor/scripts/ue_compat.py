@@ -1178,10 +1178,26 @@ def remove_widget_from_blueprint_tree(widget_tree, widget):
         except Exception:
             return False
 
-    transient_package = unreal.get_transient_package()
+    transient_package_getter = getattr(unreal, "get_transient_package", None)
+    transient_package = None
+    if callable(transient_package_getter):
+        try:
+            transient_package = transient_package_getter()
+        except Exception:
+            transient_package = None
+
+    if transient_package is None:
+        try:
+            transient_package = unreal.find_object(None, "/Engine/Transient")
+        except Exception:
+            transient_package = None
+
     for subtree_widget in subtree:
         try:
-            subtree_widget.rename(None, transient_package)
+            if transient_package is not None:
+                subtree_widget.rename(None, transient_package)
+            else:
+                subtree_widget.rename(None, widget_tree)
         except Exception:
             continue
 
