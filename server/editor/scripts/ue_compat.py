@@ -1693,19 +1693,7 @@ def add_component_to_blueprint_via_harvest(
 
     component_template = None
     try:
-        if hasattr(temp_actor, "add_component_by_class"):
-            try:
-                component_template = temp_actor.add_component_by_class(
-                    component_class,
-                    True,
-                    unreal.Transform(),
-                    False,
-                )
-            except Exception:
-                component_template = None
-
-        if not component_template:
-            component_template = unreal.new_object(component_class, temp_actor, template_name)
+        component_template = unreal.new_object(component_class, temp_actor, template_name)
 
         if not component_template:
             raise RuntimeError(
@@ -1717,15 +1705,76 @@ def add_component_to_blueprint_via_harvest(
         except Exception:
             pass
 
+        try:
+            if hasattr(temp_actor, "add_instance_component"):
+                temp_actor.add_instance_component(component_template)
+        except Exception:
+            pass
+
+        if class_is_child_of(component_class, unreal.SceneComponent):
+            current_root = None
+            try:
+                current_root = temp_actor.get_root_component()
+            except Exception:
+                current_root = get_editor_property_value(temp_actor, "root_component")
+
+            if current_root and current_root != component_template:
+                try:
+                    component_template.attach_to_component(
+                        current_root,
+                        unreal.AttachmentTransformRules.KEEP_RELATIVE_TRANSFORM,
+                    )
+                except Exception:
+                    try:
+                        component_template.setup_attachment(current_root)
+                    except Exception:
+                        pass
+            else:
+                try:
+                    temp_actor.set_root_component(component_template)
+                except Exception:
+                    set_object_property(temp_actor, "root_component", component_template)
+
+        try:
+            if hasattr(component_template, "on_component_created"):
+                component_template.on_component_created()
+        except Exception:
+            pass
+
+        try:
+            if hasattr(component_template, "register_component"):
+                component_template.register_component()
+        except Exception:
+            pass
+
         apply_scene_component_transform(component_template, location, rotation, scale)
 
         for property_name, property_value in (component_properties or {}).items():
             apply_component_property(component_template, property_name, property_value)
 
-        unreal.KismetEditorUtilities.add_components_to_blueprint(
-            blueprint,
-            [component_template],
-        )
+        harvest_attempts = [
+            lambda: unreal.KismetEditorUtilities.add_components_to_blueprint(
+                blueprint,
+                [component_template],
+                True,
+            ),
+            lambda: unreal.KismetEditorUtilities.add_components_to_blueprint(
+                blueprint,
+                [component_template],
+            ),
+        ]
+
+        last_error = None
+        for harvest_attempt in harvest_attempts:
+            try:
+                harvest_attempt()
+                break
+            except Exception as exc:
+                last_error = exc
+        else:
+            raise last_error if last_error else RuntimeError(
+                "Failed to harvest the temporary component into the Blueprint."
+            )
     finally:
         try:
             unreal.EditorLevelLibrary.destroy_actor(temp_actor)
