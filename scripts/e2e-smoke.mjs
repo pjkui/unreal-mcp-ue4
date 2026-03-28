@@ -21,6 +21,7 @@ Usage:
 
 Options:
   --with-assets         Also test Blueprint and UMG asset creation/cleanup.
+  --keep-assets         Keep temporary Blueprint and Widget assets after the run.
   --skip-domain         Skip the domain-tool smoke phase.
   --prefix <value>      Prefix used for temporary test actor and asset names.
   --timeout-ms <value>  Timeout for connect/tool calls. Default: 20000.
@@ -40,6 +41,7 @@ function parseArgs(argv) {
 		timeoutMs: 20_000,
 		verbose: false,
 		withAssets: false,
+		keepAssets: false,
 	}
 
 	for (let index = 0; index < argv.length; index += 1) {
@@ -48,6 +50,9 @@ function parseArgs(argv) {
 		switch (value) {
 			case "--with-assets":
 				options.withAssets = true
+				break
+			case "--keep-assets":
+				options.keepAssets = true
 				break
 			case "--skip-domain":
 				options.skipDomain = true
@@ -399,7 +404,9 @@ async function main() {
 		if (options.withAssets) {
 			const blueprintPath = `/Game/MCP/Tests/BP_${options.prefix}`
 			const widgetPath = `/Game/MCP/Tests/WBP_${options.prefix}`
-			addCleanup(`Delete assets for ${options.prefix}`, () => safeDeleteAssets([widgetPath, blueprintPath]))
+			if (!options.keepAssets) {
+				addCleanup(`Delete assets for ${options.prefix}`, () => safeDeleteAssets([widgetPath, blueprintPath]))
+			}
 
 				await runStep("Create a Blueprint asset", async () => {
 					const createResult = await callJsonTool("create_blueprint", {
@@ -435,6 +442,10 @@ async function main() {
 				})
 				assert(compileResult.blueprint === blueprintPath, "compile_blueprint returned an unexpected asset path")
 			})
+
+			if (options.keepAssets) {
+				console.log(`[INFO] Kept Blueprint asset: ${blueprintPath}`)
+			}
 
 				await runStep("Create a Widget Blueprint through the domain layer", async () => {
 					const createWidgetResult = await callJsonTool("manage_widget_authoring", {
@@ -472,6 +483,10 @@ async function main() {
 				})
 				assert(buttonResult.widget?.name === "SmokeButton", "Button was not added to the widget blueprint")
 			})
+
+			if (options.keepAssets) {
+				console.log(`[INFO] Kept Widget Blueprint asset: ${widgetPath}`)
+			}
 		}
 
 		console.log("")

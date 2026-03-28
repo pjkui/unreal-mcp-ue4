@@ -138,17 +138,27 @@ def add_component_to_blueprint(args):
             not blueprint_supports_scs_editing(blueprint)
             and not get_blueprint_construction_graph(blueprint)
             and not parent_component_name
-            and supports_kismet_component_harvest()
         ):
-            component_template = add_component_to_blueprint_via_harvest(
-                blueprint,
-                component_class,
-                component_name,
-                location=location,
-                rotation=rotation,
-                scale=scale,
-                component_properties=component_properties,
-            )
+            if supports_kismet_component_harvest():
+                component_template = add_component_to_blueprint_via_harvest(
+                    blueprint,
+                    component_class,
+                    component_name,
+                    location=location,
+                    rotation=rotation,
+                    scale=scale,
+                    component_properties=component_properties,
+                )
+            else:
+                component_template = add_component_template_to_blueprint(
+                    blueprint,
+                    component_class,
+                    component_name,
+                    location=location,
+                    rotation=rotation,
+                    scale=scale,
+                    component_properties=component_properties,
+                )
         else:
             component_node = add_component_node_to_blueprint(
                 blueprint,

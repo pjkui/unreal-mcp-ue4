@@ -1531,6 +1531,43 @@ def add_component_to_blueprint_via_harvest(
     return find_blueprint_cdo_component(blueprint, component_name)
 
 
+def add_component_template_to_blueprint(
+    blueprint,
+    component_class,
+    component_name,
+    location=None,
+    rotation=None,
+    scale=None,
+    component_properties=None,
+):
+    generated_class = get_blueprint_generated_class(blueprint)
+    if not generated_class:
+        raise ValueError(
+            "Blueprint generated class is not available for component template creation."
+        )
+
+    template_name = str(component_name or "").strip()
+    if not template_name:
+        raise ValueError("component_name is required")
+
+    new_template = unreal.new_object(component_class, generated_class, template_name)
+    if not new_template:
+        raise RuntimeError(
+            "Failed to create blueprint component template: {0}".format(component_name)
+        )
+
+    apply_scene_component_transform(new_template, location, rotation, scale)
+
+    for property_name, property_value in (component_properties or {}).items():
+        apply_component_property(new_template, property_name, property_value)
+
+    component_templates = get_blueprint_component_templates(blueprint)
+    component_templates.append(new_template)
+    set_object_property(blueprint, "component_templates", component_templates)
+
+    return new_template
+
+
 def get_scs_all_nodes(scs):
     try:
         return list(scs.get_all_nodes())
