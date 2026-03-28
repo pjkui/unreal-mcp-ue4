@@ -114,6 +114,44 @@ If your client cannot find `node`, point directly to `node.exe`:
 }
 ```
 
+### 🧰 GitHub Copilot
+
+GitHub Copilot supports MCP in VS Code, Visual Studio, JetBrains, Eclipse, Xcode, and Copilot CLI. For a local `stdio` server like this project, VS Code is the simplest setup.
+
+1. Build the server first:
+
+```bash
+npm install
+npm run build
+```
+
+2. In VS Code, create `.vscode/mcp.json` in your workspace:
+
+```json
+{
+  "servers": {
+    "unreal-ue4": {
+      "command": "node",
+      "args": [
+        "C:\\Users\\YourName\\dev\\unreal-mcp-ue4\\dist\\bin.js"
+      ]
+    }
+  }
+}
+```
+
+3. Open `.vscode/mcp.json` and click `Start`.
+4. Open Copilot Chat and switch to `Agent` mode.
+5. Open the tools picker and confirm that `unreal-ue4` is available.
+
+If `node` is not on your `PATH`, use `C:\\Program Files\\nodejs\\node.exe` as the `command` value instead.
+
+If you use Copilot Business or Copilot Enterprise, your organization may need to enable the `MCP servers in Copilot` policy first.
+
+Official setup docs:
+- [GitHub Docs: Extending GitHub Copilot Chat with MCP servers](https://docs.github.com/en/copilot/how-tos/provide-context/use-mcp/extend-copilot-chat-with-mcp)
+- [GitHub Docs: About Model Context Protocol in GitHub Copilot](https://docs.github.com/en/copilot/concepts/context/mcp)
+
 ### 🔧 Troubleshooting
 
 If you get an error similar to `MCP Unreal: Unexpected token 'C', Connection...` it means that the mcp-server was not able to connect to the Unreal Editor.
