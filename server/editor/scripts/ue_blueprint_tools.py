@@ -3,7 +3,7 @@ import json
 
 def _component_summary(node, component_template):
     summary = {
-        "name": get_scs_node_name(node),
+        "name": get_scs_node_name(node) if node else get_object_name(component_template),
         "class": get_object_class_name(component_template),
     }
 

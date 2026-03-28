@@ -1379,6 +1379,57 @@ def get_simple_construction_script(blueprint):
     return scs
 
 
+def blueprint_supports_scs_editing(blueprint):
+    try:
+        scs = get_simple_construction_script(blueprint)
+    except Exception:
+        return False
+
+    return callable(getattr(scs, "create_node", None)) and callable(
+        getattr(scs, "add_node", None)
+    )
+
+
+def get_blueprint_component_templates(blueprint):
+    component_templates = list(
+        get_editor_property_value(blueprint, "component_templates", []) or []
+    )
+    if component_templates:
+        return component_templates
+
+    generated_class = get_blueprint_generated_class(blueprint)
+    if generated_class:
+        return list(
+            get_editor_property_value(generated_class, "component_templates", []) or []
+        )
+
+    return []
+
+
+def find_blueprint_component_template(blueprint, component_name):
+    if not component_name:
+        return None
+
+    for component_template in get_blueprint_component_templates(blueprint):
+        template_name = get_object_name(component_template)
+        if template_name == component_name:
+            return component_template
+
+        if template_name.endswith("_GEN_VARIABLE") and template_name[: -len("_GEN_VARIABLE")] == component_name:
+            return component_template
+
+    return None
+
+
+def get_blueprint_construction_graph(blueprint):
+    for graph in get_blueprint_graphs(blueprint):
+        graph_name = get_object_name(graph).lower()
+        if graph_name in ("userconstructionscript", "constructionscript"):
+            return graph
+
+    return None
+
+
 def get_scs_all_nodes(scs):
     try:
         return list(scs.get_all_nodes())
@@ -1514,66 +1565,135 @@ def resolve_component_class(component_type):
 def add_component_node_to_blueprint(
     blueprint, component_class, component_name, parent_component_name=None
 ):
-    scs = get_simple_construction_script(blueprint)
-    create_node = getattr(scs, "create_node", None)
-    add_node = getattr(scs, "add_node", None)
+    if blueprint_supports_scs_editing(blueprint):
+        scs = get_simple_construction_script(blueprint)
+        create_node = getattr(scs, "create_node", None)
+        add_node = getattr(scs, "add_node", None)
 
-    if not callable(create_node) or not callable(add_node):
-        raise ValueError(
-            "SimpleConstructionScript node creation is not exposed in this UE4.27 Python environment."
-        )
+        new_node = create_node(get_UClass(component_class), component_name)
+        if not new_node:
+            raise RuntimeError(
+                "Failed to create blueprint component node: {0}".format(component_name)
+            )
 
-    new_node = create_node(get_UClass(component_class), component_name)
-    if not new_node:
-        raise RuntimeError(
-            "Failed to create blueprint component node: {0}".format(component_name)
-        )
-
-    if parent_component_name:
-        parent_node = find_scs_node(scs, parent_component_name)
-        if not parent_node:
-            raise ValueError(
-                "Parent component not found in blueprint: {0}".format(
-                    parent_component_name
+        if parent_component_name:
+            parent_node = find_scs_node(scs, parent_component_name)
+            if not parent_node:
+                raise ValueError(
+                    "Parent component not found in blueprint: {0}".format(
+                        parent_component_name
+                    )
                 )
-            )
 
-        if not hasattr(parent_node, "add_child_node"):
-            raise ValueError(
-                "Parent component cannot accept child nodes in this UE4.27 Python environment."
-            )
+            if not hasattr(parent_node, "add_child_node"):
+                raise ValueError(
+                    "Parent component cannot accept child nodes in this UE4.27 Python environment."
+                )
 
-        parent_node.add_child_node(new_node)
+            parent_node.add_child_node(new_node)
+            return new_node
+
+        root_nodes = get_scs_root_nodes(scs)
+        default_root_node = get_default_scene_root_node(scs)
+
+        if (
+            root_nodes
+            and not (len(root_nodes) == 1 and root_nodes[0] == default_root_node)
+            and hasattr(root_nodes[0], "add_child_node")
+            and class_is_child_of(component_class, unreal.SceneComponent)
+        ):
+            root_nodes[0].add_child_node(new_node)
+        else:
+            add_node(new_node)
+
         return new_node
 
-    root_nodes = get_scs_root_nodes(scs)
-    default_root_node = get_default_scene_root_node(scs)
+    if parent_component_name:
+        raise ValueError(
+            "UE4.27 Python cannot parent Blueprint components without SimpleConstructionScript editing support."
+        )
 
-    if (
-        root_nodes
-        and not (len(root_nodes) == 1 and root_nodes[0] == default_root_node)
-        and hasattr(root_nodes[0], "add_child_node")
-        and class_is_child_of(component_class, unreal.SceneComponent)
-    ):
-        root_nodes[0].add_child_node(new_node)
-    else:
-        scs.add_node(new_node)
+    construction_graph = get_blueprint_construction_graph(blueprint)
+    if not construction_graph:
+        raise ValueError(
+            "Blueprint does not expose a UserConstructionScript graph in this UE4.27 Python environment."
+        )
 
-    return new_node
+    generated_class = get_blueprint_generated_class(blueprint)
+    if not generated_class:
+        raise ValueError(
+            "Blueprint generated class is not available for component template creation."
+        )
+
+    template_name = str(component_name).strip()
+    if not template_name:
+        raise ValueError("component_name is required")
+
+    new_template = unreal.new_object(component_class, generated_class, template_name)
+    if not new_template:
+        raise RuntimeError(
+            "Failed to create blueprint component template: {0}".format(component_name)
+        )
+
+    component_templates = get_blueprint_component_templates(blueprint)
+    component_templates.append(new_template)
+    set_object_property(blueprint, "component_templates", component_templates)
+
+    node = create_graph_node(
+        construction_graph,
+        "/Script/BlueprintGraph.K2Node_AddComponent",
+        [0, len(get_graph_nodes(construction_graph)) * 180],
+    )
+
+    function_reference = get_editor_property_value(node, "function_reference")
+    try_set_member_reference(
+        function_reference,
+        "AddComponent",
+        parent_class=unreal.Actor,
+        self_context=True,
+    )
+    set_object_property(node, "function_reference", function_reference)
+    set_object_property(node, "template_type", get_UClass(component_class))
+    reconstruct_graph_node(node)
+
+    template_name_pin = find_node_pin(node, "TemplateName")
+    if template_name_pin:
+        set_pin_default(template_name_pin, get_object_name(new_template))
+
+    entry_node = None
+    for graph_node in get_graph_nodes(construction_graph):
+        if get_object_class_name(graph_node) == "K2Node_FunctionEntry":
+            entry_node = graph_node
+            break
+
+    if entry_node:
+        entry_pin = find_node_pin(entry_node, "then") or find_node_pin(entry_node, "Then")
+        execute_pin = find_node_pin(node, "execute") or find_node_pin(node, "Execute")
+        if entry_pin and execute_pin and not list(getattr(entry_pin, "linked_to", []) or []):
+            try:
+                entry_pin.make_link_to(execute_pin)
+            except Exception:
+                pass
+
+    return node
 
 
 def get_component_template(blueprint, component_name):
     component_node = find_scs_node(blueprint, component_name)
-    if not component_node:
-        raise ValueError("Blueprint component not found: {0}".format(component_name))
+    if component_node:
+        component_template = get_scs_node_template(component_node)
+        if not component_template:
+            raise ValueError(
+                "Blueprint component template is not available: {0}".format(component_name)
+            )
 
-    component_template = get_scs_node_template(component_node)
-    if not component_template:
-        raise ValueError(
-            "Blueprint component template is not available: {0}".format(component_name)
-        )
+        return component_node, component_template
 
-    return component_node, component_template
+    component_template = find_blueprint_component_template(blueprint, component_name)
+    if component_template:
+        return None, component_template
+
+    raise ValueError("Blueprint component not found: {0}".format(component_name))
 
 
 def apply_component_property(component_template, property_name, property_value):
