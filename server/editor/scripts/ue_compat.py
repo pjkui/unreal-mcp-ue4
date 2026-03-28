@@ -1287,6 +1287,54 @@ def get_blueprint_generated_class(blueprint):
     except Exception:
         pass
 
+    asset_path = get_asset_package_name(blueprint)
+    if asset_path:
+        try:
+            generated_class = unreal.EditorAssetLibrary.load_blueprint_class(asset_path)
+            if generated_class:
+                return generated_class
+        except Exception:
+            pass
+
+        try:
+            try_compile_blueprint(blueprint)
+        except Exception:
+            pass
+
+        try:
+            save_loaded_editor_asset(blueprint)
+        except Exception:
+            pass
+
+        try:
+            reloaded_blueprint = unreal.EditorAssetLibrary.load_asset(asset_path)
+            if reloaded_blueprint:
+                generated_class = get_editor_property_value(
+                    reloaded_blueprint, "generated_class"
+                )
+                if generated_class:
+                    return generated_class
+        except Exception:
+            pass
+
+        try:
+            generated_class = unreal.EditorAssetLibrary.load_blueprint_class(asset_path)
+            if generated_class:
+                return generated_class
+        except Exception:
+            pass
+
+        try:
+            asset_name = asset_path.rsplit("/", 1)[-1]
+            generated_class = unreal.load_class(
+                None,
+                "{0}.{1}_C".format(asset_path, asset_name),
+            )
+            if generated_class:
+                return generated_class
+        except Exception:
+            pass
+
     return None
 
 
