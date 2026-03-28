@@ -111,6 +111,8 @@ def add_component_to_blueprint(args):
     except Exception as exc:
         return {"success": False, "message": str(exc)}
 
+    blueprint_asset_path = get_asset_package_name(blueprint) or str(blueprint_name)
+
     component_class = resolve_component_class(component_type)
     if not component_class:
         return {
@@ -178,13 +180,23 @@ def add_component_to_blueprint(args):
 
     finalize_blueprint_change(blueprint, structural=True)
 
-    if component_template is None:
-        try:
-            component_node, component_template = get_component_template(
-                blueprint, component_name
-            )
-        except Exception:
-            pass
+    try:
+        reloaded_blueprint = load_blueprint_asset(blueprint_asset_path)
+    except Exception:
+        reloaded_blueprint = blueprint
+
+    try:
+        component_node, component_template = get_component_template(
+            reloaded_blueprint, component_name
+        )
+        blueprint = reloaded_blueprint
+    except Exception as exc:
+        return {
+            "success": False,
+            "message": "Blueprint component was not persisted after save/compile: {0}".format(
+                exc
+            ),
+        }
 
     component_summary = {
         "name": component_name,

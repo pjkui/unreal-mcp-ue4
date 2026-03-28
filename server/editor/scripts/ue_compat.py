@@ -1522,6 +1522,21 @@ def blueprint_supports_scs_editing(blueprint):
     )
 
 
+def blueprint_supports_scs_lookup(blueprint):
+    try:
+        scs = get_simple_construction_script(blueprint)
+    except Exception:
+        return False
+
+    if hasattr(scs, "find_scs_node") and callable(getattr(scs, "find_scs_node", None)):
+        return True
+
+    try:
+        return len(get_scs_all_nodes(scs)) >= 0
+    except Exception:
+        return False
+
+
 def get_blueprint_component_templates(blueprint):
     component_templates = list(
         get_editor_property_value(blueprint, "component_templates", []) or []
@@ -1571,7 +1586,7 @@ def blueprint_has_component(blueprint, component_name):
         return False
 
     try:
-        if blueprint_supports_scs_editing(blueprint):
+        if blueprint_supports_scs_lookup(blueprint):
             return find_scs_node(blueprint, component_name) is not None
     except Exception:
         pass
@@ -2014,7 +2029,7 @@ def add_component_node_to_blueprint(
 
 def get_component_template(blueprint, component_name):
     component_node = None
-    if blueprint_supports_scs_editing(blueprint):
+    if blueprint_supports_scs_lookup(blueprint):
         component_node = find_scs_node(blueprint, component_name)
         if component_node:
             component_template = get_scs_node_template(component_node)
