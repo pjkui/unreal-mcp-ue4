@@ -402,10 +402,6 @@ If you get an error similar to `MCP Unreal: Unexpected token 'C', Connection...`
 | `manage_game_framework` | Domain game-framework namespace for project inspection and gameplay Blueprint scaffolding actions. |
 | `manage_sessions` | Domain sessions namespace for project inspection and console-command driven local session diagnostics. |
 
-## 🤝 Contributing
-
-Please feel free to open issues or pull requests. Contributions are welcome, especially new tools/commands.
-
 ## 📄 License
 
 Licensed under the [MIT License](LICENSE).
