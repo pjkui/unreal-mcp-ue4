@@ -5,6 +5,8 @@
 
 This port and the follow-up tool, documentation, and smoke-test work were developed with assistance from OpenAI Codex.
 
+> This project is still under active development, so bugs, rough edges, and UE4.27-specific limitations may still surface.
+
 ## Overview
 
 - No custom Unreal C++ plugin from this repository is required.
@@ -276,23 +278,13 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 	</thead>
 	<tbody>
 	<tr>
-		<td width="18%"><code>set_unreal_engine_path</code></td>
-		<td width="52%">Set the Unreal Engine path</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
-		<td width="18%"><code>set_unreal_project_path</code></td>
-		<td width="52%">Set the Project path</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
 		<td width="18%"><code>get_unreal_engine_path</code></td>
-		<td width="52%">Get the current Unreal Engine path</td>
+		<td width="52%">Get the active Unreal Engine root path from the connected editor session</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>get_unreal_project_path</code></td>
-		<td width="52%">Get the current Unreal Project path</td>
+		<td width="52%">Get the active Unreal project file path from the connected editor session</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	</tbody>
@@ -543,31 +535,6 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 	<tr>
 		<td width="18%"><code>manage_gas</code></td>
 		<td width="52%">GAS tool namespace for searching gameplay-ability-related assets and inspecting their asset metadata.</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
-		<td width="18%"><code>manage_character</code></td>
-		<td width="52%">Character tool namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data.</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
-		<td width="18%"><code>manage_combat</code></td>
-		<td width="52%">Combat tool namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits.</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
-		<td width="18%"><code>manage_inventory</code></td>
-		<td width="52%">Inventory tool namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions.</td>
-		<td width="30%">&nbsp;</td>
-	</tr>
-	<tr>
-		<td width="18%"><code>manage_interaction</code></td>
-		<td width="52%">Interaction tool namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions.</td>
-		<td width="30%">Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python.</td>
-	</tr>
-	<tr>
-		<td width="18%"><code>manage_game_framework</code></td>
-		<td width="52%">Game-framework tool namespace for project inspection and gameplay Blueprint scaffolding actions.</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	</tbody>

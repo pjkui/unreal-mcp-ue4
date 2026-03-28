@@ -18,8 +18,6 @@ remoteExecution.start()
 
 let remoteNode: RemoteExecution | undefined = undefined
 let remoteConnectionPromise: Promise<void> | undefined = undefined
-let enginePath: string | undefined = undefined
-let projectPath: string | undefined = undefined
 
 const connectWithRetry = async (maxRetries: number = 3, retryDelay: number = 2000) => {
 	let lastError: unknown = undefined
@@ -112,6 +110,21 @@ const tryRunCommand = async (command: string): Promise<string> => {
 const textResponse = (text: string) => ({
 	content: [{ type: "text", text }] as const,
 })
+
+const discoverPath = async (command: string, errorMessage: string) => {
+	const output = await tryRunCommand(command)
+	const lines = output
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean)
+	const discoveredPath = lines.length > 0 ? lines[lines.length - 1] : ""
+
+	if (!discoveredPath || discoveredPath === "None") {
+		throw new Error(errorMessage)
+	}
+
+	return discoveredPath
+}
 
 const registerPythonTool = (
 	name: string,
@@ -448,74 +461,46 @@ const sourceControlFilesCommand = (
 
 /// Connection & Setup
 server.tool(
-	"set_unreal_engine_path",
-	"Set the Unreal Engine path",
-	{
-		path: z.string(),
-	},
-	async ({ path }) => {
-		enginePath = path
+	"get_unreal_engine_path",
+	"Get the active Unreal Engine root path from the connected editor session",
+	async () => {
+		const enginePath = await discoverPath(
+			[
+				"import os",
+				"import unreal",
+				'engine_dir = unreal.Paths.engine_dir() or ""',
+				"full_engine_dir = unreal.Paths.convert_relative_path_to_full(engine_dir) if engine_dir else ''",
+				"normalized = os.path.normpath(full_engine_dir) if full_engine_dir else ''",
+				"if normalized and os.path.basename(normalized).lower() == 'engine':",
+				"    print(os.path.dirname(normalized))",
+				"else:",
+				"    print(normalized)",
+			].join("\n"),
+			"Unable to resolve the active Unreal Engine path",
+		)
 
-		return {
-			content: [
-				{
-					type: "text",
-					text: `Unreal Engine path set to ${path}`,
-				},
-			],
-		}
+		return textResponse(`Unreal Engine path: ${enginePath}`)
 	},
 )
 
 server.tool(
-	"set_unreal_project_path",
-	"Set the Project path",
-	{
-		path: z.string(),
-	},
-	async ({ path }) => {
-		projectPath = path
+	"get_unreal_project_path",
+	"Get the active Unreal project file path from the connected editor session",
+	async () => {
+		const projectPath = await discoverPath(
+			[
+				"import os",
+				"import unreal",
+				'project_file = unreal.Paths.get_project_file_path() or ""',
+				"full_project_file = unreal.Paths.convert_relative_path_to_full(project_file) if project_file else ''",
+				"print(os.path.normpath(full_project_file) if full_project_file else '')",
+			].join("\n"),
+			"Unable to resolve the active Unreal project path",
+		)
 
-		return {
-			content: [
-				{
-					type: "text",
-					text: `Project path set to ${path}`,
-				},
-			],
-		}
+		return textResponse(`Unreal Project path: ${projectPath}`)
 	},
 )
-
-server.tool("get_unreal_engine_path", "Get the current Unreal Engine path", async () => {
-	if (!enginePath) {
-		throw new Error("Unreal Engine path is not set")
-	}
-
-	return {
-		content: [
-			{
-				type: "text",
-				text: `Unreal Engine path: ${enginePath}`,
-			},
-		],
-	}
-})
-
-server.tool("get_unreal_project_path", "Get the current Unreal Project path", async () => {
-	if (!projectPath) {
-		throw new Error("Unreal Project path is not set")
-	}
-
-	return {
-		content: [
-			{
-				type: "text",
-				text: `Unreal Project path: ${projectPath}`,
-			},
-		],
-	}
-})
 
 /// Actor / Level Tools
 server.tool(
@@ -1530,135 +1515,6 @@ registerToolNamespace(
 )
 
 registerToolNamespace(
-	"manage_character",
-	"Character tool namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data.",
-	{
-		create_blueprint: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintTool("create_blueprint", {
-					name: requiredStringParam(params, ["name", "blueprint_name"]),
-					parent_class: optionalStringParam(params, ["parent_class"]) ?? "Character",
-					path: optionalStringParam(params, ["path"]),
-				}),
-			),
-		spawn_blueprint_actor: (params) =>
-			pythonDispatch(
-				editorTools.UEActorTool("spawn_blueprint_actor", {
-					blueprint_name: blueprintNameParam(params),
-					name: optionalStringParam(params, ["name", "actor_name"]),
-					location: toVector3Array(params.location),
-					rotation: toRotatorArray(params.rotation),
-					scale: toVector3Array(params.scale),
-					properties: params.properties,
-				}),
-			),
-		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
-	},
-)
-
-registerToolNamespace(
-	"manage_combat",
-	"Combat tool namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits.",
-	{
-		create_blueprint: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintTool("create_blueprint", {
-					name: requiredStringParam(params, ["name", "blueprint_name"]),
-					parent_class: optionalStringParam(params, ["parent_class"]) ?? "Actor",
-					path: optionalStringParam(params, ["path"]),
-				}),
-			),
-		spawn_blueprint_actor: (params) =>
-			pythonDispatch(
-				editorTools.UEActorTool("spawn_blueprint_actor", {
-					blueprint_name: blueprintNameParam(params),
-					name: optionalStringParam(params, ["name", "actor_name"]),
-					location: toVector3Array(params.location),
-					rotation: toRotatorArray(params.rotation),
-					scale: toVector3Array(params.scale),
-					properties: params.properties,
-				}),
-			),
-		set_actor_property: (params) =>
-			pythonDispatch(
-				editorTools.UEActorTool("set_actor_property", {
-					name: actorNameParam(params),
-					property_name: requiredStringParam(params, ["property_name"]),
-					property_value: params.property_value,
-				}),
-			),
-	},
-)
-
-registerToolNamespace(
-	"manage_inventory",
-	"Inventory tool namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions.",
-	{
-		create_blueprint: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintTool("create_blueprint", {
-					name: requiredStringParam(params, ["name", "blueprint_name"]),
-					parent_class: optionalStringParam(params, ["parent_class"]) ?? "Actor",
-					path: optionalStringParam(params, ["path"]),
-				}),
-			),
-		set_blueprint_property: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintTool("set_blueprint_property", {
-					blueprint_name: blueprintNameParam(params),
-					property_name: requiredStringParam(params, ["property_name"]),
-					property_value: params.property_value,
-				}),
-			),
-		compile_blueprint: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintTool("compile_blueprint", {
-					blueprint_name: blueprintNameParam(params),
-				}),
-			),
-	},
-)
-
-registerToolNamespace(
-	"manage_interaction",
-	"Interaction tool namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions.",
-	{
-		create_blueprint: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintTool("create_blueprint", {
-					name: requiredStringParam(params, ["name", "blueprint_name"]),
-					parent_class: optionalStringParam(params, ["parent_class"]) ?? "Actor",
-					path: optionalStringParam(params, ["path"]),
-				}),
-			),
-		add_component_to_blueprint: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintTool("add_component_to_blueprint", {
-					blueprint_name: blueprintNameParam(params),
-					component_type: requiredStringParam(params, ["component_type", "class_name"]),
-					component_name: requiredStringParam(params, ["component_name", "name"]),
-					location: toVector3Array(params.location),
-					rotation: toRotatorArray(params.rotation),
-					scale: toVector3Array(params.scale),
-					component_properties: params.component_properties,
-					parent_component_name: optionalStringParam(params, ["parent_component_name"]),
-				}),
-			),
-		spawn_blueprint_actor: (params) =>
-			pythonDispatch(
-				editorTools.UEActorTool("spawn_blueprint_actor", {
-					blueprint_name: blueprintNameParam(params),
-					name: optionalStringParam(params, ["name", "actor_name"]),
-					location: toVector3Array(params.location),
-					rotation: toRotatorArray(params.rotation),
-					scale: toVector3Array(params.scale),
-					properties: params.properties,
-				}),
-			),
-	},
-)
-
-registerToolNamespace(
 	"manage_widget_authoring",
 	"Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions.",
 	{
@@ -1857,22 +1713,6 @@ registerToolNamespace(
 					packages: sourceControlPackageListParam(params),
 					revert_all: Boolean(params.revert_all),
 					reload_world: Boolean(params.reload_world),
-				}),
-			),
-	},
-)
-
-registerToolNamespace(
-	"manage_game_framework",
-	"Game-framework tool namespace for project inspection and gameplay Blueprint scaffolding actions.",
-	{
-		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
-		create_blueprint: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintTool("create_blueprint", {
-					name: requiredStringParam(params, ["name", "blueprint_name"]),
-					parent_class: optionalStringParam(params, ["parent_class"]) ?? "Actor",
-					path: optionalStringParam(params, ["path"]),
 				}),
 			),
 	},

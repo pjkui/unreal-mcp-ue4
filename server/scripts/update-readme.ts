@@ -150,10 +150,6 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 		status: "Partial",
 		note: "Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface.",
 	},
-	manage_interaction: {
-		status: "Partial",
-		note: "Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python.",
-	},
 	manage_widget_authoring: {
 		status: "Partial",
 		note: "create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.",
@@ -266,12 +262,7 @@ function fallbackCategory(toolName: string): string {
 		toolName === "manage_animation_physics" ||
 		toolName === "manage_input" ||
 		toolName === "manage_behavior_tree" ||
-		toolName === "manage_gas" ||
-		toolName === "manage_character" ||
-		toolName === "manage_combat" ||
-		toolName === "manage_inventory" ||
-		toolName === "manage_interaction" ||
-		toolName === "manage_game_framework"
+		toolName === "manage_gas"
 	) {
 		return "Gameplay & Systems Tool Namespaces"
 	}
