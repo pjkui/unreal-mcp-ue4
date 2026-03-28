@@ -416,11 +416,11 @@ function formatTableCell(value?: string): string {
 
 function generateToolsTable(tools: ToolInfo[]): string {
 	const header =
-		"| Tool | Status | Notes | Description |\n|------|--------|-------|-------------|\n"
+		"| Tool | Status | Description | Notes |\n|------|--------|-------------|-------|\n"
 	const rows = tools
 		.map((tool) => {
 			const support = supportForTool(tool.name)
-			return `| \`${tool.name}\` | ${formatTableCell(support.status)} | ${formatTableCell(support.note)} | ${formatTableCell(tool.description)} |`
+			return `| \`${tool.name}\` | ${formatTableCell(support.status)} | ${formatTableCell(tool.description)} | ${formatTableCell(support.note)} |`
 		})
 		.join("\n")
 	return header + rows

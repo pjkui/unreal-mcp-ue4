@@ -261,62 +261,62 @@ Status legend:
 
 ### Connection & Setup
 
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `set_unreal_engine_path` | Supported | - | Set the Unreal Engine path |
-| `set_unreal_project_path` | Supported | - | Set the Project path |
-| `get_unreal_engine_path` | Supported | - | Get the current Unreal Engine path |
-| `get_unreal_project_path` | Supported | - | Get the current Unreal Project path |
+| Tool | Status | Description | Notes |
+|------|--------|-------------|-------|
+| `set_unreal_engine_path` | Supported | Set the Unreal Engine path | - |
+| `set_unreal_project_path` | Supported | Set the Project path | - |
+| `get_unreal_engine_path` | Supported | Get the current Unreal Engine path | - |
+| `get_unreal_project_path` | Supported | Get the current Unreal Project path | - |
 
 ### Actor / Level Tools
 
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `editor_create_object` | Supported | - | Create a new object/actor in the world |
-| `editor_update_object` | Supported | - | Update an existing object/actor in the world |
-| `editor_delete_object` | Supported | - | Delete an object/actor from the world |
+| Tool | Status | Description | Notes |
+|------|--------|-------------|-------|
+| `editor_create_object` | Supported | Create a new object/actor in the world | - |
+| `editor_update_object` | Supported | Update an existing object/actor in the world | - |
+| `editor_delete_object` | Supported | Delete an object/actor from the world | - |
 
 ### Tool Namespaces
 
-| Tool | Status | Notes | Description |
-|------|--------|-------|-------------|
-| `manage_asset` | Supported | - | Asset tool namespace for list, search, info, references, export, and validation actions. |
-| `manage_actor` | Supported | - | Actor tool namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors. |
-| `manage_editor` | Supported | - | Editor tool namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control. |
-| `manage_level` | Supported | - | Level tool namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions. |
-| `manage_system` | Supported | - | System tool namespace for console commands, project state inspection, and asset validation actions. |
-| `manage_inspection` | Partial | Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure. | Inspection tool namespace for asset, actor, project, map, and Blueprint analysis actions. |
-| `manage_pipeline` | Supported | - | Pipeline tool namespace for asset validation, project inspection, and tool status reporting actions. |
-| `manage_tools` | Supported | - | Tool-namespace registry for listing registered tool namespaces and describing supported actions. |
-| `manage_lighting` | Supported | - | Lighting tool namespace for spawning common light actors, transforming them, and inspecting level lighting state. |
-| `manage_level_structure` | Supported | - | Level-structure tool namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions. |
-| `manage_volumes` | Supported | - | Volume tool namespace for spawning common engine volumes and applying delete or transform actions. |
-| `manage_navigation` | Supported | - | Navigation tool namespace for spawning navigation volumes and proxies plus basic map inspection actions. |
-| `manage_environment` | Supported | - | Environment-building tool namespace for preset town, arch, staircase, pyramid, and maze generation actions. |
-| `manage_splines` | Supported | - | Spline tool namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it. |
-| `manage_animation_physics` | Supported | - | Animation-and-physics tool namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions. |
-| `manage_skeleton` | Supported | - | Skeleton tool namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata. |
-| `manage_geometry` | Supported | - | Geometry tool namespace for wall, arch, staircase, and pyramid preset construction actions. |
-| `manage_effect` | Supported | - | Effects tool namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them. |
-| `manage_material_authoring` | Supported | - | Material tool namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances. |
-| `manage_texture` | Supported | - | Texture tool namespace for searching texture assets and reading their asset metadata. |
-| `manage_blueprint` | Partial | Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface. | Blueprint tool namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions. |
-| `manage_sequence` | Supported | - | Sequence tool namespace for searching LevelSequence assets and inspecting their asset metadata. |
-| `manage_performance` | Supported | - | Performance tool namespace for editor console commands and screenshot capture actions. |
-| `manage_audio` | Supported | - | Audio tool namespace for searching audio assets and inspecting their asset metadata. |
-| `manage_input` | Supported | - | Input tool namespace for creating classic UE4 input mappings and inspecting project input settings. |
-| `manage_behavior_tree` | Supported | - | Behavior-tree tool namespace for searching BehaviorTree assets and inspecting their asset metadata. |
-| `manage_ai` | Supported | - | AI tool namespace for searching AI-related assets through the existing asset registry and project inspection actions. |
-| `manage_gas` | Supported | - | GAS tool namespace for searching gameplay-ability-related assets and inspecting their asset metadata. |
-| `manage_character` | Supported | - | Character tool namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data. |
-| `manage_combat` | Supported | - | Combat tool namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits. |
-| `manage_inventory` | Supported | - | Inventory tool namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions. |
-| `manage_interaction` | Partial | Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python. | Interaction tool namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions. |
-| `manage_widget_authoring` | Partial | create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface. | Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. |
-| `manage_source_control` | Supported | provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider. | Source-control tool namespace for provider inspection and file or package source-control operations. |
-| `manage_networking` | Supported | - | Networking tool namespace for project inspection and console-command driven networking diagnostics. |
-| `manage_game_framework` | Supported | - | Game-framework tool namespace for project inspection and gameplay Blueprint scaffolding actions. |
-| `manage_sessions` | Supported | - | Sessions tool namespace for project inspection and console-command driven local session diagnostics. |
+| Tool | Status | Description | Notes |
+|------|--------|-------------|-------|
+| `manage_asset` | Supported | Asset tool namespace for list, search, info, references, export, and validation actions. | - |
+| `manage_actor` | Supported | Actor tool namespace for listing, searching, spawning, deleting, transforming, and inspecting level actors. | - |
+| `manage_editor` | Supported | Editor tool namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control. | - |
+| `manage_level` | Supported | Level tool namespace for map inspection, actor listing, world outliner inspection, and preset structure creation actions. | - |
+| `manage_system` | Supported | System tool namespace for console commands, project state inspection, and asset validation actions. | - |
+| `manage_inspection` | Partial | Inspection tool namespace for asset, actor, project, map, and Blueprint analysis actions. | Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure. |
+| `manage_pipeline` | Supported | Pipeline tool namespace for asset validation, project inspection, and tool status reporting actions. | - |
+| `manage_tools` | Supported | Tool-namespace registry for listing registered tool namespaces and describing supported actions. | - |
+| `manage_lighting` | Supported | Lighting tool namespace for spawning common light actors, transforming them, and inspecting level lighting state. | - |
+| `manage_level_structure` | Supported | Level-structure tool namespace for preset town, house, mansion, tower, wall, bridge, and fortress construction actions. | - |
+| `manage_volumes` | Supported | Volume tool namespace for spawning common engine volumes and applying delete or transform actions. | - |
+| `manage_navigation` | Supported | Navigation tool namespace for spawning navigation volumes and proxies plus basic map inspection actions. | - |
+| `manage_environment` | Supported | Environment-building tool namespace for preset town, arch, staircase, pyramid, and maze generation actions. | - |
+| `manage_splines` | Supported | Spline tool namespace for spawning a spline-host actor or Blueprint and then transforming or deleting it. | - |
+| `manage_animation_physics` | Supported | Animation-and-physics tool namespace for physics Blueprint spawning, Blueprint physics settings, and Blueprint compilation actions. | - |
+| `manage_skeleton` | Supported | Skeleton tool namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata. | - |
+| `manage_geometry` | Supported | Geometry tool namespace for wall, arch, staircase, and pyramid preset construction actions. | - |
+| `manage_effect` | Supported | Effects tool namespace for spawning debug-shape actors, assigning materials, tinting them, and deleting them. | - |
+| `manage_material_authoring` | Supported | Material tool namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances. | - |
+| `manage_texture` | Supported | Texture tool namespace for searching texture assets and reading their asset metadata. | - |
+| `manage_blueprint` | Partial | Blueprint tool namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions. | Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface. |
+| `manage_sequence` | Supported | Sequence tool namespace for searching LevelSequence assets and inspecting their asset metadata. | - |
+| `manage_performance` | Supported | Performance tool namespace for editor console commands and screenshot capture actions. | - |
+| `manage_audio` | Supported | Audio tool namespace for searching audio assets and inspecting their asset metadata. | - |
+| `manage_input` | Supported | Input tool namespace for creating classic UE4 input mappings and inspecting project input settings. | - |
+| `manage_behavior_tree` | Supported | Behavior-tree tool namespace for searching BehaviorTree assets and inspecting their asset metadata. | - |
+| `manage_ai` | Supported | AI tool namespace for searching AI-related assets through the existing asset registry and project inspection actions. | - |
+| `manage_gas` | Supported | GAS tool namespace for searching gameplay-ability-related assets and inspecting their asset metadata. | - |
+| `manage_character` | Supported | Character tool namespace for creating Blueprint characters, spawning Blueprint actors, and inspecting project character data. | - |
+| `manage_combat` | Supported | Combat tool namespace for combat Blueprint scaffolding, Blueprint actor spawning, and actor property edits. | - |
+| `manage_inventory` | Supported | Inventory tool namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions. | - |
+| `manage_interaction` | Partial | Interaction tool namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions. | Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python. |
+| `manage_widget_authoring` | Partial | Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. | create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface. |
+| `manage_source_control` | Supported | Source-control tool namespace for provider inspection and file or package source-control operations. | provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider. |
+| `manage_networking` | Supported | Networking tool namespace for project inspection and console-command driven networking diagnostics. | - |
+| `manage_game_framework` | Supported | Game-framework tool namespace for project inspection and gameplay Blueprint scaffolding actions. | - |
+| `manage_sessions` | Supported | Sessions tool namespace for project inspection and console-command driven local session diagnostics. | - |
 
 ### Excluded Capability Areas
 
