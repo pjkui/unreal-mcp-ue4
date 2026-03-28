@@ -1,0 +1,41 @@
+{
+  "name": "unreal-mcp-ue4",
+  "version": "0.1.4-ue4.27.2",
+  "description": "UE4.27-compatible fork of runreal/unreal-mcp for controlling the Unreal Editor through MCP.",
+  "main": "dist/index.js",
+  "bin": {
+    "unreal-mcp-ue4": "dist/bin.js"
+  },
+  "scripts": {
+    "dev": "tsx --watch server/bin.ts",
+    "build": "node scripts/build.mjs",
+    "start": "node dist/bin.js",
+    "postbuild": "node dist/scripts/make-executable.js && node dist/scripts/update-readme.js",
+    "fmt": "biome format . --write && biome check --formatter-enabled=false --linter-enabled=false --organize-imports-enabled=true --write"
+  },
+  "files": ["dist"],
+  "keywords": ["unreal", "mcp", "modelcontextprotocol", "unreal-mcp", "ue4", "ue4.27"],
+  "author": "Seungjee Baek (conaman)",
+  "license": "MIT",
+  "packageManager": "npm@10.8.1",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/conaman/unreal-mcp-ue4.git"
+  },
+  "homepage": "https://github.com/conaman/unreal-mcp-ue4",
+  "bugs": {
+    "url": "https://github.com/conaman/unreal-mcp-ue4/issues"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.1",
+    "unreal-remote-execution": "^1.0.0",
+    "zod": "^3.25.48"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^22.15.29",
+    "esbuild": "^0.25.10",
+    "tsx": "^4.20.6",
+    "typescript": "^5.8.3"
+  }
+}
