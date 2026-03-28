@@ -5,15 +5,9 @@ Based on the original project: [runreal/unreal-mcp](https://github.com/runreal/u
 
 This fork was modified to support Unreal Engine 4.27 while preserving the original Unreal MCP workflow where possible.
 
-![hero](https://github.com/runreal/unreal-mcp/raw/refs/heads/main/hero.png)
+![hero](hero.png)
 
-![gif](https://github.com/runreal/unreal-mcp/raw/refs/heads/main/mcp.gif)
-
-<p align="center">
-  <a href="https://x.com/runreal_dev">Twitter</a>
-  ·
-  <a href="https://discord.gg/6ZhWVU5W47">Discord</a>
-</p>
+![gif](mcp.gif)
 
 <div align="center">
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/LICENSE-MIT-GREEN?style=flat-square"></a>
@@ -55,8 +49,8 @@ It can support the [Unreal Engine Python API for 4.27](https://dev.epicgames.com
    - Go to `Edit` -> `Project Settings` 
    - Search for "Python" and enable the "Enable Remote Execution" option
 
-  ![enable plugin](https://github.com/runreal/unreal-mcp/raw/refs/heads/main/img1.png)
-  ![enable remote execution](https://github.com/runreal/unreal-mcp/raw/refs/heads/main/img2.png)
+  ![enable plugin](img1.png)
+  ![enable remote execution](img2.png)
 
 2. Set up your Client:
    - Build this local fork
