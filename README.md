@@ -74,6 +74,29 @@ pnpm build
 }
 ```
 
+### ✅ End-to-End Smoke Test
+
+With your UE4.27.2 project open and Remote Execution enabled, you can run a deterministic MCP smoke test directly against the local server:
+
+```bash
+cd /Users/conaman/Works/runreal_unreal_mcp_ue4
+npm run test:e2e
+```
+
+The default smoke test checks:
+- MCP server startup and tool discovery
+- project info, map info, and world outliner reads
+- actor spawn, search, transform, inspect, and delete
+- domain-tool dispatch for actor control
+
+To also test Blueprint and UMG asset creation, run:
+
+```bash
+npm run test:e2e -- --with-assets
+```
+
+The asset-enabled run creates temporary Blueprint and Widget Blueprint assets under `/Game/MCP/Tests` and then attempts to clean them up automatically before exiting.
+
 ### 🪟 Windows Quick Start
 
 Open PowerShell in the repository folder and run:

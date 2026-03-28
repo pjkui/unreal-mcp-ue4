@@ -40,15 +40,15 @@ const connectWithRetry = async (maxRetries: number = 3, retryDelay: number = 200
 
 			return
 		} catch (error) {
-			console.log(`Connection attempt ${attempt} failed:`, error)
+			console.error(`Connection attempt ${attempt} failed:`, error)
 
 			if (attempt < maxRetries) {
-				console.log(`Retrying in ${retryDelay}ms...`)
+				console.error(`Retrying in ${retryDelay}ms...`)
 				await new Promise((resolve) => setTimeout(resolve, retryDelay))
 				// Exponential backoff
 				retryDelay = Math.min(retryDelay * 1.5, 10000)
 			} else {
-				console.log("Unable to connect to your Unreal Engine Editor after multiple attempts")
+				console.error("Unable to connect to your Unreal Engine Editor after multiple attempts")
 				remoteExecution.stop()
 				process.exit(1)
 			}

@@ -10,6 +10,7 @@
     "dev": "tsx --watch server/bin.ts",
     "build": "node scripts/build.mjs",
     "start": "node dist/bin.js",
+    "test:e2e": "npm run build && node scripts/e2e-smoke.mjs",
     "postbuild": "node dist/scripts/make-executable.js && node dist/scripts/update-readme.js",
     "fmt": "biome format . --write && biome check --formatter-enabled=false --linter-enabled=false --organize-imports-enabled=true --write"
   },
