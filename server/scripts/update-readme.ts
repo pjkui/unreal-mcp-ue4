@@ -21,6 +21,32 @@ interface ExcludedFunctionInfo {
 	reason: string
 }
 
+const sourceControlProviderNote =
+	"Requires a configured and available Unreal source-control provider in the active editor session."
+
+const sourceControlQueryNote =
+	"Returns structured state even when source control is disabled, but meaningful revision status requires a configured and available provider."
+
+const sourceControlPackageReloadNote =
+	"Requires a configured and available Unreal source-control provider plus valid long package names to reload."
+
+const sourceControlProviderDependentTools = [
+	"check_out_file",
+	"check_out_files",
+	"check_out_or_add_file",
+	"check_out_or_add_files",
+	"mark_file_for_add",
+	"mark_files_for_add",
+	"mark_file_for_delete",
+	"mark_files_for_delete",
+	"revert_file",
+	"revert_files",
+	"revert_unchanged_files",
+	"sync_file",
+	"sync_files",
+	"check_in_files",
+] as const
+
 const categoryOrder = [
 	"Connection & Setup",
 	"Editor & Asset Tools",
@@ -35,10 +61,36 @@ const categoryOrder = [
 	"Epic Structures Tools",
 	"Level Design Tools",
 	"UMG Tools",
+	"Source Control Tools",
 	"Domain Tools",
 ]
 
 const toolSupport: Record<string, ToolSupportInfo> = {
+	...Object.fromEntries(
+		sourceControlProviderDependentTools.map((name) => [
+			name,
+			{
+				status: "Partial" as const,
+				note: sourceControlProviderNote,
+			},
+		]),
+	),
+	get_source_control_provider: {
+		status: "Supported",
+		note: "Reports provider name plus enabled or available status even when source control is disabled.",
+	},
+	query_source_control_state: {
+		status: "Partial",
+		note: sourceControlQueryNote,
+	},
+	query_source_control_states: {
+		status: "Partial",
+		note: sourceControlQueryNote,
+	},
+	revert_and_reload_packages: {
+		status: "Partial",
+		note: sourceControlPackageReloadNote,
+	},
 	read_blueprint_content: {
 		status: "Partial",
 		note: "Blueprint graph listings depend on what UE4.27 Python exposes; asset and component reads still work.",
@@ -114,6 +166,10 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 	manage_widget_authoring: {
 		status: "Partial",
 		note: "create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.",
+	},
+	manage_source_control: {
+		status: "Partial",
+		note: "provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider.",
 	},
 }
 
@@ -245,6 +301,7 @@ function fallbackCategory(toolName: string): string {
 		toolName === "manage_inventory" ||
 		toolName === "manage_interaction" ||
 		toolName === "manage_widget_authoring" ||
+		toolName === "manage_source_control" ||
 		toolName === "manage_networking" ||
 		toolName === "manage_game_framework" ||
 		toolName === "manage_sessions"
@@ -254,6 +311,10 @@ function fallbackCategory(toolName: string): string {
 
 	if (toolName.includes("umg") || toolName.includes("widget")) {
 		return "UMG Tools"
+	}
+
+	if (toolName.includes("source_control")) {
+		return "Source Control Tools"
 	}
 
 	if (toolName.includes("material") || toolName.includes("physics")) {

@@ -335,10 +335,13 @@ async function main() {
 			"editor_project_info",
 			"editor_get_map_info",
 			"editor_get_world_outliner",
+			"get_source_control_provider",
+			"query_source_control_state",
 			"spawn_actor",
 			"set_actor_transform",
 			"delete_actor",
 			"control_actor",
+			"manage_source_control",
 			"manage_tools",
 		]
 
@@ -374,6 +377,21 @@ async function main() {
 		await runStep("Read current world outliner", async () => {
 			const outliner = await callJsonTool("editor_get_world_outliner")
 			assert(Array.isArray(outliner.actors), "world outliner did not return an actor list")
+		})
+
+		await runStep("Read source control provider info", async () => {
+			const sourceControlInfo = await callJsonTool("get_source_control_provider")
+			assert(typeof sourceControlInfo.provider === "string", "provider is missing")
+			assert(typeof sourceControlInfo.enabled === "boolean", "enabled is missing")
+			assert(typeof sourceControlInfo.available === "boolean", "available is missing")
+		})
+
+		await runStep("Query source control state", async () => {
+			const sourceControlState = await callJsonTool("query_source_control_state", {
+				file: "/Game",
+			})
+			assert(typeof sourceControlState.state?.filename === "string", "state filename is missing")
+			assert(typeof sourceControlState.state?.is_valid === "boolean", "state validity is missing")
 		})
 
 		const granularActorName = `${options.prefix}_Actor`
@@ -422,9 +440,24 @@ async function main() {
 				const domainInfo = await callJsonTool("manage_tools", { action: "list_domains", params: {} })
 				assert(Array.isArray(domainInfo.domains), "manage_tools did not return a domain list")
 				const domainNames = new Set(domainInfo.domains.map((item) => item.tool))
-				for (const requiredDomain of ["control_actor", "manage_asset", "manage_widget_authoring"]) {
+				for (const requiredDomain of [
+					"control_actor",
+					"manage_asset",
+					"manage_source_control",
+					"manage_widget_authoring",
+				]) {
 					assert(domainNames.has(requiredDomain), `Domain tool is missing: ${requiredDomain}`)
 				}
+			})
+
+			await runStep("Read source control provider info through the domain layer", async () => {
+				const providerInfo = await callJsonTool("manage_source_control", {
+					action: "provider_info",
+					params: {},
+				})
+				assert(typeof providerInfo.provider === "string", "manage_source_control did not return provider")
+				assert(typeof providerInfo.enabled === "boolean", "manage_source_control did not return enabled")
+				assert(typeof providerInfo.available === "boolean", "manage_source_control did not return available")
 			})
 
 			await runStep("Spawn an actor through the domain layer", async () => {

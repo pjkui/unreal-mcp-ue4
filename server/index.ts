@@ -159,6 +159,7 @@ const colorInputSchema = z.union([
 ])
 
 const recordSchema = z.record(z.any())
+const stringListSchema = z.array(z.string().min(1)).min(1)
 
 type DomainDispatchResult =
 	| { kind: "python"; command: string }
@@ -196,6 +197,37 @@ const optionalStringParam = (params: Record<string, any>, keys: string[]) => {
 	}
 
 	return undefined
+}
+
+const optionalStringListParam = (params: Record<string, any>, keys: string[]) => {
+	for (const key of keys) {
+		const value = params[key]
+		if (Array.isArray(value)) {
+			const normalizedValues = value
+				.filter((entry) => typeof entry === "string")
+				.map((entry) => entry.trim())
+				.filter(Boolean)
+
+			if (normalizedValues.length > 0) {
+				return normalizedValues
+			}
+		}
+
+		if (typeof value === "string" && value.trim()) {
+			return [value.trim()]
+		}
+	}
+
+	return undefined
+}
+
+const requiredStringListParam = (params: Record<string, any>, keys: string[]) => {
+	const values = optionalStringListParam(params, keys)
+	if (values && values.length > 0) {
+		return values
+	}
+
+	throw new Error(`${keys[0]} is required`)
 }
 
 const toVector2Record = (value: any) => {
@@ -378,6 +410,44 @@ const blueprintNameParam = (params: Record<string, any>) =>
 
 const widgetBlueprintParam = (params: Record<string, any>) =>
 	requiredStringParam(params, ["widget_blueprint", "widget_blueprint_path", "widget_name", "blueprint_name"])
+
+const sourceControlFileParam = (params: Record<string, any>) =>
+	requiredStringParam(params, ["file", "path", "asset_path", "package", "name"])
+
+const sourceControlFileListParam = (params: Record<string, any>) =>
+	requiredStringListParam(params, [
+		"files",
+		"paths",
+		"asset_paths",
+		"packages",
+		"file",
+		"path",
+		"asset_path",
+		"package",
+		"name",
+	])
+
+const sourceControlPackageListParam = (params: Record<string, any>) =>
+	requiredStringListParam(params, [
+		"packages",
+		"package_names",
+		"paths",
+		"asset_paths",
+		"package",
+		"path",
+	])
+
+const sourceControlFilesCommand = (
+	files: string[],
+	singleOperation?: string,
+	multiOperation?: string,
+) => {
+	if (singleOperation && files.length === 1) {
+		return editorTools.UESourceControlTool(singleOperation, { file: files[0] })
+	}
+
+	return editorTools.UESourceControlTool(multiOperation ?? singleOperation!, { files })
+}
 
 /// Connection & Setup
 server.tool(
@@ -1972,6 +2042,180 @@ registerPythonTool(
 		}),
 )
 
+/// Source Control Tools
+registerZeroArgPythonTool(
+	"get_source_control_provider",
+	"Report the current Unreal source-control provider and whether it is enabled or available.",
+	() => editorTools.UESourceControlTool("get_source_control_provider"),
+)
+
+registerPythonTool(
+	"query_source_control_state",
+	"Query source-control state for one smart file string, asset path, or package name.",
+	{
+		file: z.string().describe("Smart file string, asset path, or long package name"),
+	},
+	({ file }) => editorTools.UESourceControlTool("query_source_control_state", { file }),
+)
+
+registerPythonTool(
+	"query_source_control_states",
+	"Query source-control state for multiple smart file strings, asset paths, or package names.",
+	{
+		files: stringListSchema.describe("Smart file strings, asset paths, or long package names"),
+	},
+	({ files }) => editorTools.UESourceControlTool("query_source_control_states", { files }),
+)
+
+registerPythonTool(
+	"check_out_file",
+	"Check out one source-controlled file, asset path, or package name.",
+	{
+		file: z.string().describe("Smart file string, asset path, or long package name"),
+	},
+	({ file }) => editorTools.UESourceControlTool("check_out_file", { file }),
+)
+
+registerPythonTool(
+	"check_out_files",
+	"Check out multiple source-controlled files, asset paths, or package names.",
+	{
+		files: stringListSchema.describe("Smart file strings, asset paths, or long package names"),
+	},
+	({ files }) => editorTools.UESourceControlTool("check_out_files", { files }),
+)
+
+registerPythonTool(
+	"check_out_or_add_file",
+	"Check out one file or mark it for add if it is new to source control.",
+	{
+		file: z.string().describe("Smart file string, asset path, or long package name"),
+	},
+	({ file }) => editorTools.UESourceControlTool("check_out_or_add_file", { file }),
+)
+
+registerPythonTool(
+	"check_out_or_add_files",
+	"Check out multiple files or mark any new ones for add.",
+	{
+		files: stringListSchema.describe("Smart file strings, asset paths, or long package names"),
+	},
+	({ files }) => editorTools.UESourceControlTool("check_out_or_add_files", { files }),
+)
+
+registerPythonTool(
+	"mark_file_for_add",
+	"Mark one file, asset path, or package name for add in source control.",
+	{
+		file: z.string().describe("Smart file string, asset path, or long package name"),
+	},
+	({ file }) => editorTools.UESourceControlTool("mark_file_for_add", { file }),
+)
+
+registerPythonTool(
+	"mark_files_for_add",
+	"Mark multiple files, asset paths, or package names for add in source control.",
+	{
+		files: stringListSchema.describe("Smart file strings, asset paths, or long package names"),
+	},
+	({ files }) => editorTools.UESourceControlTool("mark_files_for_add", { files }),
+)
+
+registerPythonTool(
+	"mark_file_for_delete",
+	"Mark one file, asset path, or package name for delete in source control.",
+	{
+		file: z.string().describe("Smart file string, asset path, or long package name"),
+	},
+	({ file }) => editorTools.UESourceControlTool("mark_file_for_delete", { file }),
+)
+
+registerPythonTool(
+	"mark_files_for_delete",
+	"Mark multiple files, asset paths, or package names for delete in source control.",
+	{
+		files: stringListSchema.describe("Smart file strings, asset paths, or long package names"),
+	},
+	({ files }) => editorTools.UESourceControlTool("mark_files_for_delete", { files }),
+)
+
+registerPythonTool(
+	"revert_file",
+	"Revert one checked-out file, asset path, or package name.",
+	{
+		file: z.string().describe("Smart file string, asset path, or long package name"),
+	},
+	({ file }) => editorTools.UESourceControlTool("revert_file", { file }),
+)
+
+registerPythonTool(
+	"revert_files",
+	"Revert multiple checked-out files, asset paths, or package names.",
+	{
+		files: stringListSchema.describe("Smart file strings, asset paths, or long package names"),
+	},
+	({ files }) => editorTools.UESourceControlTool("revert_files", { files }),
+)
+
+registerPythonTool(
+	"revert_unchanged_files",
+	"Revert multiple unchanged files, asset paths, or package names.",
+	{
+		files: stringListSchema.describe("Smart file strings, asset paths, or long package names"),
+	},
+	({ files }) => editorTools.UESourceControlTool("revert_unchanged_files", { files }),
+)
+
+registerPythonTool(
+	"sync_file",
+	"Sync one source-controlled file, asset path, or package name to the latest revision.",
+	{
+		file: z.string().describe("Smart file string, asset path, or long package name"),
+	},
+	({ file }) => editorTools.UESourceControlTool("sync_file", { file }),
+)
+
+registerPythonTool(
+	"sync_files",
+	"Sync multiple source-controlled files, asset paths, or package names to the latest revision.",
+	{
+		files: stringListSchema.describe("Smart file strings, asset paths, or long package names"),
+	},
+	({ files }) => editorTools.UESourceControlTool("sync_files", { files }),
+)
+
+registerPythonTool(
+	"check_in_files",
+	"Submit multiple files or packages through the active Unreal source-control provider.",
+	{
+		files: stringListSchema.describe("Smart file strings, asset paths, or long package names"),
+		description: z.string().describe("Submit description"),
+		keep_checked_out: z.boolean().optional().describe("Keep files checked out after submit"),
+	},
+	({ files, description, keep_checked_out }) =>
+		editorTools.UESourceControlTool("check_in_files", {
+			files,
+			description,
+			keep_checked_out,
+		}),
+)
+
+registerPythonTool(
+	"revert_and_reload_packages",
+	"Revert Unreal packages and optionally reload the world after source-control revert completes.",
+	{
+		packages: stringListSchema.describe("Long package names to revert and reload"),
+		revert_all: z.boolean().optional().describe("Revert all changes for the specified packages"),
+		reload_world: z.boolean().optional().describe("Reload the current world after package reload"),
+	},
+	({ packages, revert_all, reload_world }) =>
+		editorTools.UESourceControlTool("revert_and_reload_packages", {
+			packages,
+			revert_all,
+			reload_world,
+		}),
+)
+
 /// Domain Tools
 registerDomainTool(
 	"manage_asset",
@@ -3058,6 +3302,97 @@ registerDomainTool(
 					toVector2Record(params.position) ?? { x: 0, y: 0 },
 					typeof params.z_order === "number" ? params.z_order : undefined,
 				),
+			),
+	},
+)
+
+registerDomainTool(
+	"manage_source_control",
+	"Domain source-control namespace for provider inspection and file or package source-control operations.",
+	{
+		provider_info: () =>
+			pythonDispatch(editorTools.UESourceControlTool("get_source_control_provider")),
+		query_state: (params) =>
+			pythonDispatch(
+				editorTools.UESourceControlTool("query_source_control_state", {
+					file: sourceControlFileParam(params),
+				}),
+			),
+		query_states: (params) =>
+			pythonDispatch(
+				editorTools.UESourceControlTool("query_source_control_states", {
+					files: sourceControlFileListParam(params),
+				}),
+			),
+		checkout: (params) =>
+			pythonDispatch(
+				sourceControlFilesCommand(
+					sourceControlFileListParam(params),
+					"check_out_file",
+					"check_out_files",
+				),
+			),
+		checkout_or_add: (params) =>
+			pythonDispatch(
+				sourceControlFilesCommand(
+					sourceControlFileListParam(params),
+					"check_out_or_add_file",
+					"check_out_or_add_files",
+				),
+			),
+		add: (params) =>
+			pythonDispatch(
+				sourceControlFilesCommand(
+					sourceControlFileListParam(params),
+					"mark_file_for_add",
+					"mark_files_for_add",
+				),
+			),
+		delete: (params) =>
+			pythonDispatch(
+				sourceControlFilesCommand(
+					sourceControlFileListParam(params),
+					"mark_file_for_delete",
+					"mark_files_for_delete",
+				),
+			),
+		revert: (params) =>
+			pythonDispatch(
+				sourceControlFilesCommand(
+					sourceControlFileListParam(params),
+					"revert_file",
+					"revert_files",
+				),
+			),
+		revert_unchanged: (params) =>
+			pythonDispatch(
+				editorTools.UESourceControlTool("revert_unchanged_files", {
+					files: sourceControlFileListParam(params),
+				}),
+			),
+		sync: (params) =>
+			pythonDispatch(
+				sourceControlFilesCommand(
+					sourceControlFileListParam(params),
+					"sync_file",
+					"sync_files",
+				),
+			),
+		submit: (params) =>
+			pythonDispatch(
+				editorTools.UESourceControlTool("check_in_files", {
+					files: sourceControlFileListParam(params),
+					description: requiredStringParam(params, ["description", "message"]),
+					keep_checked_out: Boolean(params.keep_checked_out),
+				}),
+			),
+		revert_and_reload_packages: (params) =>
+			pythonDispatch(
+				editorTools.UESourceControlTool("revert_and_reload_packages", {
+					packages: sourceControlPackageListParam(params),
+					revert_all: Boolean(params.revert_all),
+					reload_world: Boolean(params.reload_world),
+				}),
 			),
 	},
 )

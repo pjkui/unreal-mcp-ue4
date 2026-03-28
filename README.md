@@ -398,6 +398,29 @@ Status legend:
 | `add_button_to_widget` | Supported | - | Add a Button to a Widget Blueprint and optionally place it on a CanvasPanel. |
 | `add_widget_to_viewport` | Partial | Requires an active PIE or game world and successful UserWidget instancing in the editor session. | Instantiate a Widget Blueprint and add it to the active PIE or game viewport. |
 
+### Source Control Tools
+
+| Tool | Status | Notes | Description |
+|------|--------|-------|-------------|
+| `get_source_control_provider` | Supported | Reports provider name plus enabled or available status even when source control is disabled. | Report the current Unreal source-control provider and whether it is enabled or available. |
+| `query_source_control_state` | Partial | Returns structured state even when source control is disabled, but meaningful revision status requires a configured and available provider. | Query source-control state for one smart file string, asset path, or package name. |
+| `query_source_control_states` | Partial | Returns structured state even when source control is disabled, but meaningful revision status requires a configured and available provider. | Query source-control state for multiple smart file strings, asset paths, or package names. |
+| `check_out_file` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Check out one source-controlled file, asset path, or package name. |
+| `check_out_files` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Check out multiple source-controlled files, asset paths, or package names. |
+| `check_out_or_add_file` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Check out one file or mark it for add if it is new to source control. |
+| `check_out_or_add_files` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Check out multiple files or mark any new ones for add. |
+| `mark_file_for_add` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Mark one file, asset path, or package name for add in source control. |
+| `mark_files_for_add` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Mark multiple files, asset paths, or package names for add in source control. |
+| `mark_file_for_delete` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Mark one file, asset path, or package name for delete in source control. |
+| `mark_files_for_delete` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Mark multiple files, asset paths, or package names for delete in source control. |
+| `revert_file` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Revert one checked-out file, asset path, or package name. |
+| `revert_files` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Revert multiple checked-out files, asset paths, or package names. |
+| `revert_unchanged_files` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Revert multiple unchanged files, asset paths, or package names. |
+| `sync_file` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Sync one source-controlled file, asset path, or package name to the latest revision. |
+| `sync_files` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Sync multiple source-controlled files, asset paths, or package names to the latest revision. |
+| `check_in_files` | Partial | Requires a configured and available Unreal source-control provider in the active editor session. | Submit multiple files or packages through the active Unreal source-control provider. |
+| `revert_and_reload_packages` | Partial | Requires a configured and available Unreal source-control provider plus valid long package names to reload. | Revert Unreal packages and optionally reload the world after source-control revert completes. |
+
 ### Domain Tools
 
 | Tool | Status | Notes | Description |
@@ -435,6 +458,7 @@ Status legend:
 | `manage_inventory` | Supported | - | Domain inventory namespace for Blueprint scaffolding, Blueprint default-property edits, and Blueprint compilation actions. |
 | `manage_interaction` | Partial | Its add_component_to_blueprint action inherits the SimpleConstructionScript parenting limits of UE4.27 Python. | Domain interaction namespace for Blueprint scaffolding, component wiring, and Blueprint actor spawning actions. |
 | `manage_widget_authoring` | Partial | create_widget_blueprint, add_text_block, and add_button work; add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface. | Domain widget namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. |
+| `manage_source_control` | Partial | provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider. | Domain source-control namespace for provider inspection and file or package source-control operations. |
 | `manage_networking` | Supported | - | Domain networking namespace for project inspection and console-command driven networking diagnostics. |
 | `manage_game_framework` | Supported | - | Domain game-framework namespace for project inspection and gameplay Blueprint scaffolding actions. |
 | `manage_sessions` | Supported | - | Domain sessions namespace for project inspection and console-command driven local session diagnostics. |
