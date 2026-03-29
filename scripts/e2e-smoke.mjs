@@ -1542,7 +1542,11 @@ async function main() {
 		const levelBridgePrefix = `${options.prefix}_LevelBridge`
 		const levelTownPrefix = `${options.prefix}_LevelTown`
 		const levelStructurePrefix = `${options.prefix}_House`
+		const levelStructureTownPrefix = `${options.prefix}_StructureTown`
 		const levelStructureBridgePrefix = `${options.prefix}_Bridge`
+		const levelStructureSuspensionBridgePrefix = `${options.prefix}_SuspensionBridge`
+		const levelStructureAqueductPrefix = `${options.prefix}_Aqueduct`
+		const levelStructureCastlePrefix = `${options.prefix}_CastleFortress`
 		const levelStructureMansionPrefix = `${options.prefix}_Mansion`
 		const levelStructureTowerPrefix = `${options.prefix}_Tower`
 		const levelStructureWallPrefix = `${options.prefix}_FortWall`
@@ -1711,6 +1715,40 @@ async function main() {
 			)
 		})
 
+		await runStep("Read world outliner through manage_level_structure", async () => {
+			const outliner = await callJsonTool("manage_level_structure", {
+				action: "world_outliner",
+				params: {},
+			})
+			assert(Array.isArray(outliner.actors), "manage_level_structure world_outliner did not return an actor list")
+			assert(Number.isFinite(outliner.total_actors), "manage_level_structure world_outliner did not return total_actors")
+		})
+
+		await runStep("Create a town through manage_level_structure", async () => {
+			const townResult = await callJsonTool("manage_level_structure", {
+				action: "create_town",
+				params: {
+					prefix: levelStructureTownPrefix,
+					location: { x: 1260, y: 540, z: 0 },
+					rows: 1,
+					cols: 1,
+					spacing: 650,
+				},
+			})
+			assert(
+				townResult.structure === "create_town",
+				"manage_level_structure create_town returned the wrong structure",
+			)
+			assert(
+				Number(townResult.actor_count) > 0,
+				"manage_level_structure create_town did not spawn any actors",
+			)
+			addCleanup(
+				`Delete level-structure actors for ${levelStructureTownPrefix}`,
+				() => safeDeleteActors((townResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
 		await runStep("Create a bridge through manage_level_structure", async () => {
 			const bridgeResult = await callJsonTool("manage_level_structure", {
 				action: "create_bridge",
@@ -1734,6 +1772,55 @@ async function main() {
 			addCleanup(
 				`Delete level-structure actors for ${levelStructureBridgePrefix}`,
 				() => safeDeleteActors((bridgeResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a suspension bridge through manage_level_structure", async () => {
+			const bridgeResult = await callJsonTool("manage_level_structure", {
+				action: "create_suspension_bridge",
+				params: {
+					prefix: levelStructureSuspensionBridgePrefix,
+					location: { x: 1460, y: 620, z: 0 },
+					segments: 3,
+					segment_length: 140,
+					tower_height: 320,
+				},
+			})
+			assert(
+				bridgeResult.structure === "create_suspension_bridge",
+				"manage_level_structure create_suspension_bridge returned the wrong structure",
+			)
+			assert(
+				Number(bridgeResult.actor_count) > 0,
+				"manage_level_structure create_suspension_bridge did not spawn any actors",
+			)
+			addCleanup(
+				`Delete level-structure actors for ${levelStructureSuspensionBridgePrefix}`,
+				() => safeDeleteActors((bridgeResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create an aqueduct through manage_level_structure", async () => {
+			const aqueductResult = await callJsonTool("manage_level_structure", {
+				action: "create_aqueduct",
+				params: {
+					prefix: levelStructureAqueductPrefix,
+					location: { x: 1660, y: 760, z: 0 },
+					arches: 3,
+					spacing: 260,
+				},
+			})
+			assert(
+				aqueductResult.structure === "create_aqueduct",
+				"manage_level_structure create_aqueduct returned the wrong structure",
+			)
+			assert(
+				Number(aqueductResult.actor_count) > 0,
+				"manage_level_structure create_aqueduct did not spawn any actors",
+			)
+			addCleanup(
+				`Delete level-structure actors for ${levelStructureAqueductPrefix}`,
+				() => safeDeleteActors((aqueductResult.actors || []).map((actor) => actor.label || actor.name)),
 			)
 		})
 
@@ -1812,6 +1899,33 @@ async function main() {
 			addCleanup(
 				`Delete level-structure actors for ${levelStructureWallPrefix}`,
 				() => safeDeleteActors((wallResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a castle fortress through manage_level_structure", async () => {
+			const fortressResult = await callJsonTool("manage_level_structure", {
+				action: "create_castle_fortress",
+				params: {
+					prefix: levelStructureCastlePrefix,
+					location: { x: 2540, y: 680, z: 0 },
+					size: 900,
+					segments: 3,
+					height: 220,
+					thickness: 40,
+					tower_width: 160,
+				},
+			})
+			assert(
+				fortressResult.structure === "create_castle_fortress",
+				"manage_level_structure create_castle_fortress returned the wrong structure",
+			)
+			assert(
+				Number(fortressResult.actor_count) > 0,
+				"manage_level_structure create_castle_fortress did not spawn any actors",
+			)
+			addCleanup(
+				`Delete level-structure actors for ${levelStructureCastlePrefix}`,
+				() => safeDeleteActors((fortressResult.actors || []).map((actor) => actor.label || actor.name)),
 			)
 		})
 
