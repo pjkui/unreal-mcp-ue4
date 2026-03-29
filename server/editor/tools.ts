@@ -6,7 +6,12 @@ export function read(filePath: string): string {
 	return fs.readFileSync(path.join(__dirname, filePath), "utf8")
 }
 
-const compatPrelude = read("./scripts/ue_compat.py")
+const compatPrelude = fs
+	.readdirSync(path.join(__dirname, "./scripts/ue_compat"))
+	.filter((fileName) => fileName.endsWith(".py"))
+	.sort()
+	.map((fileName) => read(`./scripts/ue_compat/${fileName}`))
+	.join("\n\n")
 
 function readWithCompat(filePath: string): string {
 	return `${compatPrelude}\n\n${read(filePath)}`

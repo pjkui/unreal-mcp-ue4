@@ -1,426 +1,14 @@
 import fs from "node:fs"
 import path from "node:path"
 
-interface ToolInfo {
-	category: string
-	description: string
-	index: number
-	name: string
-}
-
-type SupportStatus = "Supported" | "Partial"
-
-interface ToolSupportInfo {
-	note?: string
-	status: SupportStatus
-}
-
-interface ExcludedCapabilityInfo {
-	affectedSurface: string
-	capability: string
-	reason: string
-}
-
-const sourceControlProviderNote =
-	"Requires a configured and available Unreal source-control provider in the active editor session."
-
-const sourceControlQueryNote =
-	"Returns structured state even when source control is disabled, but meaningful revision status requires a configured and available provider."
-
-const sourceControlPackageReloadNote =
-	"Requires a configured and available Unreal source-control provider plus valid long package names to reload."
-
-const sourceControlProviderDependentTools = [
-	"check_out_file",
-	"check_out_files",
-	"check_out_or_add_file",
-	"check_out_or_add_files",
-	"mark_file_for_add",
-	"mark_files_for_add",
-	"mark_file_for_delete",
-	"mark_files_for_delete",
-	"revert_file",
-	"revert_files",
-	"revert_unchanged_files",
-	"sync_file",
-	"sync_files",
-	"check_in_files",
-] as const
-
-const categoryOrder = [
-	"Editor Session Info",
-	"Core Direct Tools",
-	"Core Tool Namespaces",
-	"World & Environment Tool Namespaces",
-	"Content & Authoring Tool Namespaces",
-	"Gameplay & Systems Tool Namespaces",
-]
-
-const toolSupport: Record<string, ToolSupportInfo> = {
-	...Object.fromEntries(
-		sourceControlProviderDependentTools.map((name) => [
-			name,
-			{
-				status: "Supported" as const,
-				note: sourceControlProviderNote,
-			},
-		]),
-	),
-	get_source_control_provider: {
-		status: "Supported",
-		note: "Reports provider name plus enabled or available status even when source control is disabled.",
-	},
-	query_source_control_state: {
-		status: "Supported",
-		note: sourceControlQueryNote,
-	},
-	query_source_control_states: {
-		status: "Supported",
-		note: sourceControlQueryNote,
-	},
-	revert_and_reload_packages: {
-		status: "Supported",
-		note: sourceControlPackageReloadNote,
-	},
-	read_blueprint_content: {
-		status: "Partial",
-		note: "Blueprint graph listings depend on what UE4.27 Python exposes; asset and component reads still work.",
-	},
-	add_component_to_blueprint: {
-		status: "Partial",
-		note: "Basic component adds work; parent_component_name and some hierarchy edits require SimpleConstructionScript exposure.",
-	},
-	editor_umg_add_widget: {
-		status: "Partial",
-		note: "Widget tree edits work, but nested UserWidget subclasses are not supported and positioning is reliable only on CanvasPanel children.",
-	},
-	editor_umg_set_widget_position: {
-		status: "Partial",
-		note: "Only widgets attached to CanvasPanel slots can be repositioned.",
-	},
-	editor_umg_reparent_widget: {
-		status: "Partial",
-		note: "Cannot reparent the current root widget, and CanvasPanel slot positioning rules still apply after reparenting.",
-	},
-	editor_umg_add_child_widget: {
-		status: "Partial",
-		note: "Supports native widget classes; nested UserWidget subclasses are not supported, and positioning is reliable only on CanvasPanel children.",
-	},
-	editor_umg_set_child_widget_position: {
-		status: "Partial",
-		note: "Only direct children attached to CanvasPanel slots can be repositioned.",
-	},
-	add_widget_to_viewport: {
-		status: "Partial",
-		note: "Requires an active PIE or game world and successful UserWidget instancing in the editor session.",
-	},
-	manage_inspection: {
-		status: "Partial",
-		note: "Asset, actor, and map inspection work; Blueprint inspection is limited to high-level asset summaries in stock UE4.27 Python.",
-	},
-	manage_editor: {
-		status: "Supported",
-		note: "Canonical namespace for project_info, map_info, world_outliner, PIE control, console_command, and run_python.",
-	},
-	manage_system: {
-		status: "Supported",
-		note: "Slim namespace for console and validation helpers; use manage_editor for canonical project and map inspection.",
-	},
-	manage_blueprint: {
-		status: "Partial",
-		note: "Blueprint asset and component edits work; graph inspection, pin wiring, and variable or function metadata helpers are excluded from the MCP surface in stock UE4.27 Python.",
-	},
-	manage_widget_authoring: {
-		status: "Partial",
-		note: "create_widget_blueprint, add_text_block, and add_button work; use add_child_widget for normal nested layout under an existing root such as CanvasPanel_0, while add_widget without parent_widget_name is only for assigning a new root. add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.",
-	},
-	manage_texture: {
-		status: "Supported",
-		note: "import_texture requires a local image file path that is accessible from the machine running the Unreal Editor session.",
-	},
-	manage_input: {
-		status: "Supported",
-		note: "Focused on classic UE4 input-mapping authoring; use manage_editor.project_info for the canonical project summary.",
-	},
-	manage_behavior_tree: {
-		status: "Supported",
-		note: "Focused on BehaviorTree asset discovery and inspection; use manage_editor.project_info for the canonical project summary.",
-	},
-	manage_source_control: {
-		status: "Supported",
-		note: "provider_info works broadly, but file and package operations require a configured and available Unreal source-control provider.",
-	},
-}
-
-const excludedCapabilities: ExcludedCapabilityInfo[] = [
-	{
-		capability: "Blueprint event-graph event insertion",
-		affectedSurface:
-			"Related event-node and input-action helpers are excluded from the MCP surface.",
-		reason:
-			"The current UE4.27 Python environment does not expose reliable event graph access or K2 event reference setup.",
-	},
-	{
-		capability: "Blueprint graph inspection and node search",
-		affectedSurface:
-			"Graph-analysis, graph-inspection, and node-search helpers are excluded from the MCP surface.",
-		reason:
-			"The current UE4.27 Python environment does not expose Blueprint graph arrays such as UbergraphPages or FunctionGraphs reliably enough for deterministic inspection.",
-	},
-	{
-		capability: "Low-level Blueprint graph node creation",
-		affectedSurface:
-			"Generic graph-node helpers and related self or component reference insertion helpers are excluded from the MCP surface.",
-		reason:
-			"The current UE4.27 Python environment does not expose stable low-level graph node creation or member-reference wiring.",
-	},
-	{
-		capability: "Blueprint function-call node authoring",
-		affectedSurface:
-			"Function-node helpers that depend on editor graph member-reference setup are excluded from the MCP surface.",
-		reason:
-			"The current UE4.27 Python environment does not expose reliable function-call node reference setup.",
-	},
-	{
-		capability: "Blueprint variable and function metadata inspection",
-		affectedSurface:
-			"Variable-detail and function-detail helpers are excluded from the MCP surface.",
-		reason:
-			"The current UE4.27 Python environment does not expose NewVariables or FunctionGraphs reliably enough for deterministic inspection.",
-	},
-	{
-		capability: "Blueprint variable authoring",
-		affectedSurface:
-			"Variable-creation helpers are excluded from the MCP surface.",
-		reason:
-			"BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment.",
-	},
-	{
-		capability: "UMG delegate-binding authoring",
-		affectedSurface:
-			"Widget event-binding and text-binding helpers are excluded from the MCP surface.",
-		reason:
-			"DelegateEditorBinding is not exposed in the current UE4.27 Python environment.",
-	},
-]
-
-function supportForTool(name: string): ToolSupportInfo {
-	return toolSupport[name] ?? {
-		status: "Supported",
-	}
-}
-
-function extractCategoryMarkers(content: string) {
-	const markers: Array<{ category: string; index: number }> = []
-	const categoryRegex = /^\s*\/\/\/\s+(.+)$/gm
-
-	for (const match of content.matchAll(categoryRegex)) {
-		markers.push({
-			category: match[1].trim(),
-			index: match.index ?? 0,
-		})
-	}
-
-	return markers
-}
-
-function fallbackCategory(toolName: string): string {
-	if (
-		toolName === "manage_asset" ||
-		toolName === "manage_actor" ||
-		toolName === "manage_editor" ||
-		toolName === "manage_level" ||
-		toolName === "manage_system" ||
-		toolName === "manage_inspection" ||
-		toolName === "manage_tools" ||
-		toolName === "manage_source_control"
-	) {
-		return "Core Tool Namespaces"
-	}
-
-	if (
-		toolName === "manage_lighting" ||
-		toolName === "manage_level_structure" ||
-		toolName === "manage_volumes" ||
-		toolName === "manage_navigation" ||
-		toolName === "manage_environment" ||
-		toolName === "manage_splines" ||
-		toolName === "manage_geometry" ||
-		toolName === "manage_effect"
-	) {
-		return "World & Environment Tool Namespaces"
-	}
-
-	if (
-		toolName === "manage_data" ||
-		toolName === "manage_skeleton" ||
-		toolName === "manage_material_authoring" ||
-		toolName === "manage_texture" ||
-		toolName === "manage_blueprint" ||
-		toolName === "manage_sequence" ||
-		toolName === "manage_audio" ||
-		toolName === "manage_widget_authoring"
-	) {
-		return "Content & Authoring Tool Namespaces"
-	}
-
-	if (
-		toolName === "manage_animation_physics" ||
-		toolName === "manage_input" ||
-		toolName === "manage_behavior_tree" ||
-		toolName === "manage_gas"
-	) {
-		return "Gameplay & Systems Tool Namespaces"
-	}
-
-	if (toolName.includes("umg") || toolName.includes("widget")) {
-		return "UMG Tools"
-	}
-
-	if (toolName.includes("source_control")) {
-		return "Source Control Tools"
-	}
-
-	if (toolName.includes("material") || toolName.includes("physics")) {
-		return "Physics & Materials Tools"
-	}
-
-	if (toolName.includes("blueprint")) {
-		if (
-			toolName.includes("read_") ||
-			toolName.includes("analyze_") ||
-			toolName.includes("variable_details") ||
-			toolName.includes("function_details")
-		) {
-			return "Blueprint Analysis Tools"
-		}
-
-		if (
-			toolName === "add_node" ||
-			toolName === "connect_nodes" ||
-			toolName === "disconnect_nodes" ||
-			toolName === "create_variable"
-		) {
-			return "Blueprint Graph Editing Tools"
-		}
-
-		if (toolName.includes("node") || toolName.includes("self_reference")) {
-			return "Blueprint Node Graph Tools"
-		}
-		return "Blueprint Asset / Component Tools"
-	}
-
-	if (toolName.includes("input")) {
-		return "Project / Input Tools"
-	}
-
-	if (
-		toolName.includes("create_town") ||
-		toolName.includes("construct_house") ||
-		toolName.includes("construct_mansion") ||
-		toolName.includes("create_tower") ||
-		toolName.includes("create_arch") ||
-		toolName.includes("create_staircase")
-	) {
-		return "World Building Tools"
-	}
-
-	if (
-		toolName.includes("create_castle_fortress") ||
-		toolName.includes("create_suspension_bridge") ||
-		toolName.includes("create_aqueduct") ||
-		toolName.includes("create_bridge")
-	) {
-		return "Epic Structures Tools"
-	}
-
-	if (
-		toolName.includes("create_maze") ||
-		toolName.includes("create_pyramid") ||
-		toolName.includes("create_wall")
-	) {
-		return "Level Design Tools"
-	}
-
-	if (
-		toolName.includes("actor") ||
-		toolName.includes("world") ||
-		toolName.includes("map") ||
-		toolName.includes("camera") ||
-		toolName.includes("screenshot")
-	) {
-		return "Actor / Level Tools"
-	}
-
-	if (
-		toolName.includes("asset") ||
-		toolName.includes("project") ||
-		toolName.includes("console") ||
-		toolName.includes("python")
-	) {
-		return "Editor & Asset Tools"
-	}
-
-	if (toolName.includes("path")) {
-		return "Editor Session Info"
-	}
-
-	if (toolName.includes("version")) {
-		return "Editor Session Info"
-	}
-
-	return "Editor & Asset Tools"
-}
-
-function categoryForIndex(
-	markers: Array<{ category: string; index: number }>,
-	matchIndex: number,
-	toolName: string,
-): string {
-	let activeCategory: string | undefined
-
-	for (const marker of markers) {
-		if (marker.index > matchIndex) {
-			break
-		}
-		activeCategory = marker.category
-	}
-
-	if (activeCategory === "Tool Namespaces") {
-		return fallbackCategory(toolName)
-	}
-
-	return activeCategory ?? fallbackCategory(toolName)
-}
-
-function extractToolsFromSourceFile(): ToolInfo[] {
-	const indexPath = path.join(__dirname, "../../server/index.ts")
-	const content = fs.readFileSync(indexPath, "utf-8")
-	const markers = extractCategoryMarkers(content)
-	const toolRegex =
-		/(?:rawServerTool|server\.tool|registerPythonTool|registerZeroArgPythonTool|registerToolNamespace)\(\s*["']([^"']+)["']\s*,\s*["']([^"']+)["']/g
-
-	const tools: ToolInfo[] = []
-	for (const match of content.matchAll(toolRegex)) {
-		const name = match[1]
-		const description = match[2]
-			.split("\\n\\n")[0]
-			.split("\n\n")[0]
-			.split("\\n")[0]
-			.split("\n")[0]
-			.trim()
-		const index = match.index ?? 0
-
-		tools.push({
-			category: categoryForIndex(markers, index, name),
-			description,
-			index,
-			name,
-		})
-	}
-
-	return tools.sort((a, b) => a.index - b.index)
-}
+import {
+	categoryOrder,
+	excludedCapabilities,
+	supportForTool,
+	toolCatalogEntries,
+	type ExcludedCapabilityInfo,
+	type ToolCatalogEntry,
+} from "../tool-catalog.js"
 
 function formatTableCell(value?: string): string {
 	return value && value.trim() ? value.replace(/\|/g, "\\|") : "-"
@@ -437,14 +25,18 @@ function escapeHtml(value?: string, emptyValue: string = "-"): string {
 		.replace(/>/g, "&gt;")
 }
 
-function generateToolsTable(tools: ToolInfo[]): string {
+function summarizeDescription(description: string): string {
+	return description.split("\n\n")[0].split("\n")[0].trim()
+}
+
+function generateToolsTable(tools: ToolCatalogEntry[]): string {
 	const rows = tools
 		.map((tool) => {
 			const support = supportForTool(tool.name)
 			return [
 				"\t<tr>",
 				`\t\t<td width="18%"><code>${escapeHtml(tool.name)}</code></td>`,
-				`\t\t<td width="52%">${escapeHtml(tool.description)}</td>`,
+				`\t\t<td width="52%">${escapeHtml(summarizeDescription(tool.description))}</td>`,
 				`\t\t<td width="30%">${escapeHtml(support.note, "&nbsp;")}</td>`,
 				"\t</tr>",
 			].join("\n")
@@ -453,26 +45,26 @@ function generateToolsTable(tools: ToolInfo[]): string {
 
 	return [
 		'<table width="100%">',
-		'\t<colgroup>',
+		"\t<colgroup>",
 		'\t\t<col width="18%">',
 		'\t\t<col width="52%">',
 		'\t\t<col width="30%">',
-		'\t</colgroup>',
-		'\t<thead>',
-		'\t\t<tr>',
+		"\t</colgroup>",
+		"\t<thead>",
+		"\t\t<tr>",
 		'\t\t\t<th width="18%">Tool</th>',
 		'\t\t\t<th width="52%">Description</th>',
 		'\t\t\t<th width="30%">Notes</th>',
-		'\t\t</tr>',
-		'\t</thead>',
-		'\t<tbody>',
+		"\t\t</tr>",
+		"\t</thead>",
+		"\t<tbody>",
 		rows,
-		'\t</tbody>',
-		'</table>',
+		"\t</tbody>",
+		"</table>",
 	].join("\n")
 }
 
-function generateToolsSections(tools: ToolInfo[]): string {
+function generateToolsSections(tools: ToolCatalogEntry[]): string {
 	const sections: string[] = []
 
 	for (const category of categoryOrder) {
@@ -484,7 +76,7 @@ function generateToolsSections(tools: ToolInfo[]): string {
 		sections.push(`### ${category}\n\n${generateToolsTable(categoryTools)}`)
 	}
 
-	const uncategorizedTools = tools.filter((tool) => !categoryOrder.includes(tool.category))
+	const uncategorizedTools = tools.filter((tool) => !categoryOrder.includes(tool.category as any))
 	if (uncategorizedTools.length > 0) {
 		sections.push(`### Other Tools\n\n${generateToolsTable(uncategorizedTools)}`)
 	}
@@ -501,35 +93,6 @@ function generateExcludedCapabilitiesTable(entries: ExcludedCapabilityInfo[]): s
 		})
 		.join("\n")
 	return header + rows
-}
-
-function updateReadmeWithTools() {
-	const readmePath = path.join(__dirname, "../../README.md")
-	const readmeContent = fs.readFileSync(readmePath, "utf-8")
-
-	const tools = extractToolsFromSourceFile()
-	const toolsSection = `## Available Tools
-
-Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
-
-The recommended public surface is the \`manage_*\` namespace layer. Prefer \`manage_editor.project_info\`, \`manage_editor.map_info\`, and \`manage_level.world_outliner\` as canonical read entry points, and treat the small direct-tool set as low-level primitives for path discovery and actor CRUD.
-
-${generateToolsSections(tools)}
-
-### Excluded Capability Areas
-
-These capability areas are intentionally not exposed through the MCP surface in this UE4.27 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
-
-${generateExcludedCapabilitiesTable(excludedCapabilities)}
-
-`
-
-	const updatedContent = replaceToolsSection(readmeContent, toolsSection)
-
-	fs.writeFileSync(readmePath, updatedContent)
-	console.log(
-		`Updated README.md with ${tools.length} tools and ${excludedCapabilities.length} excluded capability areas`,
-	)
 }
 
 function replaceToolsSection(content: string, toolsSection: string): string {
@@ -555,8 +118,8 @@ function insertToolsSection(content: string, toolsSection: string): string {
 	const insertMarkers = [
 		"## Contributing",
 		"## License",
-		"## ?뱞 License",
-		"## ?쩃 Contributing",
+		"## ?諭?License",
+		"## ?姨?Contributing",
 	]
 	const insertPoints = insertMarkers
 		.map((marker) => ({ found: content.indexOf(marker), marker }))
@@ -567,6 +130,34 @@ function insertToolsSection(content: string, toolsSection: string): string {
 	return insertPoint
 		? content.slice(0, insertPoint.found) + toolsSection + content.slice(insertPoint.found)
 		: content + "\n" + toolsSection
+}
+
+function updateReadmeWithTools() {
+	const readmePath = path.join(__dirname, "../../README.md")
+	const readmeContent = fs.readFileSync(readmePath, "utf-8")
+
+	const toolsSection = `## Available Tools
+
+Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
+
+The recommended public surface is the \`manage_*\` namespace layer. Prefer \`manage_editor.project_info\`, \`manage_editor.map_info\`, and \`manage_level.world_outliner\` as canonical read entry points, and treat the small direct-tool set as low-level primitives for path discovery and actor CRUD.
+
+${generateToolsSections(toolCatalogEntries)}
+
+### Excluded Capability Areas
+
+These capability areas are intentionally not exposed through the MCP surface in this UE4.27 port because they fail reliably in the current Python environment and only add prompt or context overhead until a native bridge exists.
+
+${generateExcludedCapabilitiesTable(excludedCapabilities)}
+
+`
+
+	const updatedContent = replaceToolsSection(readmeContent, toolsSection)
+
+	fs.writeFileSync(readmePath, updatedContent)
+	console.log(
+		`Updated README.md with ${toolCatalogEntries.length} tools and ${excludedCapabilities.length} excluded capability areas`,
+	)
 }
 
 updateReadmeWithTools()
