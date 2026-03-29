@@ -584,6 +584,24 @@ async function main() {
 			})
 		})
 
+		await runStep("Move the viewport camera through manage_editor", async () => {
+			const cameraResult = await callJsonTool("manage_editor", {
+				action: "move_camera",
+				params: {
+					location: { x: 180, y: -420, z: 360 },
+					rotation: { pitch: -20, yaw: 35, roll: 0 },
+				},
+			})
+			assert(
+				Math.abs(Number(cameraResult.location?.x ?? 0) - 180) < 0.1,
+				"manage_editor move_camera did not update the expected X location",
+			)
+			assert(
+				Math.abs(Number(cameraResult.rotation?.yaw ?? 0) - 35) < 0.1,
+				"manage_editor move_camera did not update the expected yaw",
+			)
+		})
+
 		const directActorName = `${options.prefix}_DirectActor`
 		addCleanup(`Delete actor ${directActorName}`, () => safeDeleteActor(directActorName))
 
@@ -641,6 +659,18 @@ async function main() {
 				params: { pattern: granularActorName },
 			})
 			assert(findResult.count >= 1, "manage_actor find did not locate the smoke actor")
+		})
+
+		await runStep("List actors through manage_actor", async () => {
+			const actorList = await callJsonTool("manage_actor", {
+				action: "list",
+				params: {},
+			})
+			assert(Array.isArray(actorList.actors), "manage_actor list did not return an actor list")
+			assert(
+				actorList.actors.some((actor) => actor.label === granularActorName),
+				"manage_actor list did not include the smoke actor",
+			)
 		})
 
 		await runStep("List actors through manage_level", async () => {
@@ -762,6 +792,22 @@ async function main() {
 					Array.isArray(namespaceDescription.supported_actions)
 						&& namespaceDescription.supported_actions.includes("apply_to_actor"),
 					"manage_tools describe_namespace did not include apply_to_actor",
+				)
+			})
+
+			await runStep("Read tool namespace status through manage_tools", async () => {
+				const toolStatus = await callJsonTool("manage_tools", {
+					action: "tool_status",
+					params: {},
+				})
+				assert(
+					Number.isFinite(toolStatus.tool_namespace_count) && toolStatus.tool_namespace_count >= 20,
+					"manage_tools tool_status did not return a namespace count",
+				)
+				assert(
+					Array.isArray(toolStatus.tool_namespaces)
+						&& toolStatus.tool_namespaces.includes("manage_widget_authoring"),
+					"manage_tools tool_status did not include manage_widget_authoring",
 				)
 			})
 
@@ -1012,6 +1058,25 @@ async function main() {
 				)
 			})
 
+			await runStep("Inspect the Blueprint through manage_inspection", async () => {
+				const inspectionBlueprintResult = await callJsonTool("manage_inspection", {
+					action: "blueprint",
+					params: {
+						blueprint_name: blueprintPath,
+						include_nodes: false,
+					},
+				})
+				assert(
+					inspectionBlueprintResult.blueprint?.asset_path === blueprintPath,
+					"manage_inspection blueprint returned the wrong asset path",
+				)
+				assert(
+					typeof inspectionBlueprintResult.blueprint?.generated_class === "string" &&
+						inspectionBlueprintResult.blueprint.generated_class.length > 0,
+					"manage_inspection blueprint did not report a generated class",
+				)
+			})
+
 			const blueprintActorName = `${options.prefix}_BlueprintActor`
 			addCleanup(`Delete actor ${blueprintActorName}`, () => safeDeleteActor(blueprintActorName))
 
@@ -1088,6 +1153,27 @@ async function main() {
 				assert(
 					stringTableResult.asset_path === stringTablePath,
 					`StringTable was created at an unexpected path: ${stringTableResult.asset_path}`,
+				)
+			})
+
+			await runStep("Search data assets through manage_data", async () => {
+				const dataSearchResult = await callJsonTool("manage_data", {
+					action: "search_data_assets",
+					params: {
+						search_term: options.prefix,
+						include_engine: false,
+						limit: 20,
+					},
+				})
+				assert(Array.isArray(dataSearchResult.assets), "manage_data search_data_assets did not return an asset list")
+				assert(
+					dataSearchResult.assets.some(
+						(asset) =>
+							asset.path === dataAssetPath
+							|| asset.path === dataTablePath
+							|| asset.path === stringTablePath,
+					),
+					"manage_data search_data_assets did not find any of the created data assets",
 				)
 			})
 
