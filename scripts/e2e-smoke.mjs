@@ -22,6 +22,9 @@ Usage:
 
 Options:
   --with-assets         Also test Blueprint and UMG asset creation/cleanup.
+  --with-source-control-mutations
+                        Exercise safe source-control mutation workflows using temporary files/assets.
+                        Implies --with-assets.
   --keep-assets         Keep temporary Blueprint and Widget assets after the run.
   --skip-namespace      Skip the tool-namespace smoke phase.
   --prefix <value>      Prefix used for temporary test actor and asset names.
@@ -42,6 +45,7 @@ function parseArgs(argv) {
 		timeoutMs: 20_000,
 		verbose: false,
 		withAssets: false,
+		withSourceControlMutations: false,
 		keepAssets: false,
 	}
 
@@ -50,6 +54,10 @@ function parseArgs(argv) {
 
 		switch (value) {
 			case "--with-assets":
+				options.withAssets = true
+				break
+			case "--with-source-control-mutations":
+				options.withSourceControlMutations = true
 				options.withAssets = true
 				break
 			case "--keep-assets":
@@ -259,6 +267,7 @@ async function main() {
 	const summary = []
 	let projectInfo
 	let currentMapInfo
+	let projectFilePath = ""
 	const basicShapeMaterialPath = "/Engine/BasicShapes/BasicShapeMaterial"
 	const tintableMaterialPath = "/Engine/EngineMaterials/EmissiveMeshMaterial"
 	const actorTintMaterialPath = `/Game/MCP/Tests/MI_${options.prefix}_ActorTint`
@@ -374,6 +383,22 @@ async function main() {
 		}
 	}
 
+	const safeRevertSourceControlFiles = async (files) => {
+		const normalizedFiles = files.filter((file) => typeof file === "string" && file.length > 0)
+		if (normalizedFiles.length === 0) {
+			return
+		}
+
+		try {
+			await callJsonTool("manage_source_control", {
+				action: "revert",
+				params: { files: normalizedFiles },
+			})
+		} catch {
+			// Best effort cleanup only.
+		}
+	}
+
 	const safeStopPie = async () => {
 		try {
 			await callJsonTool("manage_editor", {
@@ -461,6 +486,7 @@ async function main() {
 
 		if (options.withAssets) {
 			requiredTools.push(
+				"manage_animation_physics",
 				"manage_blueprint",
 				"manage_input",
 				"manage_material_authoring",
@@ -501,8 +527,9 @@ async function main() {
 				projectPathText.startsWith("Unreal Project path: "),
 				"get_unreal_project_path did not return the expected text format",
 			)
+			projectFilePath = projectPathText.slice("Unreal Project path: ".length).trim()
 			assert(
-				projectPathText.toLowerCase().includes(".uproject"),
+				projectFilePath.toLowerCase().includes(".uproject"),
 				"get_unreal_project_path did not return a .uproject path",
 			)
 		})
@@ -668,6 +695,18 @@ async function main() {
 			assert(
 				validationResult.validation_summary?.valid_count === 1,
 				"manage_system validate_assets did not mark the engine cube as valid",
+			)
+		})
+
+		await runStep("Validate an asset through manage_asset", async () => {
+			const validationResult = await callJsonTool("manage_asset", {
+				action: "validate",
+				params: { asset_paths: "/Engine/BasicShapes/Cube" },
+			})
+			assert(validationResult.total_validated === 1, "manage_asset validate did not validate one asset")
+			assert(
+				validationResult.validation_summary?.valid_count === 1,
+				"manage_asset validate did not mark the engine cube as valid",
 			)
 		})
 
@@ -1571,6 +1610,8 @@ async function main() {
 			const stringTablePath = `/Game/MCP/Tests/ST_${options.prefix}`
 			const texturePath = `/Game/MCP/Tests/T_${options.prefix}`
 			const widgetPath = `/Game/MCP/Tests/WBP_${options.prefix}`
+			const sourceControlAddAssetPath = `/Game/MCP/Tests/SC_Add_DA_${options.prefix}`
+			const sourceControlDataAssetPath = `/Game/MCP/Tests/SC_DA_${options.prefix}`
 			const tempTextureFile = path.join(os.tmpdir(), `${options.prefix}_Texture.png`)
 			const tempAudioFile = path.join(os.tmpdir(), `${options.prefix}_Audio.wav`)
 			const inputMappingName = `${options.prefix}_Action`
@@ -1584,6 +1625,8 @@ async function main() {
 				dataAssetPath,
 				dataTablePath,
 				stringTablePath,
+				sourceControlAddAssetPath,
+				sourceControlDataAssetPath,
 				actorTintMaterialPath,
 				debugTintMaterialPath,
 			]
@@ -1807,6 +1850,46 @@ async function main() {
 				assert(compileResult.blueprint === blueprintPath, "manage_blueprint compile returned an unexpected asset path")
 			})
 
+			await runStep("Set Blueprint physics properties through manage_animation_physics", async () => {
+				const animationPhysicsResult = await callJsonTool("manage_animation_physics", {
+					action: "set_physics_properties",
+					params: {
+						blueprint_name: blueprintPath,
+						component_name: "SmokeMesh",
+						simulate_physics: true,
+						gravity_enabled: true,
+						mass: 3.0,
+						linear_damping: 0.15,
+						angular_damping: 0.05,
+					},
+				})
+				assert(
+					animationPhysicsResult.blueprint === blueprintPath,
+					"manage_animation_physics set_physics_properties returned the wrong blueprint path",
+				)
+				assert(
+					animationPhysicsResult.component?.name === "SmokeMesh",
+					"manage_animation_physics set_physics_properties returned the wrong component summary",
+				)
+			})
+
+			await runStep("Compile the Blueprint through manage_animation_physics", async () => {
+				const animationCompileResult = await callJsonTool("manage_animation_physics", {
+					action: "compile_blueprint",
+					params: {
+						blueprint_name: blueprintPath,
+					},
+				})
+				assert(
+					animationCompileResult.blueprint === blueprintPath,
+					"manage_animation_physics compile_blueprint returned the wrong blueprint path",
+				)
+				assert(
+					animationCompileResult.compiled === true || animationCompileResult.saved === true,
+					"manage_animation_physics compile_blueprint did not compile or save the Blueprint",
+				)
+			})
+
 			await runStep("Read the Blueprint contents through manage_blueprint", async () => {
 				const blueprintReadResult = await callJsonTool("manage_blueprint", {
 					action: "read",
@@ -1855,6 +1938,11 @@ async function main() {
 
 			const blueprintActorName = `${options.prefix}_BlueprintActor`
 			addCleanup(`Delete actor ${blueprintActorName}`, () => safeDeleteActor(blueprintActorName))
+			const physicsBlueprintActorName = `${options.prefix}_PhysicsBlueprintActor`
+			addCleanup(
+				`Delete actor ${physicsBlueprintActorName}`,
+				() => safeDeleteActor(physicsBlueprintActorName),
+			)
 
 			await runStep("Spawn the Blueprint through manage_actor", async () => {
 				const blueprintSpawnResult = await callJsonTool("manage_actor", {
@@ -1872,6 +1960,39 @@ async function main() {
 				assert(
 					blueprintSpawnResult.actor?.label === blueprintActorName,
 					"manage_actor spawn_blueprint did not create the expected actor label",
+				)
+			})
+
+			await runStep("Spawn a physics-enabled Blueprint actor through manage_animation_physics", async () => {
+				const physicsSpawnResult = await callJsonTool("manage_animation_physics", {
+					action: "spawn_physics_blueprint_actor",
+					params: {
+						blueprint_name: blueprintPath,
+						name: physicsBlueprintActorName,
+						location: { x: 320, y: -220, z: 220 },
+						material_path: resolvedBlueprintMaterialPath,
+						simulate_physics: true,
+						gravity_enabled: true,
+						mass: 3.0,
+						linear_damping: 0.15,
+						angular_damping: 0.05,
+					},
+				})
+				assert(
+					physicsSpawnResult.blueprint === blueprintPath,
+					"manage_animation_physics spawn_physics_blueprint_actor returned the wrong blueprint path",
+				)
+				assert(
+					physicsSpawnResult.actor?.label === physicsBlueprintActorName,
+					"manage_animation_physics spawn_physics_blueprint_actor did not create the expected actor label",
+				)
+				assert(
+					physicsSpawnResult.physics?.simulate_physics === true,
+					"manage_animation_physics spawn_physics_blueprint_actor did not enable physics",
+				)
+				assert(
+					Array.isArray(physicsSpawnResult.materials),
+					"manage_animation_physics spawn_physics_blueprint_actor did not return component material info",
 				)
 			})
 
@@ -2588,6 +2709,128 @@ async function main() {
 				const pieStatus = await pollPieStatus(false)
 				assert(pieStatus?.is_pie_running === false, "manage_editor stop_pie did not stop the PIE session")
 			})
+
+			if (options.withSourceControlMutations) {
+				addCleanup(
+					`Revert source-control package changes for ${options.prefix}`,
+					() => safeRevertSourceControlFiles([sourceControlAddAssetPath, sourceControlDataAssetPath]),
+				)
+
+				await runStep("Confirm source control mutations are available", async () => {
+					const providerInfo = await callJsonTool("manage_source_control", {
+						action: "provider_info",
+						params: {},
+					})
+					assert(providerInfo.enabled === true, "Source control provider is not enabled for mutation smoke")
+					assert(providerInfo.available === true, "Source control provider is not available for mutation smoke")
+				})
+
+				await runStep("Create a generated DataAsset for source control add smoke", async () => {
+					const sourceControlAddAssetResult = await callJsonTool("manage_data", {
+						action: "create_data_asset",
+						params: {
+							name: sourceControlAddAssetPath,
+							data_asset_class: "DataAsset",
+						},
+					})
+					assert(
+						sourceControlAddAssetResult.asset_path === sourceControlAddAssetPath,
+						"Source-control add smoke DataAsset was created at an unexpected path",
+					)
+				})
+
+				await runStep("Create a generated DataAsset for source control checkout-or-add smoke", async () => {
+					const sourceControlAssetResult = await callJsonTool("manage_data", {
+						action: "create_data_asset",
+						params: {
+							name: sourceControlDataAssetPath,
+							data_asset_class: "DataAsset",
+						},
+					})
+					assert(
+						sourceControlAssetResult.asset_path === sourceControlDataAssetPath,
+						"Source-control smoke DataAsset was created at an unexpected path",
+					)
+				})
+
+				await runStep("Mark a generated asset for add through manage_source_control", async () => {
+					const addResult = await callJsonTool("manage_source_control", {
+						action: "add",
+						params: { files: [sourceControlAddAssetPath] },
+					})
+					assert(
+						addResult.file === sourceControlAddAssetPath
+							|| addResult.files?.includes(sourceControlAddAssetPath),
+						"manage_source_control add did not report the generated asset package",
+					)
+				})
+
+				await runStep("Query the generated add asset through manage_source_control", async () => {
+					const tempFileState = await callJsonTool("manage_source_control", {
+						action: "query_state",
+						params: { file: sourceControlAddAssetPath },
+					})
+					assert(
+						typeof tempFileState.state?.filename === "string" && tempFileState.state.filename.length > 0,
+						"manage_source_control query_state did not return a filename for the generated add asset",
+					)
+					assert(
+						typeof tempFileState.state?.is_added === "boolean",
+						"manage_source_control query_state did not return an is_added flag for the generated add asset",
+					)
+				})
+
+				await runStep("Revert the generated add asset through manage_source_control", async () => {
+					const revertResult = await callJsonTool("manage_source_control", {
+						action: "revert",
+						params: { files: [sourceControlAddAssetPath] },
+					})
+					assert(
+						revertResult.file === sourceControlAddAssetPath
+							|| revertResult.files?.includes(sourceControlAddAssetPath),
+						"manage_source_control revert did not report the generated add asset",
+					)
+				})
+
+				await runStep("Check out or add a generated asset through manage_source_control", async () => {
+					const checkoutOrAddResult = await callJsonTool("manage_source_control", {
+						action: "checkout_or_add",
+						params: { files: [sourceControlDataAssetPath] },
+					})
+					assert(
+						checkoutOrAddResult.file === sourceControlDataAssetPath
+							|| checkoutOrAddResult.files?.includes(sourceControlDataAssetPath),
+						"manage_source_control checkout_or_add did not report the generated asset package",
+					)
+				})
+
+				await runStep("Query the generated asset package through manage_source_control", async () => {
+					const assetState = await callJsonTool("manage_source_control", {
+						action: "query_state",
+						params: { file: sourceControlDataAssetPath },
+					})
+					assert(
+						typeof assetState.state?.filename === "string" && assetState.state.filename.length > 0,
+						"manage_source_control query_state did not return a filename for the generated asset package",
+					)
+					assert(
+						typeof assetState.state?.can_revert === "boolean",
+						"manage_source_control query_state did not return a can_revert flag for the generated asset package",
+					)
+				})
+
+				await runStep("Revert the generated checkout-or-add asset through manage_source_control", async () => {
+					const revertResult = await callJsonTool("manage_source_control", {
+						action: "revert",
+						params: { files: [sourceControlDataAssetPath] },
+					})
+					assert(
+						revertResult.file === sourceControlDataAssetPath
+							|| revertResult.files?.includes(sourceControlDataAssetPath),
+						"manage_source_control revert did not report the generated checkout-or-add asset",
+					)
+				})
+			}
 		}
 
 		console.log("")

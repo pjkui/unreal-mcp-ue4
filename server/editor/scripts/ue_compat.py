@@ -3085,6 +3085,31 @@ def get_actor_mesh_components(actor):
             seen_names.add(component_name)
             components.append(component)
 
+    try:
+        generic_components = list(
+            actor.get_components_by_class(getattr(unreal, "ActorComponent", object)) or []
+        )
+    except Exception:
+        generic_components = []
+
+    for component in generic_components:
+        component_name = get_object_name(component)
+        if component_name in seen_names:
+            continue
+
+        if not hasattr(component, "set_material"):
+            continue
+
+        if not (
+            hasattr(component, "get_material")
+            or hasattr(component, "get_num_materials")
+            or hasattr(component, "get_material_slot_names")
+        ):
+            continue
+
+        seen_names.add(component_name)
+        components.append(component)
+
     return components
 
 
