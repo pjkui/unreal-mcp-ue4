@@ -1518,9 +1518,38 @@ async function main() {
 			})
 		})
 
+		const levelPrefix = `${options.prefix}_LevelWall`
 		const levelStructurePrefix = `${options.prefix}_House`
+		const levelStructureBridgePrefix = `${options.prefix}_Bridge`
 		const environmentPrefix = `${options.prefix}_Arch`
+		const environmentPyramidPrefix = `${options.prefix}_Pyramid`
 		const geometryPrefix = `${options.prefix}_Stairs`
+		const geometryArchPrefix = `${options.prefix}_GeoArch`
+
+		await runStep("Create a wall through manage_level", async () => {
+			const levelResult = await callJsonTool("manage_level", {
+				action: "create_wall",
+				params: {
+					prefix: levelPrefix,
+					location: { x: 700, y: 320, z: 0 },
+					length: 260,
+					height: 160,
+					thickness: 30,
+				},
+			})
+			assert(
+				levelResult.structure === "create_wall",
+				"manage_level create_wall returned the wrong structure",
+			)
+			assert(
+				Number(levelResult.actor_count) > 0,
+				"manage_level create_wall did not spawn any actors",
+			)
+			addCleanup(
+				`Delete level actors for ${levelPrefix}`,
+				() => safeDeleteActors((levelResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
 
 		await runStep("Construct a house through manage_level_structure", async () => {
 			const structureResult = await callJsonTool("manage_level_structure", {
@@ -1545,6 +1574,32 @@ async function main() {
 			addCleanup(
 				`Delete level-structure actors for ${levelStructurePrefix}`,
 				() => safeDeleteActors((structureResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a bridge through manage_level_structure", async () => {
+			const bridgeResult = await callJsonTool("manage_level_structure", {
+				action: "create_bridge",
+				params: {
+					prefix: levelStructureBridgePrefix,
+					location: { x: 1100, y: 480, z: 0 },
+					span_length: 320,
+					width: 120,
+					deck_thickness: 20,
+					rail_height: 45,
+				},
+			})
+			assert(
+				bridgeResult.structure === "create_bridge",
+				"manage_level_structure create_bridge returned the wrong structure",
+			)
+			assert(
+				Number(bridgeResult.actor_count) > 0,
+				"manage_level_structure create_bridge did not spawn any actors",
+			)
+			addCleanup(
+				`Delete level-structure actors for ${levelStructureBridgePrefix}`,
+				() => safeDeleteActors((bridgeResult.actors || []).map((actor) => actor.label || actor.name)),
 			)
 		})
 
@@ -1574,6 +1629,31 @@ async function main() {
 			)
 		})
 
+		await runStep("Create a pyramid through manage_environment", async () => {
+			const pyramidResult = await callJsonTool("manage_environment", {
+				action: "create_pyramid",
+				params: {
+					prefix: environmentPyramidPrefix,
+					location: { x: 1380, y: 520, z: 0 },
+					base_size: 260,
+					levels: 4,
+					level_height: 36,
+				},
+			})
+			assert(
+				pyramidResult.structure === "create_pyramid",
+				"manage_environment create_pyramid returned the wrong structure",
+			)
+			assert(
+				Number(pyramidResult.actor_count) > 0,
+				"manage_environment create_pyramid did not spawn any actors",
+			)
+			addCleanup(
+				`Delete environment actors for ${environmentPyramidPrefix}`,
+				() => safeDeleteActors((pyramidResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
 		await runStep("Create a staircase through manage_geometry", async () => {
 			const geometryResult = await callJsonTool("manage_geometry", {
 				action: "create_staircase",
@@ -1597,6 +1677,32 @@ async function main() {
 			addCleanup(
 				`Delete geometry actors for ${geometryPrefix}`,
 				() => safeDeleteActors((geometryResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create an arch through manage_geometry", async () => {
+			const geometryArchResult = await callJsonTool("manage_geometry", {
+				action: "create_arch",
+				params: {
+					prefix: geometryArchPrefix,
+					location: { x: 1720, y: 520, z: 0 },
+					span_width: 180,
+					pillar_height: 150,
+					pillar_width: 35,
+					beam_height: 30,
+				},
+			})
+			assert(
+				geometryArchResult.structure === "create_arch",
+				"manage_geometry create_arch returned the wrong structure",
+			)
+			assert(
+				Number(geometryArchResult.actor_count) > 0,
+				"manage_geometry create_arch did not spawn any actors",
+			)
+			addCleanup(
+				`Delete geometry actors for ${geometryArchPrefix}`,
+				() => safeDeleteActors((geometryArchResult.actors || []).map((actor) => actor.label || actor.name)),
 			)
 		})
 
@@ -1890,6 +1996,12 @@ async function main() {
 				)
 			})
 
+			let blueprintGraphNames = []
+			let analyzedBlueprintGraphName = ""
+			let analyzedBlueprintNodeClass = ""
+			const unavailableBlueprintGraphReason =
+				"Blueprint graph metadata is not exposed in this UE4.27 environment."
+
 			await runStep("Read the Blueprint contents through manage_blueprint", async () => {
 				const blueprintReadResult = await callJsonTool("manage_blueprint", {
 					action: "read",
@@ -1914,6 +2026,139 @@ async function main() {
 				assert(
 					Array.isArray(blueprintReadResult.blueprint?.graphs),
 					"manage_blueprint read did not return a graphs list",
+				)
+				blueprintGraphNames = (blueprintReadResult.blueprint?.graphs || [])
+					.map((graph) => graph?.name)
+					.filter((graphName) => typeof graphName === "string" && graphName.length > 0)
+			})
+
+			await runStep("Read Blueprint variable details through manage_blueprint", async () => {
+				const variableDetailsResult = await callJsonTool("manage_blueprint", {
+					action: "get_variable_details",
+					params: {
+						blueprint_name: blueprintPath,
+					},
+				})
+				assert(
+					variableDetailsResult.blueprint === blueprintPath,
+					"manage_blueprint get_variable_details returned the wrong asset path",
+				)
+				assert(
+					Number.isFinite(variableDetailsResult.count),
+					"manage_blueprint get_variable_details did not return a numeric count",
+				)
+				assert(
+					Array.isArray(variableDetailsResult.variables),
+					"manage_blueprint get_variable_details did not return a variables list",
+				)
+			})
+
+			await runStep("Read Blueprint function details through manage_blueprint", async () => {
+				const functionDetailsResult = await callJsonTool("manage_blueprint", {
+					action: "get_function_details",
+					params: {
+						blueprint_name: blueprintPath,
+					},
+				})
+				assert(
+					functionDetailsResult.blueprint === blueprintPath,
+					"manage_blueprint get_function_details returned the wrong asset path",
+				)
+				assert(
+					Number.isFinite(functionDetailsResult.count),
+					"manage_blueprint get_function_details did not return a numeric count",
+				)
+				assert(
+					Array.isArray(functionDetailsResult.functions),
+					"manage_blueprint get_function_details did not return a functions list",
+				)
+			})
+
+			await runStep("Analyze the Blueprint graph through manage_blueprint", async () => {
+				if (blueprintGraphNames.length === 0) {
+					throw new StepSkipError(unavailableBlueprintGraphReason)
+				}
+				const graphAnalysisResult = await callJsonTool("manage_blueprint", {
+					action: "analyze_graph",
+					params: {
+						blueprint_name: blueprintPath,
+						graph_name: blueprintGraphNames[0],
+						include_nodes: true,
+					},
+				})
+				assert(
+					graphAnalysisResult.blueprint === blueprintPath,
+					"manage_blueprint analyze_graph returned the wrong asset path",
+				)
+				assert(
+					typeof graphAnalysisResult.graph?.name === "string" &&
+						graphAnalysisResult.graph.name.length > 0,
+					"manage_blueprint analyze_graph did not return a graph name",
+				)
+				assert(
+					Array.isArray(graphAnalysisResult.graph?.nodes),
+					"manage_blueprint analyze_graph did not return a node list",
+				)
+				analyzedBlueprintGraphName = graphAnalysisResult.graph.name
+				const sampleNode = graphAnalysisResult.graph.nodes.find(
+					(node) => typeof node?.class === "string" && node.class.length > 0,
+				)
+				assert(sampleNode, "manage_blueprint analyze_graph did not return a searchable node entry")
+				analyzedBlueprintNodeClass = sampleNode.class
+			})
+
+			await runStep("Inspect the Blueprint graph through manage_inspection", async () => {
+				if (!analyzedBlueprintGraphName) {
+					throw new StepSkipError(unavailableBlueprintGraphReason)
+				}
+				const inspectionGraphResult = await callJsonTool("manage_inspection", {
+					action: "blueprint_graph",
+					params: {
+						blueprint_name: blueprintPath,
+						graph_name: analyzedBlueprintGraphName,
+						include_nodes: true,
+					},
+				})
+				assert(
+					inspectionGraphResult.blueprint === blueprintPath,
+					"manage_inspection blueprint_graph returned the wrong asset path",
+				)
+				assert(
+					inspectionGraphResult.graph?.name === analyzedBlueprintGraphName,
+					"manage_inspection blueprint_graph returned the wrong graph name",
+				)
+				assert(
+					Array.isArray(inspectionGraphResult.graph?.nodes),
+					"manage_inspection blueprint_graph did not return a node list",
+				)
+			})
+
+			await runStep("Find Blueprint graph nodes through manage_blueprint", async () => {
+				if (!analyzedBlueprintGraphName || !analyzedBlueprintNodeClass) {
+					throw new StepSkipError(unavailableBlueprintGraphReason)
+				}
+				const nodeSearchResult = await callJsonTool("manage_blueprint", {
+					action: "find_nodes",
+					params: {
+						blueprint_name: blueprintPath,
+						graph_name: analyzedBlueprintGraphName,
+						node_class: analyzedBlueprintNodeClass,
+					},
+				})
+				assert(
+					nodeSearchResult.blueprint === blueprintPath,
+					"manage_blueprint find_nodes returned the wrong asset path",
+				)
+				assert(
+					Number(nodeSearchResult.count) >= 1,
+					"manage_blueprint find_nodes did not return any matching graph nodes",
+				)
+				assert(
+					Array.isArray(nodeSearchResult.nodes) &&
+						nodeSearchResult.nodes.some((node) =>
+							String(node.class || "").toLowerCase().includes(analyzedBlueprintNodeClass.toLowerCase()),
+						),
+					"manage_blueprint find_nodes did not return the expected node class",
 				)
 			})
 
