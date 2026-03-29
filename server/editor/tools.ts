@@ -22,14 +22,40 @@ function jsonArg(value: unknown): string {
 
 export const UEGetAssetInfo = (asset_path: string) => renderScript("./scripts/ue_get_asset_info.py", { asset_path })
 
-export const UEListAssets = () => renderScript("./scripts/ue_list_assets.py", {})
+export const UEListAssets = (
+	root_path?: string,
+	recursive?: boolean,
+	limit?: number,
+) =>
+	renderScript("./scripts/ue_list_assets.py", {
+		root_path: jsonArg(root_path),
+		recursive: jsonArg(recursive),
+		limit: jsonArg(limit),
+	})
 
-export const UEExportAsset = (asset_path: string) => renderScript("./scripts/ue_export_asset.py", { asset_path })
+export const UEExportAsset = (
+	asset_path: string,
+	destination_path?: string,
+	overwrite?: boolean,
+) =>
+	renderScript("./scripts/ue_export_asset.py", {
+		asset_path: jsonArg(asset_path),
+		destination_path: jsonArg(destination_path),
+		overwrite: jsonArg(overwrite),
+	})
 
 export const UEGetAssetReferences = (asset_path: string) =>
 	renderScript("./scripts/ue_get_asset_references.py", { asset_path })
 
-export const UEConsoleCommand = (command: string) => renderScript("./scripts/ue_console_command.py", { command })
+export const UEConsoleCommand = (command: string) =>
+	renderScript("./scripts/ue_console_command.py", {
+		command: jsonArg(command),
+	})
+
+export const UEGetConsoleVariable = (variable_name: string) =>
+	renderScript("./scripts/ue_get_console_variable.py", {
+		variable_name: jsonArg(variable_name),
+	})
 
 export const UEGetProjectInfo = () => renderScript("./scripts/ue_get_project_info.py", {})
 

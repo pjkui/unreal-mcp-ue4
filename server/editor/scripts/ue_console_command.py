@@ -1,12 +1,18 @@
-import unreal
+import json
 
 
-def execute_console_command(command: str) -> None:
-    unreal.SystemLibrary.execute_console_command(None, command)
+def execute_console_command(command):
+    normalized_command = str(command or "").strip()
+    if not normalized_command:
+        return {"success": False, "message": "command is required"}
+
+    unreal.SystemLibrary.execute_console_command(None, normalized_command)
+    return {"success": True, "command": normalized_command}
 
 
 def main():
-    execute_console_command("${command}")
+    command = decode_template_json("""${command}""")
+    print(json.dumps(execute_console_command(command), indent=2))
 
 
 if __name__ == "__main__":

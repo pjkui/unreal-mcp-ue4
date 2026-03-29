@@ -584,6 +584,74 @@ async function main() {
 			})
 		})
 
+		const smokeConsoleVariableName = "t.MaxFPS"
+		addCleanup(`Reset console variable ${smokeConsoleVariableName}`, async () => {
+			try {
+				await callJsonTool("manage_editor", {
+					action: "console_command",
+					params: { command: `${smokeConsoleVariableName} 0` },
+				})
+			} catch {
+				// Best effort only.
+			}
+		})
+
+		await runStep("Execute a console command through manage_editor", async () => {
+			const consoleResult = await callJsonTool("manage_editor", {
+				action: "console_command",
+				params: { command: `${smokeConsoleVariableName} 87` },
+			})
+			assert(
+				consoleResult.command === `${smokeConsoleVariableName} 87`,
+				"manage_editor console_command did not echo the executed command",
+			)
+		})
+
+		await runStep("Read a console variable through manage_editor", async () => {
+			const consoleVariable = await callJsonTool("manage_editor", {
+				action: "get_console_variable",
+				params: { variable_name: smokeConsoleVariableName },
+			})
+			assert(
+				consoleVariable.variable_name === smokeConsoleVariableName,
+				"manage_editor get_console_variable returned the wrong variable name",
+			)
+			assert(
+				Math.abs(Number(consoleVariable.float_value ?? 0) - 87) < 0.5
+					|| Number(consoleVariable.int_value ?? -1) === 87
+					|| String(consoleVariable.string_value ?? "").includes("87"),
+				"manage_editor get_console_variable did not report the expected value",
+			)
+		})
+
+		await runStep("Execute a console command through manage_system", async () => {
+			const consoleResult = await callJsonTool("manage_system", {
+				action: "console_command",
+				params: { command: `${smokeConsoleVariableName} 91` },
+			})
+			assert(
+				consoleResult.command === `${smokeConsoleVariableName} 91`,
+				"manage_system console_command did not echo the executed command",
+			)
+		})
+
+		await runStep("Read a console variable through manage_system", async () => {
+			const consoleVariable = await callJsonTool("manage_system", {
+				action: "get_console_variable",
+				params: { variable_name: smokeConsoleVariableName },
+			})
+			assert(
+				consoleVariable.variable_name === smokeConsoleVariableName,
+				"manage_system get_console_variable returned the wrong variable name",
+			)
+			assert(
+				Math.abs(Number(consoleVariable.float_value ?? 0) - 91) < 0.5
+					|| Number(consoleVariable.int_value ?? -1) === 91
+					|| String(consoleVariable.string_value ?? "").includes("91"),
+				"manage_system get_console_variable did not report the expected value",
+			)
+		})
+
 		await runStep("Move the viewport camera through manage_editor", async () => {
 			const cameraResult = await callJsonTool("manage_editor", {
 				action: "move_camera",
@@ -1239,6 +1307,60 @@ async function main() {
 				assert(
 					textureInfo[0].package === texturePath,
 					`manage_texture texture_info returned an unexpected asset path: ${textureInfo[0]?.package}`,
+				)
+			})
+
+			await runStep("List generated assets through manage_asset", async () => {
+				const listedAssets = await callJsonTool("manage_asset", {
+					action: "list",
+					params: {
+						root_path: "/Game/MCP/Tests",
+						recursive: true,
+						limit: 50,
+					},
+				})
+				assert(listedAssets.root_path === "/Game/MCP/Tests", "manage_asset list returned the wrong root path")
+				assert(Array.isArray(listedAssets.assets), "manage_asset list did not return an assets list")
+				assert(
+					listedAssets.assets.some(
+						(assetPath) =>
+							assetPath === blueprintPath || String(assetPath).startsWith(`${blueprintPath}.`),
+					)
+						&& listedAssets.assets.some(
+							(assetPath) =>
+								assetPath === texturePath || String(assetPath).startsWith(`${texturePath}.`),
+						),
+					"manage_asset list did not include the expected generated assets",
+				)
+			})
+
+			const exportedTextureFile = path.join(os.tmpdir(), `${options.prefix}_TextureExport.tga`)
+			if (!options.keepAssets) {
+				addCleanup(`Delete exported asset ${exportedTextureFile}`, async () => {
+					try {
+						fs.unlinkSync(exportedTextureFile)
+					} catch {
+						// Best effort only.
+					}
+				})
+			}
+
+			await runStep("Export a generated asset through manage_asset", async () => {
+				const exportResult = await callJsonTool("manage_asset", {
+					action: "export",
+					params: {
+						asset_path: texturePath,
+						destination_path: exportedTextureFile,
+						overwrite: true,
+					},
+				})
+				assert(
+					resolveLocalPath(exportResult.exported_file) === exportedTextureFile,
+					"manage_asset export returned the wrong destination path",
+				)
+				assert(
+					fs.existsSync(exportedTextureFile) && fs.statSync(exportedTextureFile).size > 0,
+					"manage_asset export did not create a non-empty exported file",
 				)
 			})
 

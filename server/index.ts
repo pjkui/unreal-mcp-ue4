@@ -618,7 +618,14 @@ registerToolNamespace(
 	"manage_asset",
 	"Asset tool namespace for list, search, info, references, export, and validation actions.",
 	{
-		list: () => pythonDispatch(editorTools.UEListAssets()),
+		list: (params) =>
+			pythonDispatch(
+				editorTools.UEListAssets(
+					optionalStringParam(params, ["root_path", "path"]) ?? "/Game",
+					typeof params.recursive === "boolean" ? params.recursive : true,
+					typeof params.limit === "number" ? params.limit : undefined,
+				),
+			),
 		search: (params) => pythonDispatch(searchAssetsCommand(params)),
 		info: (params) =>
 			pythonDispatch(
@@ -630,7 +637,11 @@ registerToolNamespace(
 			),
 		export: (params) =>
 			pythonDispatch(
-				editorTools.UEExportAsset(requiredStringParam(params, ["asset_path", "path", "name"])),
+				editorTools.UEExportAsset(
+					requiredStringParam(params, ["asset_path", "path", "name"]),
+					optionalStringParam(params, ["destination_path", "file_path", "output_path"]),
+					typeof params.overwrite === "boolean" ? params.overwrite : true,
+				),
 			),
 		validate: (params) =>
 			pythonDispatch(editorTools.UEValidateAssets(optionalStringParam(params, ["asset_paths", "paths"]))),
@@ -718,6 +729,12 @@ registerToolNamespace(
 		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 		map_info: () => pythonDispatch(editorTools.UEGetMapInfo()),
 		world_outliner: () => pythonDispatch(editorTools.UEGetWorldOutliner()),
+		get_console_variable: (params) =>
+			pythonDispatch(
+				editorTools.UEGetConsoleVariable(
+					requiredStringParam(params, ["variable_name", "name", "console_variable"]),
+				),
+			),
 		screenshot: () => pythonDispatch(editorTools.UETakeScreenshot()),
 		move_camera: (params) =>
 			pythonDispatch(
@@ -751,6 +768,12 @@ registerToolNamespace(
 		console_command: (params) =>
 			pythonDispatch(
 				editorTools.UEConsoleCommand(requiredStringParam(params, ["command"])),
+			),
+		get_console_variable: (params) =>
+			pythonDispatch(
+				editorTools.UEGetConsoleVariable(
+					requiredStringParam(params, ["variable_name", "name", "console_variable"]),
+				),
 			),
 		validate_assets: (params) =>
 			pythonDispatch(editorTools.UEValidateAssets(optionalStringParam(params, ["asset_paths", "paths"]))),
