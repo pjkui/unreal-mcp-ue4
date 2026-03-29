@@ -614,62 +614,6 @@ async function main() {
 			assert(Array.isArray(references), "manage_inspection asset_references did not return an array")
 		})
 
-		let sequenceAssetPath = ""
-		await runStep("Search sequence assets through manage_sequence", async () => {
-			const sequenceSearchResult = await callJsonTool("manage_sequence", {
-				action: "search_sequences",
-				params: { search_term: "" },
-			})
-			assert(Array.isArray(sequenceSearchResult.assets), "manage_sequence search_sequences did not return an asset list")
-			sequenceAssetPath = firstAssetPathFromSearch(sequenceSearchResult)
-			if (!sequenceAssetPath) {
-				throw new StepSkipError("No LevelSequence assets were found in the active project or engine content.")
-			}
-		})
-
-		await runStep("Read sequence metadata through manage_sequence", async () => {
-			if (!sequenceAssetPath) {
-				throw new StepSkipError("No LevelSequence asset was available for sequence_info.")
-			}
-			const sequenceInfo = await callJsonTool("manage_sequence", {
-				action: "sequence_info",
-				params: { asset_path: sequenceAssetPath },
-			})
-			assert(Array.isArray(sequenceInfo) && sequenceInfo.length === 1, "manage_sequence sequence_info did not return one asset record")
-			assert(
-				sequenceInfo[0].package === sequenceAssetPath,
-				"manage_sequence sequence_info returned the wrong asset package",
-			)
-		})
-
-		let audioAssetPath = ""
-		await runStep("Search audio assets through manage_audio", async () => {
-			const audioSearchResult = await callJsonTool("manage_audio", {
-				action: "search_audio_assets",
-				params: { search_term: "" },
-			})
-			assert(Array.isArray(audioSearchResult.assets), "manage_audio search_audio_assets did not return an asset list")
-			audioAssetPath = firstAssetPathFromSearch(audioSearchResult)
-			if (!audioAssetPath) {
-				throw new StepSkipError("No SoundCue assets were found in the active project or engine content.")
-			}
-		})
-
-		await runStep("Read audio metadata through manage_audio", async () => {
-			if (!audioAssetPath) {
-				throw new StepSkipError("No SoundCue asset was available for audio_info.")
-			}
-			const audioInfo = await callJsonTool("manage_audio", {
-				action: "audio_info",
-				params: { asset_path: audioAssetPath },
-			})
-			assert(Array.isArray(audioInfo) && audioInfo.length === 1, "manage_audio audio_info did not return one asset record")
-			assert(
-				audioInfo[0].package === audioAssetPath,
-				"manage_audio audio_info returned the wrong asset package",
-			)
-		})
-
 		let skeletonAssetPath = ""
 		await runStep("Search skeleton assets through manage_skeleton", async () => {
 			const skeletonSearchResult = await callJsonTool("manage_skeleton", {
@@ -709,76 +653,6 @@ async function main() {
 			assert(
 				skeletonInfo[0].package === skeletonInfoTarget,
 				"manage_skeleton asset_info returned the wrong asset package",
-			)
-		})
-
-		let behaviorTreeAssetPath = ""
-		await runStep("Search behavior trees through manage_behavior_tree", async () => {
-			const behaviorTreeSearchResult = await callJsonTool("manage_behavior_tree", {
-				action: "search_behavior_trees",
-				params: { search_term: "" },
-			})
-			assert(Array.isArray(behaviorTreeSearchResult.assets), "manage_behavior_tree search_behavior_trees did not return an asset list")
-			behaviorTreeAssetPath = firstAssetPathFromSearch(behaviorTreeSearchResult)
-			if (!behaviorTreeAssetPath) {
-				throw new StepSkipError("No BehaviorTree assets were found in the active project or engine content.")
-			}
-		})
-
-		let aiAssetPath = ""
-		await runStep("Search AI assets through manage_behavior_tree", async () => {
-			const aiAssetSearchResult = await callJsonTool("manage_behavior_tree", {
-				action: "search_ai_assets",
-				params: { search_term: "" },
-			})
-			assert(Array.isArray(aiAssetSearchResult.assets), "manage_behavior_tree search_ai_assets did not return an asset list")
-			aiAssetPath = firstAssetPathFromSearch(aiAssetSearchResult)
-			if (!aiAssetPath) {
-				throw new StepSkipError("No AI behavior assets were found in the active project or engine content.")
-			}
-		})
-
-		await runStep("Read behavior-tree metadata through manage_behavior_tree", async () => {
-			const behaviorTreeInfoTarget = behaviorTreeAssetPath || aiAssetPath
-			if (!behaviorTreeInfoTarget) {
-				throw new StepSkipError("No BehaviorTree asset was available for behavior_tree_info.")
-			}
-			const behaviorTreeInfo = await callJsonTool("manage_behavior_tree", {
-				action: "behavior_tree_info",
-				params: { asset_path: behaviorTreeInfoTarget },
-			})
-			assert(Array.isArray(behaviorTreeInfo) && behaviorTreeInfo.length === 1, "manage_behavior_tree behavior_tree_info did not return one asset record")
-			assert(
-				behaviorTreeInfo[0].package === behaviorTreeInfoTarget,
-				"manage_behavior_tree behavior_tree_info returned the wrong asset package",
-			)
-		})
-
-		let gasAssetPath = ""
-		await runStep("Search GAS assets through manage_gas", async () => {
-			const gasSearchResult = await callJsonTool("manage_gas", {
-				action: "search_gas_assets",
-				params: { search_term: "GameplayAbility" },
-			})
-			assert(Array.isArray(gasSearchResult.assets), "manage_gas search_gas_assets did not return an asset list")
-			gasAssetPath = firstAssetPathFromSearch(gasSearchResult)
-			if (!gasAssetPath) {
-				throw new StepSkipError("No gameplay-ability-related assets were found for the current search term.")
-			}
-		})
-
-		await runStep("Read GAS asset metadata through manage_gas", async () => {
-			if (!gasAssetPath) {
-				throw new StepSkipError("No gameplay-ability-related asset was available for asset_info.")
-			}
-			const gasAssetInfo = await callJsonTool("manage_gas", {
-				action: "asset_info",
-				params: { asset_path: gasAssetPath },
-			})
-			assert(Array.isArray(gasAssetInfo) && gasAssetInfo.length === 1, "manage_gas asset_info did not return one asset record")
-			assert(
-				gasAssetInfo[0].package === gasAssetPath,
-				"manage_gas asset_info returned the wrong asset package",
 			)
 		})
 
@@ -1625,13 +1499,28 @@ async function main() {
 
 		if (options.withAssets) {
 			const blueprintPath = `/Game/MCP/Tests/BP_${options.prefix}`
+			const sequencePath = `/Game/MCP/Tests/LS_${options.prefix}`
+			const behaviorTreePath = `/Game/MCP/Tests/BT_${options.prefix}`
+			const gasAbilityPath = `/Game/MCP/Tests/GA_${options.prefix}`
 			const dataAssetPath = `/Game/MCP/Tests/DA_${options.prefix}`
 			const dataTablePath = `/Game/MCP/Tests/DT_${options.prefix}`
 			const stringTablePath = `/Game/MCP/Tests/ST_${options.prefix}`
 			const texturePath = `/Game/MCP/Tests/T_${options.prefix}`
 			const widgetPath = `/Game/MCP/Tests/WBP_${options.prefix}`
 			const tempTextureFile = path.join(os.tmpdir(), `${options.prefix}_Texture.png`)
+			const tempAudioFile = path.join(os.tmpdir(), `${options.prefix}_Audio.wav`)
 			const inputMappingName = `${options.prefix}_Action`
+			const generatedAssetPaths = [
+				widgetPath,
+				texturePath,
+				blueprintPath,
+				sequencePath,
+				behaviorTreePath,
+				gasAbilityPath,
+				dataAssetPath,
+				dataTablePath,
+				stringTablePath,
+			]
 			const defaultInputConfigPath = path.join(
 				resolveLocalPath(projectInfo.project_directory),
 				"Config",
@@ -1646,22 +1535,42 @@ async function main() {
 			const texturePixelBase64 =
 				"iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZSURBVBhXY/jPAEQNIAoO/oMBlEMQMDAAAO2DCXg4buGUAAAAAElFTkSuQmCC"
 			fs.writeFileSync(tempTextureFile, Buffer.from(texturePixelBase64, "base64"))
+			const createSilenceWavBuffer = (sampleRate = 8000, durationSeconds = 0.1) => {
+				const numSamples = Math.max(1, Math.floor(sampleRate * durationSeconds))
+				const dataSize = numSamples
+				const buffer = Buffer.alloc(44 + dataSize)
+				buffer.write("RIFF", 0, "ascii")
+				buffer.writeUInt32LE(36 + dataSize, 4)
+				buffer.write("WAVE", 8, "ascii")
+				buffer.write("fmt ", 12, "ascii")
+				buffer.writeUInt32LE(16, 16)
+				buffer.writeUInt16LE(1, 20)
+				buffer.writeUInt16LE(1, 22)
+				buffer.writeUInt32LE(sampleRate, 24)
+				buffer.writeUInt32LE(sampleRate, 28)
+				buffer.writeUInt16LE(1, 32)
+				buffer.writeUInt16LE(8, 34)
+				buffer.write("data", 36, "ascii")
+				buffer.writeUInt32LE(dataSize, 40)
+				buffer.fill(128, 44)
+				return buffer
+			}
+			fs.writeFileSync(tempAudioFile, createSilenceWavBuffer())
 			if (!options.keepAssets) {
 				addCleanup(
 					`Delete assets for ${options.prefix}`,
-					() =>
-						safeDeleteAssets([
-							widgetPath,
-							texturePath,
-							blueprintPath,
-							dataAssetPath,
-							dataTablePath,
-							stringTablePath,
-						]),
+					() => safeDeleteAssets(generatedAssetPaths),
 				)
 				addCleanup(`Delete temp image ${tempTextureFile}`, async () => {
 					try {
 						fs.unlinkSync(tempTextureFile)
+					} catch {
+						// Best effort only.
+					}
+				})
+				addCleanup(`Delete temp audio ${tempAudioFile}`, async () => {
+					try {
+						fs.unlinkSync(tempAudioFile)
 					} catch {
 						// Best effort only.
 					}
@@ -1897,6 +1806,207 @@ async function main() {
 				assert(
 					blueprintSpawnResult.actor?.label === blueprintActorName,
 					"manage_actor spawn_blueprint did not create the expected actor label",
+				)
+			})
+
+			await runStep("Create a LevelSequence through manage_sequence", async () => {
+				const sequenceCreateResult = await callJsonTool("manage_sequence", {
+					action: "create_sequence",
+					params: {
+						name: sequencePath,
+					},
+				})
+				assert(
+					sequenceCreateResult.asset_path === sequencePath,
+					`manage_sequence create_sequence returned an unexpected asset path: ${sequenceCreateResult.asset_path}`,
+				)
+			})
+
+			await runStep("Search sequence assets through manage_sequence", async () => {
+				const sequenceSearchResult = await callJsonTool("manage_sequence", {
+					action: "search_sequences",
+					params: { search_term: options.prefix },
+				})
+				assert(Array.isArray(sequenceSearchResult.assets), "manage_sequence search_sequences did not return an asset list")
+				assert(
+					firstAssetPathFromSearch(sequenceSearchResult) === sequencePath,
+					"manage_sequence search_sequences did not find the created LevelSequence",
+				)
+			})
+
+			await runStep("Read sequence metadata through manage_sequence", async () => {
+				const sequenceInfo = await callJsonTool("manage_sequence", {
+					action: "sequence_info",
+					params: { asset_path: sequencePath },
+				})
+				assert(Array.isArray(sequenceInfo) && sequenceInfo.length === 1, "manage_sequence sequence_info did not return one asset record")
+				assert(
+					sequenceInfo[0].package === sequencePath,
+					"manage_sequence sequence_info returned the wrong asset package",
+				)
+			})
+
+			await runStep("Create a BehaviorTree through manage_behavior_tree", async () => {
+				const behaviorTreeCreateResult = await callJsonTool("manage_behavior_tree", {
+					action: "create_behavior_tree",
+					params: {
+						name: behaviorTreePath,
+					},
+				})
+				assert(
+					behaviorTreeCreateResult.asset_path === behaviorTreePath,
+					`manage_behavior_tree create_behavior_tree returned an unexpected asset path: ${behaviorTreeCreateResult.asset_path}`,
+				)
+			})
+
+			await runStep("Search behavior trees through manage_behavior_tree", async () => {
+				const behaviorTreeSearchResult = await callJsonTool("manage_behavior_tree", {
+					action: "search_behavior_trees",
+					params: { search_term: options.prefix },
+				})
+				assert(Array.isArray(behaviorTreeSearchResult.assets), "manage_behavior_tree search_behavior_trees did not return an asset list")
+				assert(
+					firstAssetPathFromSearch(behaviorTreeSearchResult) === behaviorTreePath,
+					"manage_behavior_tree search_behavior_trees did not find the created BehaviorTree",
+				)
+			})
+
+			await runStep("Search AI assets through manage_behavior_tree", async () => {
+				const aiAssetSearchResult = await callJsonTool("manage_behavior_tree", {
+					action: "search_ai_assets",
+					params: { search_term: options.prefix },
+				})
+				assert(Array.isArray(aiAssetSearchResult.assets), "manage_behavior_tree search_ai_assets did not return an asset list")
+				assert(
+					firstAssetPathFromSearch(aiAssetSearchResult) === behaviorTreePath,
+					"manage_behavior_tree search_ai_assets did not find the created BehaviorTree",
+				)
+			})
+
+			await runStep("Read behavior-tree metadata through manage_behavior_tree", async () => {
+				const behaviorTreeInfo = await callJsonTool("manage_behavior_tree", {
+					action: "behavior_tree_info",
+					params: { asset_path: behaviorTreePath },
+				})
+				assert(Array.isArray(behaviorTreeInfo) && behaviorTreeInfo.length === 1, "manage_behavior_tree behavior_tree_info did not return one asset record")
+				assert(
+					behaviorTreeInfo[0].package === behaviorTreePath,
+					"manage_behavior_tree behavior_tree_info returned the wrong asset package",
+				)
+			})
+
+			let importedAudioCuePath = ""
+			await runStep("Import audio through manage_audio", async () => {
+				const audioImportResult = await callJsonTool("manage_audio", {
+					action: "import_audio",
+					params: {
+						source_file: tempAudioFile,
+						destination_path: "/Game/MCP/Tests",
+						asset_name: `A_${options.prefix}`,
+						auto_create_cue: true,
+						cue_suffix: "_Cue",
+					},
+				})
+				assert(
+					typeof audioImportResult.sound_wave_path === "string" &&
+						audioImportResult.sound_wave_path.includes(`/Game/MCP/Tests/A_${options.prefix}`),
+					"manage_audio import_audio did not return the expected SoundWave path",
+				)
+				assert(
+					typeof audioImportResult.sound_cue_path === "string" &&
+						audioImportResult.sound_cue_path.endsWith(`A_${options.prefix}_Cue`),
+					"manage_audio import_audio did not return the expected SoundCue path",
+				)
+				importedAudioCuePath = audioImportResult.sound_cue_path
+				for (const importedAssetPath of [
+					audioImportResult.sound_wave_path,
+					audioImportResult.sound_cue_path,
+				]) {
+					if (
+						typeof importedAssetPath === "string" &&
+						importedAssetPath.length > 0 &&
+						!generatedAssetPaths.includes(importedAssetPath)
+					) {
+						generatedAssetPaths.push(importedAssetPath)
+					}
+				}
+			})
+
+			await runStep("Search audio assets through manage_audio", async () => {
+				const audioSearchResult = await callJsonTool("manage_audio", {
+					action: "search_audio_assets",
+					params: { search_term: options.prefix },
+				})
+				assert(Array.isArray(audioSearchResult.assets), "manage_audio search_audio_assets did not return an asset list")
+				assert(
+					firstAssetPathFromSearch(audioSearchResult) === importedAudioCuePath,
+					"manage_audio search_audio_assets did not find the imported SoundCue",
+				)
+			})
+
+			await runStep("Read audio metadata through manage_audio", async () => {
+				const audioInfo = await callJsonTool("manage_audio", {
+					action: "audio_info",
+					params: { asset_path: importedAudioCuePath },
+				})
+				assert(Array.isArray(audioInfo) && audioInfo.length === 1, "manage_audio audio_info did not return one asset record")
+				assert(
+					audioInfo[0].package === importedAudioCuePath,
+					"manage_audio audio_info returned the wrong asset package",
+				)
+			})
+
+			let gasAbilityCreated = false
+			await runStep("Create a GameplayAbility Blueprint for GAS smoke coverage", async () => {
+				try {
+					const gasBlueprintCreateResult = await callJsonTool("manage_blueprint", {
+						action: "create_blueprint",
+						params: {
+							name: gasAbilityPath,
+							parent_class: "/Script/GameplayAbilities.GameplayAbility",
+						},
+					})
+					assert(
+						gasBlueprintCreateResult.asset_path === gasAbilityPath,
+						`GameplayAbility Blueprint was created at an unexpected path: ${gasBlueprintCreateResult.asset_path}`,
+					)
+					gasAbilityCreated = true
+				} catch (error) {
+					throw new StepSkipError(
+						error instanceof Error
+							? error.message
+							: "GameplayAbility Blueprint creation is unavailable in this project or engine configuration.",
+					)
+				}
+			})
+
+			await runStep("Search GAS assets through manage_gas", async () => {
+				if (!gasAbilityCreated) {
+					throw new StepSkipError("GameplayAbility Blueprint creation is unavailable in this project or engine configuration.")
+				}
+				const gasSearchResult = await callJsonTool("manage_gas", {
+					action: "search_gas_assets",
+					params: { search_term: `GA_${options.prefix}` },
+				})
+				assert(Array.isArray(gasSearchResult.assets), "manage_gas search_gas_assets did not return an asset list")
+				assert(
+					firstAssetPathFromSearch(gasSearchResult) === gasAbilityPath,
+					"manage_gas search_gas_assets did not find the created GameplayAbility Blueprint",
+				)
+			})
+
+			await runStep("Read GAS asset metadata through manage_gas", async () => {
+				if (!gasAbilityCreated) {
+					throw new StepSkipError("GameplayAbility Blueprint creation is unavailable in this project or engine configuration.")
+				}
+				const gasAssetInfo = await callJsonTool("manage_gas", {
+					action: "asset_info",
+					params: { asset_path: gasAbilityPath },
+				})
+				assert(Array.isArray(gasAssetInfo) && gasAssetInfo.length === 1, "manage_gas asset_info did not return one asset record")
+				assert(
+					gasAssetInfo[0].package === gasAbilityPath,
+					"manage_gas asset_info returned the wrong asset package",
 				)
 			})
 

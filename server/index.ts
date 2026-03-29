@@ -1485,8 +1485,15 @@ registerToolNamespace(
 
 registerToolNamespace(
 	"manage_sequence",
-	"Sequence tool namespace for searching LevelSequence assets and inspecting their asset metadata.",
+	"Sequence tool namespace for creating, searching, and inspecting LevelSequence assets.",
 	{
+		create_sequence: (params) =>
+			pythonDispatch(
+				editorTools.UEContentFactoryTool("create_level_sequence", {
+					name: requiredStringParam(params, ["name", "asset_name"]),
+					path: optionalStringParam(params, ["path"]),
+				}),
+			),
 		search_sequences: (params) => pythonDispatch(searchAssetsCommand(params, "LevelSequence")),
 		sequence_info: (params) =>
 			pythonDispatch(
@@ -1498,8 +1505,22 @@ registerToolNamespace(
 /// Tool Namespaces
 registerToolNamespace(
 	"manage_audio",
-	"Audio tool namespace for searching audio assets and inspecting their asset metadata.",
+	"Audio tool namespace for importing audio files, searching audio assets, and inspecting their asset metadata.",
 	{
+		import_audio: (params) =>
+			pythonDispatch(
+				editorTools.UEContentFactoryTool("import_audio", {
+					source_file: requiredStringParam(params, ["source_file", "file_path", "local_path"]),
+					destination_path: optionalStringParam(params, ["destination_path", "content_path", "path"]),
+					asset_name: optionalStringParam(params, ["asset_name", "name"]),
+					replace_existing:
+						typeof params.replace_existing === "boolean" ? params.replace_existing : true,
+					save: typeof params.save === "boolean" ? params.save : true,
+					auto_create_cue:
+						typeof params.auto_create_cue === "boolean" ? params.auto_create_cue : true,
+					cue_suffix: optionalStringParam(params, ["cue_suffix"]),
+				}),
+			),
 		search_audio_assets: (params) => pythonDispatch(searchAssetsCommand(params, "SoundCue")),
 		audio_info: (params) =>
 			pythonDispatch(
@@ -1527,8 +1548,15 @@ registerToolNamespace(
 /// Tool Namespaces
 registerToolNamespace(
 	"manage_behavior_tree",
-	"Behavior-tree tool namespace for searching BehaviorTree assets and inspecting their asset metadata.",
+	"Behavior-tree tool namespace for creating, searching, and inspecting BehaviorTree assets.",
 	{
+		create_behavior_tree: (params) =>
+			pythonDispatch(
+				editorTools.UEContentFactoryTool("create_behavior_tree", {
+					name: requiredStringParam(params, ["name", "asset_name"]),
+					path: optionalStringParam(params, ["path"]),
+				}),
+			),
 		search_behavior_trees: (params) =>
 			pythonDispatch(searchAssetsCommand(params, "BehaviorTree")),
 		search_ai_assets: (params) =>

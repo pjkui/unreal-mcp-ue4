@@ -514,12 +514,12 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_sequence</code></td>
-		<td width="52%">Sequence tool namespace for searching LevelSequence assets and inspecting their asset metadata.</td>
+		<td width="52%">Sequence tool namespace for creating, searching, and inspecting LevelSequence assets.</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_audio</code></td>
-		<td width="52%">Audio tool namespace for searching audio assets and inspecting their asset metadata.</td>
+		<td width="52%">Audio tool namespace for importing audio files, searching audio assets, and inspecting their asset metadata.</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
@@ -558,7 +558,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_behavior_tree</code></td>
-		<td width="52%">Behavior-tree tool namespace for searching BehaviorTree assets and inspecting their asset metadata.</td>
+		<td width="52%">Behavior-tree tool namespace for creating, searching, and inspecting BehaviorTree assets.</td>
 		<td width="30%">Focused on BehaviorTree asset discovery and inspection; use manage_editor.project_info for the canonical project summary.</td>
 	</tr>
 	<tr>
