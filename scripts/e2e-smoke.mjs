@@ -783,6 +783,20 @@ async function main() {
 			})
 		})
 
+		await runStep("Execute Python through manage_editor", async () => {
+			const marker = `${options.prefix}_run_python_ok`
+			const pythonOutput = (await callTextTool("manage_editor", {
+				action: "run_python",
+				params: {
+					code: `print("${marker}")`,
+				},
+			})).trim()
+			assert(
+				pythonOutput === marker,
+				`manage_editor run_python returned unexpected output: ${pythonOutput}`,
+			)
+		})
+
 		const smokeConsoleVariableName = "t.MaxFPS"
 		addCleanup(`Reset console variable ${smokeConsoleVariableName}`, async () => {
 			try {
