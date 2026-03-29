@@ -24,7 +24,10 @@ def _linear_color_from_list(color_values, default=None):
 
 
 def _load_widget_blueprint(widget_name):
-    return load_blueprint_asset(widget_name, allow_widget=True)
+    widget_blueprint = load_blueprint_asset(widget_name, allow_widget=True)
+    if not get_object_class_name(widget_blueprint).endswith("WidgetBlueprint"):
+        raise ValueError("Expected a widget blueprint, but got: {0}".format(widget_name))
+    return widget_blueprint
 
 
 def _ensure_root_canvas(widget_blueprint):

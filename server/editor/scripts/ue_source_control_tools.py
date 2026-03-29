@@ -264,12 +264,26 @@ def _query_states(args):
         "helper_class": helper_name,
     }
     payload.update(_provider_snapshot(helper))
-    states = _call_helper_method(
-        helper,
-        ("query_file_states", "QueryFileStates"),
-        files,
-        True,
-    )
+    try:
+        states = _call_helper_method(
+            helper,
+            ("query_file_states", "QueryFileStates"),
+            files,
+            True,
+        )
+    except RuntimeError as exc:
+        if "does not expose query_file_states" not in str(exc):
+            raise
+
+        states = [
+            _call_helper_method(
+                helper,
+                ("query_file_state", "QueryFileState"),
+                file_value,
+                True,
+            )
+            for file_value in files
+        ]
     payload["states"] = [
         _serialize_source_control_state(state) for state in (states or [])
     ]

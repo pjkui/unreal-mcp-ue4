@@ -548,6 +548,42 @@ async function main() {
 			assert(typeof sourceControlState.state?.is_valid === "boolean", "state validity is missing")
 		})
 
+		await runStep("Query source control states in bulk", async () => {
+			const sourceControlStates = await callJsonTool("manage_source_control", {
+				action: "query_states",
+				params: { files: ["/Game", "/Engine/BasicShapes/Cube"] },
+			})
+			assert(sourceControlStates.count === 2, "manage_source_control query_states did not return the expected count")
+			assert(Array.isArray(sourceControlStates.states), "manage_source_control query_states did not return a states list")
+			assert(
+				sourceControlStates.states.every(
+					(state) =>
+						typeof state?.filename === "string" && typeof state?.is_valid === "boolean",
+				),
+				"manage_source_control query_states returned an invalid state entry",
+			)
+		})
+
+		await runStep("Take an editor screenshot through manage_editor", async () => {
+			const screenshotText = (await callTextTool("manage_editor", {
+				action: "screenshot",
+				params: {},
+			})).trim()
+			assert(
+				screenshotText.length > 0 && !screenshotText.includes("Failed to take screenshot"),
+				"manage_editor screenshot did not return a screenshot path",
+			)
+			const screenshotPath = resolveLocalPath(screenshotText)
+			assert(fs.existsSync(screenshotPath), `manage_editor screenshot did not create a file at ${screenshotPath}`)
+			addCleanup(`Delete screenshot ${screenshotPath}`, async () => {
+				try {
+					fs.unlinkSync(screenshotPath)
+				} catch {
+					// Best effort only.
+				}
+			})
+		})
+
 		const directActorName = `${options.prefix}_DirectActor`
 		addCleanup(`Delete actor ${directActorName}`, () => safeDeleteActor(directActorName))
 
@@ -809,6 +845,7 @@ async function main() {
 		if (options.withAssets) {
 			const blueprintPath = `/Game/MCP/Tests/BP_${options.prefix}`
 			const dataAssetPath = `/Game/MCP/Tests/DA_${options.prefix}`
+			const dataTablePath = `/Game/MCP/Tests/DT_${options.prefix}`
 			const stringTablePath = `/Game/MCP/Tests/ST_${options.prefix}`
 			const texturePath = `/Game/MCP/Tests/T_${options.prefix}`
 			const widgetPath = `/Game/MCP/Tests/WBP_${options.prefix}`
@@ -831,7 +868,15 @@ async function main() {
 			if (!options.keepAssets) {
 				addCleanup(
 					`Delete assets for ${options.prefix}`,
-					() => safeDeleteAssets([widgetPath, texturePath, blueprintPath, dataAssetPath, stringTablePath]),
+					() =>
+						safeDeleteAssets([
+							widgetPath,
+							texturePath,
+							blueprintPath,
+							dataAssetPath,
+							dataTablePath,
+							stringTablePath,
+						]),
 				)
 				addCleanup(`Delete temp image ${tempTextureFile}`, async () => {
 					try {
@@ -940,6 +985,55 @@ async function main() {
 				assert(compileResult.blueprint === blueprintPath, "manage_blueprint compile returned an unexpected asset path")
 			})
 
+			await runStep("Read the Blueprint contents through manage_blueprint", async () => {
+				const blueprintReadResult = await callJsonTool("manage_blueprint", {
+					action: "read",
+					params: {
+						blueprint_name: blueprintPath,
+						include_nodes: false,
+					},
+				})
+				assert(
+					blueprintReadResult.blueprint?.asset_path === blueprintPath,
+					"manage_blueprint read returned the wrong asset path",
+				)
+				assert(
+					typeof blueprintReadResult.blueprint?.generated_class === "string" &&
+						blueprintReadResult.blueprint.generated_class.length > 0,
+					"manage_blueprint read did not report a generated class",
+				)
+				assert(
+					Array.isArray(blueprintReadResult.blueprint?.components),
+					"manage_blueprint read did not return a components list",
+				)
+				assert(
+					Array.isArray(blueprintReadResult.blueprint?.graphs),
+					"manage_blueprint read did not return a graphs list",
+				)
+			})
+
+			const blueprintActorName = `${options.prefix}_BlueprintActor`
+			addCleanup(`Delete actor ${blueprintActorName}`, () => safeDeleteActor(blueprintActorName))
+
+			await runStep("Spawn the Blueprint through manage_actor", async () => {
+				const blueprintSpawnResult = await callJsonTool("manage_actor", {
+					action: "spawn_blueprint",
+					params: {
+						blueprint_name: blueprintPath,
+						name: blueprintActorName,
+						location: { x: 180, y: -180, z: 150 },
+					},
+				})
+				assert(
+					blueprintSpawnResult.blueprint === blueprintPath,
+					"manage_actor spawn_blueprint returned the wrong blueprint path",
+				)
+				assert(
+					blueprintSpawnResult.actor?.label === blueprintActorName,
+					"manage_actor spawn_blueprint did not create the expected actor label",
+				)
+			})
+
 			await runStep("Create a DataAsset through the tool-namespace layer", async () => {
 				const dataAssetResult = await callJsonTool("manage_data", {
 					action: "create_data_asset",
@@ -963,6 +1057,24 @@ async function main() {
 				assert(
 					dataAssetInfo[0].package === dataAssetPath,
 					`manage_data asset_info returned an unexpected asset path: ${dataAssetInfo[0]?.package}`,
+				)
+			})
+
+			await runStep("Create a DataTable through the tool-namespace layer", async () => {
+				const dataTableResult = await callJsonTool("manage_data", {
+					action: "create_data_table",
+					params: {
+						name: dataTablePath,
+						row_struct: "/Script/Engine.TableRowBase",
+					},
+				})
+				assert(
+					dataTableResult.asset_path === dataTablePath,
+					`DataTable was created at an unexpected path: ${dataTableResult.asset_path}`,
+				)
+				assert(
+					String(dataTableResult.row_struct) === "/Script/Engine.TableRowBase",
+					`DataTable used an unexpected row struct: ${dataTableResult.row_struct}`,
 				)
 			})
 
@@ -1047,6 +1159,7 @@ async function main() {
 			if (options.keepAssets) {
 				console.log(`[INFO] Kept Blueprint asset: ${blueprintPath}`)
 				console.log(`[INFO] Kept DataAsset: ${dataAssetPath}`)
+				console.log(`[INFO] Kept DataTable: ${dataTablePath}`)
 				console.log(`[INFO] Kept StringTable: ${stringTablePath}`)
 				console.log(`[INFO] Kept Texture asset: ${texturePath}`)
 				console.log(`[INFO] Kept temp texture file: ${tempTextureFile}`)

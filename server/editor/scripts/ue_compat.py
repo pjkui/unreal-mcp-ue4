@@ -1467,13 +1467,6 @@ def load_blueprint_asset(blueprint_name_or_path, allow_widget=False):
             )
         )
 
-    if allow_widget and not blueprint_class_name.endswith("WidgetBlueprint"):
-        raise ValueError(
-            "Expected a widget blueprint, but got: {0}".format(
-                blueprint_name_or_path
-            )
-        )
-
     return blueprint_asset
 
 
