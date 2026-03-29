@@ -92,10 +92,16 @@ def apply_material_to_blueprint(args):
     except Exception as exc:
         return {"success": False, "message": str(exc)}
 
+    resolved_component_name = (
+        get_scs_node_name(component_node)
+        or get_object_name(component_template)
+        or str(component_name or "")
+    )
+
     return {
         "success": True,
         "blueprint": get_asset_package_name(blueprint),
-        "component": get_scs_node_name(component_node),
+        "component": resolved_component_name,
         "slot_index": slot_index,
         "material": get_material_summary(material_asset),
     }

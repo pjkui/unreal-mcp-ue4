@@ -197,6 +197,14 @@ for asset_path in asset_paths:
 print(json.dumps({"success": True, "deleted": deleted}, indent=2))`
 }
 
+function resolveLocalPath(pathValue) {
+	if (!pathValue) {
+		return ""
+	}
+
+	return path.isAbsolute(pathValue) ? pathValue : path.resolve(repoRoot, pathValue)
+}
+
 async function main() {
 	const options = parseArgs(process.argv.slice(2))
 	if (options.help) {
@@ -249,6 +257,8 @@ async function main() {
 
 	const cleanupTasks = []
 	const summary = []
+	let projectInfo
+	let currentMapInfo
 
 	const addCleanup = (name, fn) => {
 		cleanupTasks.push({ name, fn })
@@ -340,8 +350,11 @@ async function main() {
 		const toolsResult = await runStep("List registered MCP tools", async () => client.listTools())
 		const toolNames = new Set(toolsResult.tools.map((tool) => tool.name))
 		const requiredTools = [
+			"manage_asset",
 			"manage_editor",
 			"manage_actor",
+			"manage_level",
+			"manage_lighting",
 			"manage_data",
 			"manage_source_control",
 			"manage_tools",
@@ -350,6 +363,9 @@ async function main() {
 		if (options.withAssets) {
 			requiredTools.push(
 				"manage_blueprint",
+				"manage_input",
+				"manage_material_authoring",
+				"manage_texture",
 				"manage_widget_authoring",
 			)
 		}
@@ -360,7 +376,7 @@ async function main() {
 		})
 
 		await runStep("Read project info", async () => {
-			const projectInfo = await callJsonTool("manage_editor", {
+			projectInfo = await callJsonTool("manage_editor", {
 				action: "project_info",
 				params: {},
 			})
@@ -369,12 +385,12 @@ async function main() {
 		})
 
 		await runStep("Read current map info", async () => {
-			const mapInfo = await callJsonTool("manage_editor", {
+			currentMapInfo = await callJsonTool("manage_editor", {
 				action: "map_info",
 				params: {},
 			})
-			assert(typeof mapInfo.map_name === "string" && mapInfo.map_name.length > 0, "map_name is missing")
-			assert(Number.isFinite(mapInfo.total_actors), "total_actors is missing")
+			assert(typeof currentMapInfo.map_name === "string" && currentMapInfo.map_name.length > 0, "map_name is missing")
+			assert(Number.isFinite(currentMapInfo.total_actors), "total_actors is missing")
 		})
 
 		await runStep("Read current world outliner", async () => {
@@ -383,6 +399,56 @@ async function main() {
 				params: {},
 			})
 			assert(Array.isArray(outliner.actors), "world outliner did not return an actor list")
+		})
+
+		await runStep("Read map info through manage_level", async () => {
+			const levelInfo = await callJsonTool("manage_level", {
+				action: "info",
+				params: {},
+			})
+			assert(levelInfo.map_name === currentMapInfo.map_name, "manage_level info returned a different map name")
+			assert(Number.isFinite(levelInfo.total_actors), "manage_level info did not return total_actors")
+		})
+
+		await runStep("Read world outliner through manage_level", async () => {
+			const outliner = await callJsonTool("manage_level", {
+				action: "world_outliner",
+				params: {},
+			})
+			assert(Array.isArray(outliner.actors), "manage_level world_outliner did not return an actor list")
+			assert(Number.isFinite(outliner.total_actors), "manage_level world_outliner did not return total_actors")
+		})
+
+		await runStep("Search assets through manage_asset", async () => {
+			const searchResult = await callJsonTool("manage_asset", {
+				action: "search",
+				params: {
+					search_term: "Cube",
+					asset_class: "StaticMesh",
+				},
+			})
+			assert(Array.isArray(searchResult.assets), "manage_asset search did not return an asset list")
+			assert(
+				searchResult.assets.some((asset) => asset.package_name === "/Engine/BasicShapes/Cube"),
+				"manage_asset search did not find /Engine/BasicShapes/Cube",
+			)
+		})
+
+		await runStep("Read asset info through manage_asset", async () => {
+			const assetInfo = await callJsonTool("manage_asset", {
+				action: "info",
+				params: { asset_path: "/Engine/BasicShapes/Cube" },
+			})
+			assert(Array.isArray(assetInfo) && assetInfo.length === 1, "manage_asset info did not return one asset record")
+			assert(assetInfo[0].package === "/Engine/BasicShapes/Cube", "manage_asset info returned the wrong asset package")
+		})
+
+		await runStep("Read asset references through manage_asset", async () => {
+			const references = await callJsonTool("manage_asset", {
+				action: "references",
+				params: { asset_path: "/Engine/BasicShapes/Cube" },
+			})
+			assert(Array.isArray(references), "manage_asset references did not return an array")
 		})
 
 		await runStep("Read source control provider info", async () => {
@@ -461,6 +527,18 @@ async function main() {
 				params: { pattern: granularActorName },
 			})
 			assert(findResult.count >= 1, "manage_actor find did not locate the smoke actor")
+		})
+
+		await runStep("List actors through manage_level", async () => {
+			const actorList = await callJsonTool("manage_level", {
+				action: "list_actors",
+				params: {},
+			})
+			assert(Array.isArray(actorList.actors), "manage_level list_actors did not return an actor list")
+			assert(
+				actorList.actors.some((actor) => actor.label === granularActorName),
+				"manage_level list_actors did not include the smoke actor",
+			)
 		})
 
 		await runStep("Move the spawned actor", async () => {
@@ -545,6 +623,50 @@ async function main() {
 			})
 		}
 
+		const lightActorName = `${options.prefix}_PointLight`
+		addCleanup(`Delete actor ${lightActorName}`, () => safeDeleteActor(lightActorName))
+
+		await runStep("Spawn a point light through manage_lighting", async () => {
+			const lightResult = await callJsonTool("manage_lighting", {
+				action: "spawn_point_light",
+				params: {
+					name: lightActorName,
+					location: { x: -300, y: 300, z: 240 },
+				},
+			})
+			assert(lightResult.actor?.label === lightActorName, "manage_lighting spawn_point_light did not create the expected actor")
+		})
+
+		await runStep("Move the point light through manage_lighting", async () => {
+			const transformResult = await callJsonTool("manage_lighting", {
+				action: "transform_light",
+				params: {
+					name: lightActorName,
+					location: { x: -180, y: 300, z: 260 },
+				},
+			})
+			assert(
+				Math.abs(Number(transformResult.actor?.location?.x ?? 0) - -180) < 0.1,
+				"manage_lighting transform_light did not update the expected X location",
+			)
+		})
+
+		await runStep("Inspect lighting through manage_lighting", async () => {
+			const lightingInfo = await callJsonTool("manage_lighting", {
+				action: "inspect_lighting",
+				params: {},
+			})
+			assert(typeof lightingInfo.map_name === "string" && lightingInfo.map_name.length > 0, "manage_lighting inspect_lighting did not return map_name")
+			assert(Number.isFinite(lightingInfo.lighting?.point_lights), "manage_lighting inspect_lighting did not return point_lights")
+		})
+
+		await runStep("Delete the point light smoke-test actor", async () => {
+			await callJsonTool("manage_actor", {
+				action: "delete",
+				params: { name: lightActorName },
+			})
+		})
+
 		if (options.withAssets) {
 			const blueprintPath = `/Game/MCP/Tests/BP_${options.prefix}`
 			const dataAssetPath = `/Game/MCP/Tests/DA_${options.prefix}`
@@ -552,7 +674,18 @@ async function main() {
 			const texturePath = `/Game/MCP/Tests/T_${options.prefix}`
 			const widgetPath = `/Game/MCP/Tests/WBP_${options.prefix}`
 			const tempTextureFile = path.join(os.tmpdir(), `${options.prefix}_Texture.png`)
+			const inputMappingName = `${options.prefix}_Action`
+			const defaultInputConfigPath = path.join(
+				resolveLocalPath(projectInfo.project_directory),
+				"Config",
+				"DefaultInput.ini",
+			)
+			const originalDefaultInputConfig = fs.existsSync(defaultInputConfigPath)
+				? fs.readFileSync(defaultInputConfigPath, "utf8")
+				: null
+			const originalClassicInputActionCount = Number(projectInfo.classic_input_actions_count ?? 0)
 			let widgetAuthoringUnsupportedReason = ""
+			let basicShapeMaterialPath = "/Engine/BasicShapes/BasicShapeMaterial"
 			const texturePixelBase64 =
 				"iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZSURBVBhXY/jPAEQNIAoO/oMBlEMQMDAAAO2DCXg4buGUAAAAAElFTkSuQmCC"
 			fs.writeFileSync(tempTextureFile, Buffer.from(texturePixelBase64, "base64"))
@@ -564,6 +697,20 @@ async function main() {
 				addCleanup(`Delete temp image ${tempTextureFile}`, async () => {
 					try {
 						fs.unlinkSync(tempTextureFile)
+					} catch {
+						// Best effort only.
+					}
+				})
+				addCleanup(`Restore input config ${defaultInputConfigPath}`, async () => {
+					try {
+						if (originalDefaultInputConfig === null) {
+							if (fs.existsSync(defaultInputConfigPath)) {
+								fs.unlinkSync(defaultInputConfigPath)
+							}
+							return
+						}
+
+						fs.writeFileSync(defaultInputConfigPath, originalDefaultInputConfig, "utf8")
 					} catch {
 						// Best effort only.
 					}
@@ -605,6 +752,43 @@ async function main() {
 						static_mesh: "/Engine/BasicShapes/Cube",
 					},
 				})
+			})
+
+			await runStep("List materials through manage_material_authoring", async () => {
+				const materialsResult = await callJsonTool("manage_material_authoring", {
+					action: "list_materials",
+					params: {
+						search_term: "BasicShapeMaterial",
+						include_engine: true,
+						limit: 10,
+					},
+				})
+				assert(Array.isArray(materialsResult.materials), "manage_material_authoring list_materials did not return a materials list")
+				const discoveredMaterial = materialsResult.materials.find((material) =>
+					String(material.path).includes("BasicShapeMaterial"),
+				)
+				assert(discoveredMaterial, "manage_material_authoring list_materials did not find BasicShapeMaterial")
+				basicShapeMaterialPath = discoveredMaterial.path
+			})
+
+			await runStep("Apply a material to the Blueprint through manage_material_authoring", async () => {
+				const applyResult = await callJsonTool("manage_material_authoring", {
+					action: "apply_to_blueprint",
+					params: {
+						blueprint_name: blueprintPath,
+						component_name: "SmokeMesh",
+						material_path: basicShapeMaterialPath,
+					},
+				})
+				assert(applyResult.blueprint === blueprintPath, "manage_material_authoring apply_to_blueprint returned the wrong blueprint")
+				assert(
+					String(applyResult.component).includes("SmokeMesh"),
+					"manage_material_authoring apply_to_blueprint returned the wrong component",
+				)
+				assert(
+					applyResult.material?.path === basicShapeMaterialPath,
+					"manage_material_authoring apply_to_blueprint returned the wrong material path",
+				)
 			})
 
 			await runStep("Compile the Blueprint asset", async () => {
@@ -653,6 +837,44 @@ async function main() {
 				assert(
 					stringTableResult.asset_path === stringTablePath,
 					`StringTable was created at an unexpected path: ${stringTableResult.asset_path}`,
+				)
+			})
+
+			await runStep("Create a classic input mapping through manage_input", async () => {
+				const inputResult = await callJsonTool("manage_input", {
+					action: "create_input_mapping",
+					params: {
+						mapping_name: inputMappingName,
+						key: "P",
+						input_type: "Action",
+					},
+				})
+				const resolvedConfigPath = resolveLocalPath(inputResult.config_path)
+				assert(inputResult.mapping_name === inputMappingName, "manage_input create_input_mapping returned the wrong mapping name")
+				assert(
+					typeof resolvedConfigPath === "string" && resolvedConfigPath.endsWith("DefaultInput.ini"),
+					"manage_input create_input_mapping did not return DefaultInput.ini",
+				)
+				assert(
+					fs.existsSync(resolvedConfigPath) &&
+						fs.readFileSync(resolvedConfigPath, "utf8").includes(inputResult.mapping_line),
+					"manage_input create_input_mapping did not write the mapping line to DefaultInput.ini",
+				)
+			})
+
+			await runStep("Read project info after input mapping creation", async () => {
+				const refreshedProjectInfo = await callJsonTool("manage_editor", {
+					action: "project_info",
+					params: {},
+				})
+				assert(
+					Array.isArray(refreshedProjectInfo.classic_input_actions) &&
+						refreshedProjectInfo.classic_input_actions.includes(inputMappingName),
+					"manage_editor project_info did not report the new classic input mapping",
+				)
+				assert(
+					Number(refreshedProjectInfo.classic_input_actions_count ?? 0) >= originalClassicInputActionCount + 1,
+					"manage_editor project_info did not increase the classic input action count",
 				)
 			})
 

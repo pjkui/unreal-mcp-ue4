@@ -54,9 +54,9 @@ def _insert_mapping_line(config_text, mapping_line):
     lines = config_text.splitlines()
 
     if section_header not in lines:
-        if config_text and not config_text.endswith("\n"):
-            config_text += "\n"
-        config_text += "{0}\n{1}\n".format(section_header, mapping_line)
+        if config_text and not config_text.endswith("\\n"):
+            config_text += "\\n"
+        config_text += "{0}\\n{1}\\n".format(section_header, mapping_line)
         return config_text
 
     updated_lines = []
@@ -81,7 +81,7 @@ def _insert_mapping_line(config_text, mapping_line):
     if inside_section and not inserted:
         updated_lines.append(mapping_line)
 
-    return "\n".join(updated_lines) + "\n"
+    return "\\n".join(updated_lines) + "\\n"
 
 
 def create_input_mapping(args):
@@ -107,7 +107,7 @@ def create_input_mapping(args):
     except Exception as exc:
         return {"success": False, "message": str(exc)}
 
-    config_path = Path(unreal.Paths.project_dir()) / "Config" / "DefaultInput.ini"
+    config_path = (Path(unreal.Paths.project_dir()) / "Config" / "DefaultInput.ini").resolve()
     config_text = ""
     if config_path.exists():
         config_text = config_path.read_text(encoding="utf-8", errors="ignore")
@@ -128,6 +128,7 @@ def create_input_mapping(args):
         }
 
     updated_text = _insert_mapping_line(config_text, mapping_line)
+    config_path.parent.mkdir(parents=True, exist_ok=True)
     config_path.write_text(updated_text, encoding="utf-8")
 
     input_settings_class = getattr(unreal, "InputSettings", None)
