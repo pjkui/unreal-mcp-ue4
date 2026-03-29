@@ -213,6 +213,24 @@ function resolveLocalPath(pathValue) {
 	return path.isAbsolute(pathValue) ? pathValue : path.resolve(repoRoot, pathValue)
 }
 
+function projectRepoHasGitRemote(projectDirectory) {
+	if (!projectDirectory) {
+		return false
+	}
+
+	try {
+		const gitConfigPath = path.join(projectDirectory, ".git", "config")
+		if (!fs.existsSync(gitConfigPath)) {
+			return false
+		}
+
+		const gitConfigContent = fs.readFileSync(gitConfigPath, "utf8")
+		return /\[remote\s+"/.test(gitConfigContent)
+	} catch {
+		return false
+	}
+}
+
 async function main() {
 	const options = parseArgs(process.argv.slice(2))
 	if (options.help) {
@@ -1519,12 +1537,24 @@ async function main() {
 		})
 
 		const levelPrefix = `${options.prefix}_LevelWall`
+		const levelMazePrefix = `${options.prefix}_LevelMaze`
+		const levelPyramidPrefix = `${options.prefix}_LevelPyramid`
+		const levelBridgePrefix = `${options.prefix}_LevelBridge`
+		const levelTownPrefix = `${options.prefix}_LevelTown`
 		const levelStructurePrefix = `${options.prefix}_House`
 		const levelStructureBridgePrefix = `${options.prefix}_Bridge`
+		const levelStructureMansionPrefix = `${options.prefix}_Mansion`
+		const levelStructureTowerPrefix = `${options.prefix}_Tower`
+		const levelStructureWallPrefix = `${options.prefix}_FortWall`
 		const environmentPrefix = `${options.prefix}_Arch`
+		const environmentTownPrefix = `${options.prefix}_EnvTown`
+		const environmentStairPrefix = `${options.prefix}_EnvStair`
 		const environmentPyramidPrefix = `${options.prefix}_Pyramid`
+		const environmentMazePrefix = `${options.prefix}_EnvMaze`
 		const geometryPrefix = `${options.prefix}_Stairs`
 		const geometryArchPrefix = `${options.prefix}_GeoArch`
+		const geometryWallPrefix = `${options.prefix}_GeoWall`
+		const geometryPyramidPrefix = `${options.prefix}_GeoPyramid`
 
 		await runStep("Create a wall through manage_level", async () => {
 			const levelResult = await callJsonTool("manage_level", {
@@ -1548,6 +1578,110 @@ async function main() {
 			addCleanup(
 				`Delete level actors for ${levelPrefix}`,
 				() => safeDeleteActors((levelResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a maze through manage_level", async () => {
+			const mazeResult = await callJsonTool("manage_level", {
+				action: "create_maze",
+				params: {
+					prefix: levelMazePrefix,
+					location: { x: 760, y: 640, z: 0 },
+					rows: 4,
+					cols: 5,
+					cell_size: 180,
+					wall_height: 140,
+					wall_thickness: 24,
+					seed: 42,
+				},
+			})
+			assert(
+				mazeResult.structure === "create_maze",
+				"manage_level create_maze returned the wrong structure",
+			)
+			assert(
+				Number(mazeResult.actor_count) > 0,
+				"manage_level create_maze did not spawn any actors",
+			)
+			addCleanup(
+				`Delete level actors for ${levelMazePrefix}`,
+				() => safeDeleteActors((mazeResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a pyramid through manage_level", async () => {
+			const pyramidResult = await callJsonTool("manage_level", {
+				action: "create_pyramid",
+				params: {
+					prefix: levelPyramidPrefix,
+					location: { x: 980, y: 760, z: 0 },
+					levels: 3,
+					block_size: 140,
+				},
+			})
+			assert(
+				pyramidResult.structure === "create_pyramid",
+				"manage_level create_pyramid returned the wrong structure",
+			)
+			assert(
+				Number(pyramidResult.actor_count) > 0,
+				"manage_level create_pyramid did not spawn any actors",
+			)
+			addCleanup(
+				`Delete level actors for ${levelPyramidPrefix}`,
+				() => safeDeleteActors((pyramidResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a bridge through manage_level", async () => {
+			const bridgeResult = await callJsonTool("manage_level", {
+				action: "create_bridge",
+				params: {
+					prefix: levelBridgePrefix,
+					location: { x: 1120, y: 860, z: 0 },
+					segments: 4,
+					segment_length: 140,
+					width: 120,
+					thickness: 24,
+					rail_height: 50,
+				},
+			})
+			assert(
+				bridgeResult.structure === "create_bridge",
+				"manage_level create_bridge returned the wrong structure",
+			)
+			assert(
+				Number(bridgeResult.actor_count) > 0,
+				"manage_level create_bridge did not spawn any actors",
+			)
+			addCleanup(
+				`Delete level actors for ${levelBridgePrefix}`,
+				() => safeDeleteActors((bridgeResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a town through manage_level", async () => {
+			const townResult = await callJsonTool("manage_level", {
+				action: "create_town",
+				params: {
+					prefix: levelTownPrefix,
+					location: { x: 1480, y: 760, z: 0 },
+					rows: 1,
+					cols: 2,
+					spacing: 650,
+				},
+			})
+			assert(
+				townResult.structure === "create_town",
+				"manage_level create_town returned the wrong structure",
+			)
+			assert(
+				Number(townResult.actor_count) >= 10,
+				"manage_level create_town did not spawn enough actors",
+			)
+			addCleanup(
+				`Delete level actors for ${levelTownPrefix}`,
+				() => safeDeleteActors((townResult.actors || []).map((actor) => actor.label || actor.name)),
 			)
 		})
 
@@ -1603,6 +1737,84 @@ async function main() {
 			)
 		})
 
+		await runStep("Construct a mansion through manage_level_structure", async () => {
+			const mansionResult = await callJsonTool("manage_level_structure", {
+				action: "construct_mansion",
+				params: {
+					prefix: levelStructureMansionPrefix,
+					location: { x: 1840, y: 360, z: 0 },
+					width: 720,
+					depth: 520,
+					wall_height: 280,
+					roof_height: 90,
+					wing_offset: 520,
+				},
+			})
+			assert(
+				mansionResult.structure === "construct_mansion",
+				"manage_level_structure construct_mansion returned the wrong structure",
+			)
+			assert(
+				Number(mansionResult.actor_count) >= 15,
+				"manage_level_structure construct_mansion did not spawn enough actors",
+			)
+			addCleanup(
+				`Delete level-structure actors for ${levelStructureMansionPrefix}`,
+				() => safeDeleteActors((mansionResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a tower through manage_level_structure", async () => {
+			const towerResult = await callJsonTool("manage_level_structure", {
+				action: "create_tower",
+				params: {
+					prefix: levelStructureTowerPrefix,
+					location: { x: 2100, y: 640, z: 0 },
+					width: 240,
+					floors: 4,
+					floor_height: 180,
+				},
+			})
+			assert(
+				towerResult.structure === "create_tower",
+				"manage_level_structure create_tower returned the wrong structure",
+			)
+			assert(
+				Number(towerResult.actor_count) >= 5,
+				"manage_level_structure create_tower did not spawn enough actors",
+			)
+			addCleanup(
+				`Delete level-structure actors for ${levelStructureTowerPrefix}`,
+				() => safeDeleteActors((towerResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a wall through manage_level_structure", async () => {
+			const wallResult = await callJsonTool("manage_level_structure", {
+				action: "create_wall",
+				params: {
+					prefix: levelStructureWallPrefix,
+					location: { x: 2300, y: 520, z: 160 },
+					segments: 5,
+					segment_length: 160,
+					height: 220,
+					thickness: 40,
+				},
+			})
+			assert(
+				wallResult.structure === "create_wall",
+				"manage_level_structure create_wall returned the wrong structure",
+			)
+			assert(
+				Number(wallResult.actor_count) > 0,
+				"manage_level_structure create_wall did not spawn any actors",
+			)
+			addCleanup(
+				`Delete level-structure actors for ${levelStructureWallPrefix}`,
+				() => safeDeleteActors((wallResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
 		await runStep("Create an arch through manage_environment", async () => {
 			const environmentResult = await callJsonTool("manage_environment", {
 				action: "create_arch",
@@ -1651,6 +1863,85 @@ async function main() {
 			addCleanup(
 				`Delete environment actors for ${environmentPyramidPrefix}`,
 				() => safeDeleteActors((pyramidResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a staircase through manage_environment", async () => {
+			const stairResult = await callJsonTool("manage_environment", {
+				action: "create_staircase",
+				params: {
+					prefix: environmentStairPrefix,
+					location: { x: 1560, y: 760, z: 0 },
+					steps: 5,
+					step_width: 180,
+					step_height: 24,
+					step_depth: 80,
+				},
+			})
+			assert(
+				stairResult.structure === "create_staircase",
+				"manage_environment create_staircase returned the wrong structure",
+			)
+			assert(
+				Number(stairResult.actor_count) === 5,
+				"manage_environment create_staircase did not spawn the expected actor count",
+			)
+			addCleanup(
+				`Delete environment actors for ${environmentStairPrefix}`,
+				() => safeDeleteActors((stairResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a maze through manage_environment", async () => {
+			const mazeResult = await callJsonTool("manage_environment", {
+				action: "create_maze",
+				params: {
+					prefix: environmentMazePrefix,
+					location: { x: 1760, y: 860, z: 0 },
+					rows: 3,
+					cols: 4,
+					cell_size: 160,
+					wall_height: 130,
+					wall_thickness: 22,
+					seed: 99,
+				},
+			})
+			assert(
+				mazeResult.structure === "create_maze",
+				"manage_environment create_maze returned the wrong structure",
+			)
+			assert(
+				Number(mazeResult.actor_count) > 0,
+				"manage_environment create_maze did not spawn any actors",
+			)
+			addCleanup(
+				`Delete environment actors for ${environmentMazePrefix}`,
+				() => safeDeleteActors((mazeResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a town through manage_environment", async () => {
+			const townResult = await callJsonTool("manage_environment", {
+				action: "create_town",
+				params: {
+					prefix: environmentTownPrefix,
+					location: { x: 1980, y: 860, z: 0 },
+					rows: 1,
+					cols: 2,
+					spacing: 640,
+				},
+			})
+			assert(
+				townResult.structure === "create_town",
+				"manage_environment create_town returned the wrong structure",
+			)
+			assert(
+				Number(townResult.actor_count) >= 10,
+				"manage_environment create_town did not spawn enough actors",
+			)
+			addCleanup(
+				`Delete environment actors for ${environmentTownPrefix}`,
+				() => safeDeleteActors((townResult.actors || []).map((actor) => actor.label || actor.name)),
 			)
 		})
 
@@ -1706,6 +1997,56 @@ async function main() {
 			)
 		})
 
+		await runStep("Create a wall through manage_geometry", async () => {
+			const geometryWallResult = await callJsonTool("manage_geometry", {
+				action: "create_wall",
+				params: {
+					prefix: geometryWallPrefix,
+					location: { x: 2220, y: 860, z: 140 },
+					segments: 4,
+					segment_length: 140,
+					height: 200,
+					thickness: 32,
+				},
+			})
+			assert(
+				geometryWallResult.structure === "create_wall",
+				"manage_geometry create_wall returned the wrong structure",
+			)
+			assert(
+				Number(geometryWallResult.actor_count) > 0,
+				"manage_geometry create_wall did not spawn any actors",
+			)
+			addCleanup(
+				`Delete geometry actors for ${geometryWallPrefix}`,
+				() => safeDeleteActors((geometryWallResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a pyramid through manage_geometry", async () => {
+			const geometryPyramidResult = await callJsonTool("manage_geometry", {
+				action: "create_pyramid",
+				params: {
+					prefix: geometryPyramidPrefix,
+					location: { x: 2400, y: 960, z: 0 },
+					levels: 3,
+					block_size: 120,
+				},
+			})
+			assert(
+				geometryPyramidResult.structure === "create_pyramid",
+				"manage_geometry create_pyramid returned the wrong structure",
+			)
+			assert(
+				Number(geometryPyramidResult.actor_count) > 0,
+				"manage_geometry create_pyramid did not spawn any actors",
+			)
+			addCleanup(
+				`Delete geometry actors for ${geometryPyramidPrefix}`,
+				() => safeDeleteActors((geometryPyramidResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
 		if (options.withAssets) {
 			const blueprintPath = `/Game/MCP/Tests/BP_${options.prefix}`
 			const sequencePath = `/Game/MCP/Tests/LS_${options.prefix}`
@@ -1736,11 +2077,10 @@ async function main() {
 				actorTintMaterialPath,
 				debugTintMaterialPath,
 			]
-			const defaultInputConfigPath = path.join(
-				resolveLocalPath(projectInfo.project_directory),
-				"Config",
-				"DefaultInput.ini",
-			)
+			const projectDirectoryPath = path.dirname(projectFilePath)
+			const defaultInputConfigPath = path.join(projectDirectoryPath, "Config", "DefaultInput.ini")
+			const defaultEngineConfigPath = path.join(projectDirectoryPath, "Config", "DefaultEngine.ini")
+			const projectHasGitRemote = projectRepoHasGitRemote(projectDirectoryPath)
 			const originalDefaultInputConfig = fs.existsSync(defaultInputConfigPath)
 				? fs.readFileSync(defaultInputConfigPath, "utf8")
 				: null
@@ -2829,6 +3169,68 @@ async function main() {
 					})
 					assert(providerInfo.enabled === true, "Source control provider is not enabled for mutation smoke")
 					assert(providerInfo.available === true, "Source control provider is not available for mutation smoke")
+				})
+
+				await runStep("Query a tracked config file through manage_source_control", async () => {
+					assert(fs.existsSync(defaultEngineConfigPath), `Tracked config file not found: ${defaultEngineConfigPath}`)
+					const trackedConfigState = await callJsonTool("manage_source_control", {
+						action: "query_state",
+						params: { file: defaultEngineConfigPath },
+					})
+					assert(
+						trackedConfigState.state?.filename === defaultEngineConfigPath,
+						"manage_source_control query_state returned the wrong tracked config path",
+					)
+					assert(
+						typeof trackedConfigState.state?.is_source_controlled === "boolean",
+						"manage_source_control query_state did not expose source-control state for the tracked config file",
+					)
+				})
+
+				await runStep("Check out a tracked config file through manage_source_control", async () => {
+					const checkoutResult = await callJsonTool("manage_source_control", {
+						action: "checkout",
+						params: { files: [defaultEngineConfigPath] },
+					})
+					assert(
+						checkoutResult.file === defaultEngineConfigPath
+							|| checkoutResult.files?.includes(defaultEngineConfigPath),
+						"manage_source_control checkout did not report the tracked config file",
+					)
+					assert(checkoutResult.success === true, "manage_source_control checkout did not succeed")
+				})
+
+				await runStep("Revert an unchanged tracked config file through manage_source_control", async () => {
+					const revertUnchangedResult = await callJsonTool("manage_source_control", {
+						action: "revert_unchanged",
+						params: { files: [defaultEngineConfigPath] },
+					})
+					assert(
+						revertUnchangedResult.files?.includes(defaultEngineConfigPath),
+						"manage_source_control revert_unchanged did not report the tracked config file",
+					)
+					assert(
+						revertUnchangedResult.success === true,
+						"manage_source_control revert_unchanged did not succeed",
+					)
+				})
+
+				await runStep("Sync a tracked config file through manage_source_control", async () => {
+					if (!projectHasGitRemote) {
+						throw new StepSkipError(
+							"Project source-control repository does not have a remote configured for sync.",
+						)
+					}
+					const syncResult = await callJsonTool("manage_source_control", {
+						action: "sync",
+						params: { files: [defaultEngineConfigPath] },
+					})
+					assert(
+						syncResult.file === defaultEngineConfigPath
+							|| syncResult.files?.includes(defaultEngineConfigPath),
+						"manage_source_control sync did not report the tracked config file",
+					)
+					assert(syncResult.success === true, "manage_source_control sync did not succeed")
 				})
 
 				await runStep("Create a generated DataAsset for source control add smoke", async () => {

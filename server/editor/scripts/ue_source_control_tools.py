@@ -338,7 +338,18 @@ def _run_file_operation(
             payload["keep_checked_out"] = keep_checked_out
             call_args.append(keep_checked_out)
 
-        success = bool(_call_helper_method(helper, method_names, *call_args))
+        try:
+            success = bool(_call_helper_method(helper, method_names, *call_args))
+        except TypeError as exc:
+            if not keep_checked_out_key or not call_args:
+                raise
+
+            message = str(exc)
+            if "argument" not in message and "positional" not in message:
+                raise
+
+            success = bool(_call_helper_method(helper, method_names, *call_args[:-1]))
+            payload["keep_checked_out_ignored"] = True
         payload["success"] = success
         if not success and "message" not in payload:
             payload["message"] = "{0} failed".format(operation_name)
