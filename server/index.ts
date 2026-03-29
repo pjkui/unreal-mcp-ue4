@@ -502,7 +502,7 @@ server.tool(
 	},
 )
 
-/// Actor / Level Tools
+/// Core Direct Tools
 server.tool(
 	"editor_create_object",
 	"Create a new object/actor in the world\n\nExample output: {'success': true, 'actor_name': 'StaticMeshActor_1', 'actor_label': 'MyCube', 'class': 'StaticMeshActor', 'location': {'x': 100.0, 'y': 200.0, 'z': 0.0}, 'rotation': {'pitch': 0.0, 'yaw': 45.0, 'roll': 0.0}, 'scale': {'x': 1.0, 'y': 1.0, 'z': 1.0}}\n\nReturns created actor details with final transform values.",
@@ -759,13 +759,12 @@ registerToolNamespace(
 
 registerToolNamespace(
 	"manage_system",
-	"System tool namespace for console commands, project state inspection, and asset validation actions.",
+	"System tool namespace for console commands and asset validation actions.",
 	{
 		console_command: (params) =>
 			pythonDispatch(
 				editorTools.UEConsoleCommand(requiredStringParam(params, ["command"])),
 			),
-		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 		validate_assets: (params) =>
 			pythonDispatch(editorTools.UEValidateAssets(optionalStringParam(params, ["asset_paths", "paths"]))),
 	},
@@ -773,7 +772,7 @@ registerToolNamespace(
 
 registerToolNamespace(
 	"manage_inspection",
-	"Inspection tool namespace for asset, actor, project, map, and Blueprint analysis actions.",
+	"Inspection tool namespace for asset, actor, map, and Blueprint analysis actions.",
 	{
 		asset: (params) =>
 			pythonDispatch(
@@ -810,14 +809,13 @@ registerToolNamespace(
 					include_nodes: params.include_nodes ?? true,
 				}),
 			),
-		project: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 		map: () => pythonDispatch(editorTools.UEGetMapInfo()),
 	},
 )
 
 registerToolNamespace(
 	"manage_tools",
-	"Tool-namespace registry for listing registered tool namespaces and describing supported actions.",
+	"Tool-namespace registry for listing registered tool namespaces and describing supported actions. Use this as the discovery entry point for the namespace-first MCP surface.",
 	{
 		list_namespaces: () =>
 			directDispatch({
@@ -1481,7 +1479,7 @@ registerToolNamespace(
 
 registerToolNamespace(
 	"manage_input",
-	"Input tool namespace for creating classic UE4 input mappings and inspecting project input settings.",
+	"Input tool namespace for creating classic UE4 input mappings.",
 	{
 		create_input_mapping: (params) =>
 			pythonDispatch(
@@ -1492,7 +1490,6 @@ registerToolNamespace(
 					scale: params.scale,
 				}),
 			),
-		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 	},
 )
 
@@ -1509,7 +1506,6 @@ registerToolNamespace(
 			pythonDispatch(
 				editorTools.UEGetAssetInfo(requiredStringParam(params, ["asset_path", "path", "name"])),
 			),
-		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 	},
 )
 

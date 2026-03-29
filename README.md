@@ -131,6 +131,14 @@ Official Copilot docs:
 
 ## Usage
 
+### Interface model
+
+- Prefer the `manage_*` namespace tools as the main MCP surface.
+- Treat `manage_editor.project_info` as the canonical project summary entry point.
+- Treat `manage_editor.map_info` and `manage_level.world_outliner` as the canonical map and level read entry points.
+- Use direct tools only for a small set of low-level primitives such as Unreal session path discovery and actor create or update or delete flows.
+- Use `manage_editor.run_python` as an escape hatch for debugging, rapid prototyping, and UE4.27 API gaps that are not yet wrapped as stable tools.
+
 ### Recommended first-run flow
 
 1. Open your UE4.27.2 project and wait for the editor to finish loading.
@@ -144,6 +152,7 @@ Useful first commands:
 - `manage_editor` with `action: "project_info"`
 - `manage_editor` with `action: "map_info"`
 - `manage_level` with `action: "world_outliner"`
+- `manage_tools` with `action: "list_namespaces"`
 
 Useful first natural-language requests:
 
@@ -261,6 +270,8 @@ The tool list below is generated from `server/index.ts` during build.
 
 Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
 
+The recommended public surface is the `manage_*` namespace layer. Prefer `manage_editor.project_info`, `manage_editor.map_info`, and `manage_level.world_outliner` as canonical read entry points, and treat the small direct-tool set as low-level primitives for path discovery and actor CRUD.
+
 ### Editor Session Paths
 
 <table width="100%">
@@ -290,7 +301,7 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 	</tbody>
 </table>
 
-### Actor / Level Tools
+### Core Direct Tools
 
 <table width="100%">
 	<colgroup>
@@ -353,7 +364,7 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 	<tr>
 		<td width="18%"><code>manage_editor</code></td>
 		<td width="52%">Editor tool namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control.</td>
-		<td width="30%">&nbsp;</td>
+		<td width="30%">Canonical namespace for project_info, map_info, world_outliner, console_command, and run_python.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_level</code></td>
@@ -362,17 +373,17 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_system</code></td>
-		<td width="52%">System tool namespace for console commands, project state inspection, and asset validation actions.</td>
-		<td width="30%">&nbsp;</td>
+		<td width="52%">System tool namespace for console commands and asset validation actions.</td>
+		<td width="30%">Slim namespace for console and validation helpers; use manage_editor for canonical project and map inspection.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_inspection</code></td>
-		<td width="52%">Inspection tool namespace for asset, actor, project, map, and Blueprint analysis actions.</td>
-		<td width="30%">Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure.</td>
+		<td width="52%">Inspection tool namespace for asset, actor, map, and Blueprint analysis actions.</td>
+		<td width="30%">Asset, actor, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_tools</code></td>
-		<td width="52%">Tool-namespace registry for listing registered tool namespaces and describing supported actions.</td>
+		<td width="52%">Tool-namespace registry for listing registered tool namespaces and describing supported actions</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
@@ -524,13 +535,13 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_input</code></td>
-		<td width="52%">Input tool namespace for creating classic UE4 input mappings and inspecting project input settings.</td>
-		<td width="30%">&nbsp;</td>
+		<td width="52%">Input tool namespace for creating classic UE4 input mappings.</td>
+		<td width="30%">Focused on classic UE4 input-mapping authoring; use manage_editor.project_info for the canonical project summary.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_behavior_tree</code></td>
 		<td width="52%">Behavior-tree tool namespace for searching BehaviorTree assets and inspecting their asset metadata.</td>
-		<td width="30%">&nbsp;</td>
+		<td width="30%">Focused on BehaviorTree asset discovery and inspection; use manage_editor.project_info for the canonical project summary.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_gas</code></td>

@@ -49,7 +49,7 @@ const sourceControlProviderDependentTools = [
 
 const categoryOrder = [
 	"Editor Session Paths",
-	"Actor / Level Tools",
+	"Core Direct Tools",
 	"Core Tool Namespaces",
 	"World & Environment Tool Namespaces",
 	"Content & Authoring Tool Namespaces",
@@ -144,7 +144,15 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_inspection: {
 		status: "Partial",
-		note: "Asset, actor, project, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure.",
+		note: "Asset, actor, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure.",
+	},
+	manage_editor: {
+		status: "Supported",
+		note: "Canonical namespace for project_info, map_info, world_outliner, console_command, and run_python.",
+	},
+	manage_system: {
+		status: "Supported",
+		note: "Slim namespace for console and validation helpers; use manage_editor for canonical project and map inspection.",
 	},
 	manage_blueprint: {
 		status: "Partial",
@@ -157,6 +165,14 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 	manage_texture: {
 		status: "Supported",
 		note: "import_texture requires a local image file path that is accessible from the machine running the Unreal Editor session.",
+	},
+	manage_input: {
+		status: "Supported",
+		note: "Focused on classic UE4 input-mapping authoring; use manage_editor.project_info for the canonical project summary.",
+	},
+	manage_behavior_tree: {
+		status: "Supported",
+		note: "Focused on BehaviorTree asset discovery and inspection; use manage_editor.project_info for the canonical project summary.",
 	},
 	manage_source_control: {
 		status: "Supported",
@@ -500,6 +516,8 @@ function updateReadmeWithTools() {
 	const toolsSection = `## Available Tools
 
 Notes call out important requirements or UE4.27 limitations when they matter. Empty notes mean there are no additional caveats beyond normal editor setup.
+
+The recommended public surface is the \`manage_*\` namespace layer. Prefer \`manage_editor.project_info\`, \`manage_editor.map_info\`, and \`manage_level.world_outliner\` as canonical read entry points, and treat the small direct-tool set as low-level primitives for path discovery and actor CRUD.
 
 ${generateToolsSections(tools)}
 
