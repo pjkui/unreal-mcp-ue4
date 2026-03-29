@@ -941,7 +941,15 @@ async function main() {
 		}
 
 		const lightActorName = `${options.prefix}_PointLight`
+		const navBoundsVolumeName = `${options.prefix}_NavBounds`
+		const triggerVolumeName = `${options.prefix}_TriggerVolume`
+		const debugShapeActorName = `cube_${options.prefix}_DebugShape`
+		const splineActorName = `${options.prefix}_SplineHost`
 		addCleanup(`Delete actor ${lightActorName}`, () => safeDeleteActor(lightActorName))
+		addCleanup(`Delete actor ${navBoundsVolumeName}`, () => safeDeleteActor(navBoundsVolumeName))
+		addCleanup(`Delete actor ${triggerVolumeName}`, () => safeDeleteActor(triggerVolumeName))
+		addCleanup(`Delete actor ${debugShapeActorName}`, () => safeDeleteActor(debugShapeActorName))
+		addCleanup(`Delete actor ${splineActorName}`, () => safeDeleteActor(splineActorName))
 
 		await runStep("Spawn a point light through manage_lighting", async () => {
 			const lightResult = await callJsonTool("manage_lighting", {
@@ -981,6 +989,139 @@ async function main() {
 			await callJsonTool("manage_actor", {
 				action: "delete",
 				params: { name: lightActorName },
+			})
+		})
+
+		await runStep("Spawn a nav-mesh bounds volume through manage_navigation", async () => {
+			const navVolumeResult = await callJsonTool("manage_navigation", {
+				action: "spawn_nav_mesh_bounds_volume",
+				params: {
+					name: navBoundsVolumeName,
+					location: { x: 420, y: 320, z: 0 },
+					scale: { x: 4, y: 4, z: 2 },
+				},
+			})
+			assert(
+				navVolumeResult.actor_label === navBoundsVolumeName,
+				"manage_navigation spawn_nav_mesh_bounds_volume did not create the expected actor label",
+			)
+		})
+
+		await runStep("Inspect navigation through manage_navigation", async () => {
+			const navigationInfo = await callJsonTool("manage_navigation", {
+				action: "inspect_navigation",
+				params: {},
+			})
+			assert(
+				typeof navigationInfo.map_name === "string" && navigationInfo.map_name.length > 0,
+				"manage_navigation inspect_navigation did not return map_name",
+			)
+			assert(
+				Number.isFinite(navigationInfo.total_actors),
+				"manage_navigation inspect_navigation did not return total_actors",
+			)
+		})
+
+		await runStep("Delete the nav-mesh bounds volume", async () => {
+			await callJsonTool("manage_actor", {
+				action: "delete",
+				params: { name: navBoundsVolumeName },
+			})
+		})
+
+		await runStep("Spawn a trigger volume through manage_volumes", async () => {
+			const triggerVolumeResult = await callJsonTool("manage_volumes", {
+				action: "spawn_trigger_volume",
+				params: {
+					name: triggerVolumeName,
+					location: { x: 520, y: 320, z: 0 },
+					scale: { x: 2, y: 2, z: 2 },
+				},
+			})
+			assert(
+				triggerVolumeResult.actor_label === triggerVolumeName,
+				"manage_volumes spawn_trigger_volume did not create the expected actor label",
+			)
+		})
+
+		await runStep("Transform the trigger volume through manage_volumes", async () => {
+			const transformVolumeResult = await callJsonTool("manage_volumes", {
+				action: "transform_volume",
+				params: {
+					name: triggerVolumeName,
+					location: { x: 560, y: 320, z: 32 },
+					scale: { x: 3, y: 2, z: 2 },
+				},
+			})
+			assert(
+				Math.abs(Number(transformVolumeResult.actor?.location?.x ?? 0) - 560) < 0.1,
+				"manage_volumes transform_volume did not update the expected X location",
+			)
+		})
+
+		await runStep("Delete the trigger volume through manage_volumes", async () => {
+			await callJsonTool("manage_volumes", {
+				action: "delete_volume",
+				params: { name: triggerVolumeName },
+			})
+		})
+
+		await runStep("Spawn a debug shape through manage_effect", async () => {
+			const effectResult = await callJsonTool("manage_effect", {
+				action: "spawn_debug_shape",
+				params: {
+					shape: "cube",
+					name: `${options.prefix}_DebugShape`,
+					location: { x: 640, y: 320, z: 100 },
+					scale: { x: 1.25, y: 1.25, z: 1.25 },
+				},
+			})
+			assert(
+				effectResult.actor_label === debugShapeActorName,
+				"manage_effect spawn_debug_shape did not create the expected actor label",
+			)
+		})
+
+		await runStep("Delete the debug shape through manage_effect", async () => {
+			await callJsonTool("manage_effect", {
+				action: "delete_debug_shape",
+				params: { name: debugShapeActorName },
+			})
+		})
+
+		await runStep("Spawn a spline host actor through manage_splines", async () => {
+			const splineSpawnResult = await callJsonTool("manage_splines", {
+				action: "spawn_actor",
+				params: {
+					object_class: "/Script/Engine.Actor",
+					name: splineActorName,
+					location: { x: 760, y: 320, z: 100 },
+				},
+			})
+			assert(
+				splineSpawnResult.actor_label === splineActorName,
+				"manage_splines spawn_actor did not create the expected actor label",
+			)
+		})
+
+		await runStep("Transform the spline host actor through manage_splines", async () => {
+			const splineTransformResult = await callJsonTool("manage_splines", {
+				action: "transform_actor",
+				params: {
+					name: splineActorName,
+					location: { x: 800, y: 340, z: 120 },
+				},
+			})
+			assert(
+				Math.abs(Number(splineTransformResult.actor?.location?.x ?? 0) - 800) < 0.1,
+				"manage_splines transform_actor did not update the expected X location",
+			)
+		})
+
+		await runStep("Delete the spline host actor through manage_splines", async () => {
+			await callJsonTool("manage_splines", {
+				action: "delete_actor",
+				params: { name: splineActorName },
 			})
 		})
 

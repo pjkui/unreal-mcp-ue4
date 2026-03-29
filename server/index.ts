@@ -958,7 +958,7 @@ registerToolNamespace(
 		spawn_trigger_volume: (params) =>
 			pythonDispatch(
 				editorTools.UECreateObject(
-					optionalStringParam(params, ["object_class", "class_name"]) ?? "TriggerVolume",
+					optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.TriggerVolume",
 					optionalStringParam(params, ["name", "actor_name"]) ?? "TriggerVolume",
 					toVector3Record(params.location),
 					toRotatorRecord(params.rotation),
@@ -969,7 +969,7 @@ registerToolNamespace(
 		spawn_blocking_volume: (params) =>
 			pythonDispatch(
 				editorTools.UECreateObject(
-					optionalStringParam(params, ["object_class", "class_name"]) ?? "BlockingVolume",
+					optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.BlockingVolume",
 					optionalStringParam(params, ["name", "actor_name"]) ?? "BlockingVolume",
 					toVector3Record(params.location),
 					toRotatorRecord(params.rotation),
@@ -980,7 +980,7 @@ registerToolNamespace(
 		spawn_physics_volume: (params) =>
 			pythonDispatch(
 				editorTools.UECreateObject(
-					optionalStringParam(params, ["object_class", "class_name"]) ?? "PhysicsVolume",
+					optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.PhysicsVolume",
 					optionalStringParam(params, ["name", "actor_name"]) ?? "PhysicsVolume",
 					toVector3Record(params.location),
 					toRotatorRecord(params.rotation),
@@ -991,7 +991,7 @@ registerToolNamespace(
 		spawn_audio_volume: (params) =>
 			pythonDispatch(
 				editorTools.UECreateObject(
-					optionalStringParam(params, ["object_class", "class_name"]) ?? "AudioVolume",
+					optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/Engine.AudioVolume",
 					optionalStringParam(params, ["name", "actor_name"]) ?? "AudioVolume",
 					toVector3Record(params.location),
 					toRotatorRecord(params.rotation),
@@ -1024,7 +1024,7 @@ registerToolNamespace(
 		spawn_nav_mesh_bounds_volume: (params) =>
 			pythonDispatch(
 				editorTools.UECreateObject(
-					optionalStringParam(params, ["object_class", "class_name"]) ?? "NavMeshBoundsVolume",
+					optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/NavigationSystem.NavMeshBoundsVolume",
 					optionalStringParam(params, ["name", "actor_name"]) ?? "NavMeshBoundsVolume",
 					toVector3Record(params.location),
 					toRotatorRecord(params.rotation),
@@ -1035,7 +1035,7 @@ registerToolNamespace(
 		spawn_nav_modifier_volume: (params) =>
 			pythonDispatch(
 				editorTools.UECreateObject(
-					optionalStringParam(params, ["object_class", "class_name"]) ?? "NavModifierVolume",
+					optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/NavigationSystem.NavModifierVolume",
 					optionalStringParam(params, ["name", "actor_name"]) ?? "NavModifierVolume",
 					toVector3Record(params.location),
 					toRotatorRecord(params.rotation),
@@ -1046,7 +1046,7 @@ registerToolNamespace(
 		spawn_nav_link_proxy: (params) =>
 			pythonDispatch(
 				editorTools.UECreateObject(
-					optionalStringParam(params, ["object_class", "class_name"]) ?? "NavLinkProxy",
+					optionalStringParam(params, ["object_class", "class_name"]) ?? "/Script/AIModule.NavLinkProxy",
 					optionalStringParam(params, ["name", "actor_name"]) ?? "NavLinkProxy",
 					toVector3Record(params.location),
 					toRotatorRecord(params.rotation),
