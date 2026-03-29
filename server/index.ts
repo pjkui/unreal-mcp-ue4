@@ -1,4 +1,5 @@
 import { z } from "zod"
+import os from "node:os"
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
 import { RemoteExecution, RemoteExecutionConfig } from "unreal-remote-execution"
@@ -11,8 +12,25 @@ export const server = new McpServer({
 })
 const rawServerTool = server.tool.bind(server) as (...args: any[]) => unknown
 
-const config = new RemoteExecutionConfig(1, ["239.0.0.1", 6766], "0.0.0.0")
+const resolveRemoteExecutionBindAddress = () => {
+	const interfaces = os.networkInterfaces()
+
+	for (const networkInterface of Object.values(interfaces)) {
+		for (const addressInfo of networkInterface ?? []) {
+			if (addressInfo.family === "IPv4" && !addressInfo.internal) {
+				return addressInfo.address
+			}
+		}
+	}
+
+	return "0.0.0.0"
+}
+
+const remoteExecutionBindAddress = resolveRemoteExecutionBindAddress()
+const config = new RemoteExecutionConfig(1, ["239.0.0.1", 6766], remoteExecutionBindAddress)
 const remoteExecution = new RemoteExecution(config)
+
+console.error(`Using Unreal Remote Execution bind address: ${remoteExecutionBindAddress}`)
 
 // Start the remote execution server
 remoteExecution.start()

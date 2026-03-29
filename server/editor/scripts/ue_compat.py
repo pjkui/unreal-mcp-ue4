@@ -3264,6 +3264,15 @@ def tint_material_interface(
     material_library = getattr(unreal, "MaterialEditingLibrary", None)
     material_class_name = get_object_class_name(material_interface)
     parameter_candidates = []
+
+    def _linear_colors_match(lhs, rhs, tolerance=1e-4):
+        return (
+            abs(float(lhs.r) - float(rhs.r)) <= tolerance
+            and abs(float(lhs.g) - float(rhs.g)) <= tolerance
+            and abs(float(lhs.b) - float(rhs.b)) <= tolerance
+            and abs(float(lhs.a) - float(rhs.a)) <= tolerance
+        )
+
     if parameter_name:
         parameter_candidates.append(parameter_name)
     parameter_candidates.extend(
@@ -3284,6 +3293,18 @@ def tint_material_interface(
             package_path=package_path,
         )
 
+    if hasattr(material_library, "get_vector_parameter_names"):
+        try:
+            discovered_names = material_library.get_vector_parameter_names(
+                material_interface
+            )
+            for discovered_name in discovered_names or []:
+                discovered_name = str(discovered_name)
+                if discovered_name and discovered_name not in parameter_candidates:
+                    parameter_candidates.append(discovered_name)
+        except Exception:
+            pass
+
     if (
         material_library is None
         or not hasattr(material_library, "set_material_instance_vector_parameter_value")
@@ -3303,7 +3324,21 @@ def tint_material_interface(
                 else parameter_candidate,
                 color_value,
             )
-            if success:
+            readback_matches = False
+            if hasattr(material_library, "get_material_instance_vector_parameter_value"):
+                try:
+                    current_value = (
+                        material_library.get_material_instance_vector_parameter_value(
+                            material_interface,
+                            unreal.Name(parameter_candidate)
+                            if hasattr(unreal, "Name")
+                            else parameter_candidate,
+                        )
+                    )
+                    readback_matches = _linear_colors_match(current_value, color_value)
+                except Exception:
+                    readback_matches = False
+            if success or readback_matches:
                 material_library.update_material_instance(material_interface)
                 save_loaded_editor_asset(material_interface)
                 return material_interface, parameter_candidate

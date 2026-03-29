@@ -260,6 +260,9 @@ async function main() {
 	let projectInfo
 	let currentMapInfo
 	const basicShapeMaterialPath = "/Engine/BasicShapes/BasicShapeMaterial"
+	const tintableMaterialPath = "/Engine/EngineMaterials/EmissiveMeshMaterial"
+	const actorTintMaterialPath = `/Game/MCP/Tests/MI_${options.prefix}_ActorTint`
+	const debugTintMaterialPath = `/Game/MCP/Tests/MI_${options.prefix}_DebugTint`
 
 	const addCleanup = (name, fn) => {
 		cleanupTasks.push({ name, fn })
@@ -937,6 +940,29 @@ async function main() {
 			)
 		})
 
+		await runStep("Tint the actor material through manage_material_authoring", async () => {
+			const tintResult = await callJsonTool("manage_material_authoring", {
+				action: "tint_material",
+				params: {
+					actor_name: granularActorName,
+					material_path: tintableMaterialPath,
+					color: { r: 0.2, g: 0.8, b: 0.3, a: 1.0 },
+					parameter_name: "Color",
+					instance_name: path.basename(actorTintMaterialPath),
+					instance_path: path.dirname(actorTintMaterialPath).replace(/\\/g, "/"),
+				},
+			})
+			assert(tintResult.actor?.label === granularActorName, "manage_material_authoring tint_material returned the wrong actor")
+			assert(
+				tintResult.material?.path === actorTintMaterialPath,
+				`manage_material_authoring tint_material returned an unexpected material path: ${tintResult.material?.path}`,
+			)
+			assert(
+				typeof tintResult.parameter_name === "string" && tintResult.parameter_name.length > 0,
+				"manage_material_authoring tint_material did not report a parameter name",
+			)
+		})
+
 		await runStep("Move the spawned actor", async () => {
 			const transformResult = await callJsonTool("manage_actor", {
 				action: "transform",
@@ -980,9 +1006,9 @@ async function main() {
 			assert(
 				materialInspection.materials.components.some((component) =>
 					Array.isArray(component.materials)
-						&& component.materials.some((slot) => slot.material?.path === basicShapeMaterialPath),
+						&& component.materials.some((slot) => slot.material?.path === actorTintMaterialPath),
 				),
-				"manage_inspection actor_materials did not report the applied material",
+				"manage_inspection actor_materials did not report the tinted material",
 			)
 		})
 
@@ -1372,6 +1398,44 @@ async function main() {
 			)
 		})
 
+		await runStep("Apply a material to the debug shape through manage_effect", async () => {
+			const applyResult = await callJsonTool("manage_effect", {
+				action: "apply_material",
+				params: {
+					name: debugShapeActorName,
+					material_path: tintableMaterialPath,
+				},
+			})
+			assert(applyResult.actor?.label === debugShapeActorName, "manage_effect apply_material returned the wrong actor")
+			assert(
+				applyResult.material?.path === tintableMaterialPath,
+				"manage_effect apply_material returned the wrong material path",
+			)
+		})
+
+		await runStep("Tint the debug shape through manage_effect", async () => {
+			const tintResult = await callJsonTool("manage_effect", {
+				action: "tint_debug_shape",
+				params: {
+					name: debugShapeActorName,
+					color: { r: 0.9, g: 0.2, b: 0.2, a: 1.0 },
+					material_path: tintableMaterialPath,
+					parameter_name: "Color",
+					instance_name: path.basename(debugTintMaterialPath),
+					instance_path: path.dirname(debugTintMaterialPath).replace(/\\/g, "/"),
+				},
+			})
+			assert(tintResult.actor?.label === debugShapeActorName, "manage_effect tint_debug_shape returned the wrong actor")
+			assert(
+				tintResult.material?.path === debugTintMaterialPath,
+				`manage_effect tint_debug_shape returned an unexpected material path: ${tintResult.material?.path}`,
+			)
+			assert(
+				typeof tintResult.parameter_name === "string" && tintResult.parameter_name.length > 0,
+				"manage_effect tint_debug_shape did not report a parameter name",
+			)
+		})
+
 		await runStep("Delete the debug shape through manage_effect", async () => {
 			await callJsonTool("manage_effect", {
 				action: "delete_debug_shape",
@@ -1520,6 +1584,8 @@ async function main() {
 				dataAssetPath,
 				dataTablePath,
 				stringTablePath,
+				actorTintMaterialPath,
+				debugTintMaterialPath,
 			]
 			const defaultInputConfigPath = path.join(
 				resolveLocalPath(projectInfo.project_directory),
@@ -2164,6 +2230,22 @@ async function main() {
 				)
 			})
 
+			await runStep("Search textures through manage_texture", async () => {
+				const textureSearchResult = await callJsonTool("manage_texture", {
+					action: "search_textures",
+					params: {
+						search_term: options.prefix,
+						include_engine: false,
+						limit: 20,
+					},
+				})
+				assert(Array.isArray(textureSearchResult.assets), "manage_texture search_textures did not return an asset list")
+				assert(
+					firstAssetPathFromSearch(textureSearchResult) === texturePath,
+					"manage_texture search_textures did not find the imported texture",
+				)
+			})
+
 			await runStep("List generated assets through manage_asset", async () => {
 				const listedAssets = await callJsonTool("manage_asset", {
 					action: "list",
@@ -2380,6 +2462,45 @@ async function main() {
 					)
 				})
 
+				await runStep("Add a second CanvasPanel through advanced widget tooling", async () => {
+					const panelResult = await callJsonTool("manage_widget_authoring", {
+						action: "add_widget",
+						params: {
+							widget_blueprint_path: widgetPath,
+							widget_class: "CanvasPanel",
+							widget_name: "SmokePanelHost",
+							parent_widget_name: "CanvasPanel_0",
+							position: { x: 320, y: 40 },
+						},
+					})
+					assert(panelResult.widget_name === "SmokePanelHost", "Second CanvasPanel was not added through advanced widget tooling")
+				})
+
+				await runStep("Reparent the CanvasPanel through advanced widget tooling", async () => {
+					const reparentResult = await callJsonTool("manage_widget_authoring", {
+						action: "reparent_widget",
+						params: {
+							widget_blueprint_path: widgetPath,
+							widget_name: "SmokePanel",
+							new_parent_widget_name: "SmokePanelHost",
+							position: { x: 24, y: 16 },
+							z_order: 3,
+						},
+					})
+					assert(
+						reparentResult.old_parent_widget_name === "CanvasPanel_0",
+						`Advanced widget reparent reported an unexpected old parent: ${reparentResult.old_parent_widget_name}`,
+					)
+					assert(
+						reparentResult.new_parent_widget_name === "SmokePanelHost",
+						"Advanced widget reparent did not report the expected new parent",
+					)
+					assert(
+						Math.abs(Number(reparentResult.layout?.position?.x ?? 0) - 24) < 0.1,
+						"Advanced widget reparent did not preserve the requested X position",
+					)
+				})
+
 				await runStep("Remove the child widget through advanced widget tooling", async () => {
 					const removeChildResult = await callJsonTool("manage_widget_authoring", {
 						action: "remove_child_widget",
@@ -2401,6 +2522,17 @@ async function main() {
 						},
 					})
 					assert(removePanelResult.widget_name === "SmokePanel", "CanvasPanel was not removed through advanced widget tooling")
+				})
+
+				await runStep("Remove the second CanvasPanel through advanced widget tooling", async () => {
+					const removePanelResult = await callJsonTool("manage_widget_authoring", {
+						action: "remove_widget",
+						params: {
+							widget_blueprint_path: widgetPath,
+							widget_name: "SmokePanelHost",
+						},
+					})
+					assert(removePanelResult.widget_name === "SmokePanelHost", "Second CanvasPanel was not removed through advanced widget tooling")
 				})
 			}
 
