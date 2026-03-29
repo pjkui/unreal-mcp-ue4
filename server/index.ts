@@ -719,7 +719,7 @@ registerToolNamespace(
 
 registerToolNamespace(
 	"manage_editor",
-	"Editor tool namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control.",
+	"Editor tool namespace for Python execution, console commands, project inspection, map inspection, PIE control, screenshots, and camera control.",
 	{
 		run_python: (params) => pythonDispatch(requiredStringParam(params, ["code"])),
 		console_command: (params) =>
@@ -729,6 +729,27 @@ registerToolNamespace(
 		project_info: () => pythonDispatch(editorTools.UEGetProjectInfo()),
 		map_info: () => pythonDispatch(editorTools.UEGetMapInfo()),
 		world_outliner: () => pythonDispatch(editorTools.UEGetWorldOutliner()),
+		is_pie_running: (params) =>
+			pythonDispatch(
+				editorTools.UEPIETool("get_pie_status", {
+					timeout_seconds: params.timeout_seconds,
+					poll_interval: params.poll_interval,
+				}),
+			),
+		start_pie: (params) =>
+			pythonDispatch(
+				editorTools.UEPIETool("start_pie", {
+					timeout_seconds: params.timeout_seconds,
+					poll_interval: params.poll_interval,
+				}),
+			),
+		stop_pie: (params) =>
+			pythonDispatch(
+				editorTools.UEPIETool("stop_pie", {
+					timeout_seconds: params.timeout_seconds,
+					poll_interval: params.poll_interval,
+				}),
+			),
 		get_console_variable: (params) =>
 			pythonDispatch(
 				editorTools.UEGetConsoleVariable(

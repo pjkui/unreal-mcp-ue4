@@ -148,7 +148,7 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_editor: {
 		status: "Supported",
-		note: "Canonical namespace for project_info, map_info, world_outliner, console_command, and run_python.",
+		note: "Canonical namespace for project_info, map_info, world_outliner, PIE control, console_command, and run_python.",
 	},
 	manage_system: {
 		status: "Supported",

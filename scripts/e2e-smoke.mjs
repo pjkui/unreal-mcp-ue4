@@ -362,10 +362,38 @@ async function main() {
 		}
 	}
 
+	const safeStopPie = async () => {
+		try {
+			await callJsonTool("manage_editor", {
+				action: "stop_pie",
+				params: { timeout_seconds: 5, poll_interval: 0.25 },
+			})
+		} catch {
+			// Best effort cleanup only.
+		}
+	}
+
+	const pollPieStatus = async (expectedRunning, attempts = 30, delayMs = 350) => {
+		let latestStatus = null
+		for (let attempt = 0; attempt < attempts; attempt += 1) {
+			latestStatus = await callJsonTool("manage_editor", {
+				action: "is_pie_running",
+				params: {},
+			})
+			if (Boolean(latestStatus?.is_pie_running) === expectedRunning) {
+				return latestStatus
+			}
+			await new Promise((resolve) => setTimeout(resolve, delayMs))
+		}
+		return latestStatus
+	}
+
 	try {
 		await runStep("Connect to Unreal MCP server", async () => {
 			await withTimeout(client.connect(transport), options.timeoutMs, "MCP connect")
 		})
+
+		addCleanup("Ensure PIE is stopped", () => safeStopPie())
 
 		const toolsResult = await runStep("List registered MCP tools", async () => client.listTools())
 		const toolNames = new Set(toolsResult.tools.map((tool) => tool.name))
@@ -1268,17 +1296,28 @@ async function main() {
 			})
 
 			await runStep("Read project info after input mapping creation", async () => {
-				const refreshedProjectInfo = await callJsonTool("manage_editor", {
-					action: "project_info",
-					params: {},
-				})
+				let refreshedProjectInfo = null
+				for (let attempt = 0; attempt < 10; attempt += 1) {
+					refreshedProjectInfo = await callJsonTool("manage_editor", {
+						action: "project_info",
+						params: {},
+					})
+					if (
+						Array.isArray(refreshedProjectInfo.classic_input_actions) &&
+						refreshedProjectInfo.classic_input_actions.includes(inputMappingName)
+					) {
+						break
+					}
+
+					await new Promise((resolve) => setTimeout(resolve, 300))
+				}
 				assert(
-					Array.isArray(refreshedProjectInfo.classic_input_actions) &&
+					Array.isArray(refreshedProjectInfo?.classic_input_actions) &&
 						refreshedProjectInfo.classic_input_actions.includes(inputMappingName),
 					"manage_editor project_info did not report the new classic input mapping",
 				)
 				assert(
-					Number(refreshedProjectInfo.classic_input_actions_count ?? 0) >= originalClassicInputActionCount + 1,
+					Number(refreshedProjectInfo?.classic_input_actions_count ?? 0) >= originalClassicInputActionCount + 1,
 					"manage_editor project_info did not increase the classic input action count",
 				)
 			})
@@ -1553,6 +1592,55 @@ async function main() {
 			if (options.keepAssets) {
 				console.log(`[INFO] Kept Widget Blueprint asset: ${widgetPath}`)
 			}
+
+			await runStep("Read PIE status through manage_editor", async () => {
+				await safeStopPie()
+				const pieStatus = await callJsonTool("manage_editor", {
+					action: "is_pie_running",
+					params: {},
+				})
+				assert(typeof pieStatus.is_pie_running === "boolean", "manage_editor is_pie_running did not return a boolean status")
+				assert(pieStatus.is_pie_running === false, "manage_editor is_pie_running reported PIE before the test started")
+			})
+
+			await runStep("Start PIE through manage_editor", async () => {
+				const pieStart = await callJsonTool("manage_editor", {
+					action: "start_pie",
+					params: { timeout_seconds: 10, poll_interval: 0.25 },
+				})
+				assert(pieStart.success === true, "manage_editor start_pie did not acknowledge the request")
+				const pieStatus = await pollPieStatus(true)
+				assert(pieStatus?.is_pie_running === true, "manage_editor start_pie did not lead to a running PIE session")
+				assert(Number.isFinite(pieStatus?.pie_world_count), "manage_editor is_pie_running did not return pie_world_count")
+			})
+
+			await runStep("Add the Widget Blueprint to the viewport", async () => {
+				const viewportResult = await callJsonTool("manage_widget_authoring", {
+					action: "add_to_viewport",
+					params: {
+						widget_name: widgetPath,
+						z_order: 5,
+					},
+				})
+				assert(
+					viewportResult.widget_blueprint === widgetPath,
+					"manage_widget_authoring add_to_viewport returned the wrong widget blueprint path",
+				)
+				assert(
+					typeof viewportResult.widget_class === "string" && viewportResult.widget_class.length > 0,
+					"manage_widget_authoring add_to_viewport did not return a widget class",
+				)
+			})
+
+			await runStep("Stop PIE through manage_editor", async () => {
+				const pieStop = await callJsonTool("manage_editor", {
+					action: "stop_pie",
+					params: { timeout_seconds: 10, poll_interval: 0.25 },
+				})
+				assert(pieStop.success === true, "manage_editor stop_pie did not acknowledge the request")
+				const pieStatus = await pollPieStatus(false)
+				assert(pieStatus?.is_pie_running === false, "manage_editor stop_pie did not stop the PIE session")
+			})
 		}
 
 		console.log("")

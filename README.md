@@ -381,8 +381,8 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_editor</code></td>
-		<td width="52%">Editor tool namespace for Python execution, console commands, project inspection, map inspection, screenshots, and camera control.</td>
-		<td width="30%">Canonical namespace for project_info, map_info, world_outliner, console_command, and run_python.</td>
+		<td width="52%">Editor tool namespace for Python execution, console commands, project inspection, map inspection, PIE control, screenshots, and camera control.</td>
+		<td width="30%">Canonical namespace for project_info, map_info, world_outliner, PIE control, console_command, and run_python.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_level</code></td>

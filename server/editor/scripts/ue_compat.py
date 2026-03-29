@@ -1457,7 +1457,13 @@ def load_asset_by_identifier(identifier, allowed_class_names=None):
 
 
 def load_blueprint_asset(blueprint_name_or_path, allow_widget=False):
-    blueprint_asset = load_asset_by_identifier(blueprint_name_or_path, ["Blueprint"])
+    allowed_class_names = ["Blueprint", "BlueprintGeneratedClass"]
+    if allow_widget:
+        allowed_class_names.extend(["WidgetBlueprint", "BaseWidgetBlueprint"])
+
+    blueprint_asset = load_asset_by_identifier(
+        blueprint_name_or_path, allowed_class_names
+    )
     blueprint_class_name = get_object_class_name(blueprint_asset)
 
     if blueprint_class_name.endswith("WidgetBlueprint") and not allow_widget:

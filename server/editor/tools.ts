@@ -286,3 +286,9 @@ export const UEWorldBuildingTool = (operation: string, args: Record<string, unkn
 		operation: jsonArg(operation),
 		args: jsonArg(args),
 	})
+
+export const UEPIETool = (operation: string, args: Record<string, unknown> = {}) =>
+	renderScript("./scripts/ue_pie_tools.py", {
+		operation: jsonArg(operation),
+		args: jsonArg(args),
+	})

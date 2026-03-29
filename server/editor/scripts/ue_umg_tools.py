@@ -30,6 +30,65 @@ def _load_widget_blueprint(widget_name):
     return widget_blueprint
 
 
+def _resolve_widget_runtime_class(widget_name):
+    widget_blueprint = None
+    widget_path = ""
+
+    try:
+        widget_blueprint = _load_widget_blueprint(widget_name)
+        widget_path = get_asset_package_name(widget_blueprint)
+    except Exception:
+        widget_blueprint = None
+
+    candidate_paths = []
+    if widget_path:
+        candidate_paths.append(widget_path)
+
+    if isinstance(widget_name, str) and widget_name.startswith("/"):
+        candidate_paths.append(widget_name)
+
+    try:
+        for asset_candidate in find_asset_candidates(widget_name, ["WidgetBlueprint"]):
+            package_name = asset_candidate.get("package_name")
+            if package_name:
+                candidate_paths.append(package_name)
+    except Exception:
+        pass
+
+    resolved_paths = []
+    seen_paths = set()
+    for candidate_path in candidate_paths:
+        normalized_path = str(candidate_path or "").strip()
+        if not normalized_path or normalized_path in seen_paths:
+            continue
+        seen_paths.add(normalized_path)
+        resolved_paths.append(normalized_path)
+
+    for candidate_path in resolved_paths:
+        try:
+            widget_class = unreal.EditorAssetLibrary.load_blueprint_class(candidate_path)
+            if widget_class:
+                return widget_blueprint, candidate_path, widget_class
+        except Exception:
+            pass
+
+        asset_name = candidate_path.rsplit("/", 1)[-1]
+        if not asset_name:
+            continue
+
+        try:
+            widget_class = unreal.load_class(
+                None,
+                "{0}.{1}_C".format(candidate_path, asset_name),
+            )
+            if widget_class:
+                return widget_blueprint, candidate_path, widget_class
+        except Exception:
+            pass
+
+    return widget_blueprint, widget_path or str(widget_name or ""), None
+
+
 def _ensure_root_canvas(widget_blueprint):
     widget_tree = get_widget_tree(widget_blueprint)
     root_widget = get_root_widget(widget_tree)
@@ -256,16 +315,14 @@ def add_widget_to_viewport(args):
     widget_name = args.get("widget_name")
     z_order = int(args.get("z_order", 0))
 
-    try:
-        widget_blueprint = _load_widget_blueprint(widget_name)
-    except Exception as exc:
-        return {"success": False, "message": str(exc)}
+    widget_blueprint, widget_path, widget_class = _resolve_widget_runtime_class(widget_name)
+    if not widget_blueprint and not widget_class:
+        return {
+            "success": False,
+            "message": "Asset not found: {0}".format(widget_name),
+        }
 
-    widget_class = None
-    widget_path = get_asset_package_name(widget_blueprint)
-    try:
-        widget_class = unreal.EditorAssetLibrary.load_blueprint_class(widget_path)
-    except Exception:
+    if not widget_class and widget_blueprint:
         widget_class = get_blueprint_generated_class(widget_blueprint)
 
     if not widget_class:
