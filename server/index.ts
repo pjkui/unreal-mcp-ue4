@@ -462,7 +462,7 @@ const sourceControlFilesCommand = (
 	return editorTools.UESourceControlTool(multiOperation ?? singleOperation!, { files })
 }
 
-/// Editor Session Paths
+/// Editor Session Info
 rawServerTool(
 	"get_unreal_engine_path",
 	"Get the active Unreal Engine root path from the connected editor session",
@@ -502,6 +502,22 @@ rawServerTool(
 		)
 
 		return textResponse(`Unreal Project path: ${projectPath}`)
+	},
+)
+
+rawServerTool(
+	"get_unreal_version",
+	"Get the active Unreal Engine version string from the connected editor session",
+	async () => {
+		const engineVersion = await discoverPath(
+			[
+				"import unreal",
+				"print(unreal.SystemLibrary.get_engine_version() or '')",
+			].join("\n"),
+			"Unable to resolve the active Unreal Engine version",
+		)
+
+		return textResponse(`Unreal version: ${engineVersion}`)
 	},
 )
 

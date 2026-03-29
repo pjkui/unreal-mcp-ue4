@@ -285,7 +285,7 @@ Notes call out important requirements or UE4.27 limitations when they matter. Em
 
 The recommended public surface is the `manage_*` namespace layer. Prefer `manage_editor.project_info`, `manage_editor.map_info`, and `manage_level.world_outliner` as canonical read entry points, and treat the small direct-tool set as low-level primitives for path discovery and actor CRUD.
 
-### Editor Session Paths
+### Editor Session Info
 
 <table width="100%">
 	<colgroup>
@@ -309,6 +309,11 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	<tr>
 		<td width="18%"><code>get_unreal_project_path</code></td>
 		<td width="52%">Get the active Unreal project file path from the connected editor session</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="18%"><code>get_unreal_version</code></td>
+		<td width="52%">Get the active Unreal Engine version string from the connected editor session</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	</tbody>

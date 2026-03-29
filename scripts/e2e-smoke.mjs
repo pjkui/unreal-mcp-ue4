@@ -303,6 +303,25 @@ async function main() {
 		return parseToolJson(toolName, result)
 	}
 
+	const callTextTool = async (toolName, args = {}) => {
+		const result = await withTimeout(
+			client.callTool({ name: toolName, arguments: args }),
+			options.timeoutMs,
+			toolName,
+		)
+
+		if (result?.isError) {
+			fail(`Tool ${toolName} returned an MCP error: ${extractTextContent(result)}`)
+		}
+
+		const text = extractTextContent(result)
+		if (!text) {
+			fail(`Tool ${toolName} returned no text content`)
+		}
+
+		return text
+	}
+
 	const isUnsupportedWidgetTreeAuthoring = (error) => {
 		if (error instanceof ToolFailureError) {
 			if (error.parsed?.unsupported_capability === "widget_tree_authoring") {
@@ -350,6 +369,9 @@ async function main() {
 		const toolsResult = await runStep("List registered MCP tools", async () => client.listTools())
 		const toolNames = new Set(toolsResult.tools.map((tool) => tool.name))
 		const requiredTools = [
+			"get_unreal_engine_path",
+			"get_unreal_project_path",
+			"get_unreal_version",
 			"manage_asset",
 			"manage_editor",
 			"manage_actor",
@@ -382,6 +404,47 @@ async function main() {
 			})
 			assert(typeof projectInfo.project_name === "string" && projectInfo.project_name.length > 0, "project_name is missing")
 			assert(typeof projectInfo.engine_version === "string" && projectInfo.engine_version.includes("4.27"), "engine_version does not look like UE4.27")
+		})
+
+		await runStep("Read Unreal Engine path through direct tool", async () => {
+			const enginePathText = await callTextTool("get_unreal_engine_path")
+			assert(
+				enginePathText.startsWith("Unreal Engine path: "),
+				"get_unreal_engine_path did not return the expected text format",
+			)
+			assert(
+				enginePathText.slice("Unreal Engine path: ".length).trim().length > 0,
+				"get_unreal_engine_path returned an empty path",
+			)
+		})
+
+		await runStep("Read Unreal project path through direct tool", async () => {
+			const projectPathText = await callTextTool("get_unreal_project_path")
+			assert(
+				projectPathText.startsWith("Unreal Project path: "),
+				"get_unreal_project_path did not return the expected text format",
+			)
+			assert(
+				projectPathText.toLowerCase().includes(".uproject"),
+				"get_unreal_project_path did not return a .uproject path",
+			)
+		})
+
+		await runStep("Read Unreal version through direct tool", async () => {
+			const versionText = await callTextTool("get_unreal_version")
+			assert(
+				versionText.startsWith("Unreal version: "),
+				"get_unreal_version did not return the expected text format",
+			)
+			assert(
+				versionText.includes("4.27"),
+				"get_unreal_version did not report a UE4.27 engine version",
+			)
+			assert(
+				typeof projectInfo.engine_version === "string" &&
+					versionText.includes(projectInfo.engine_version),
+				"get_unreal_version did not match manage_editor.project_info",
+			)
 		})
 
 		await runStep("Read current map info", async () => {
