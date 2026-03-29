@@ -185,8 +185,10 @@ This checks:
 - MCP server startup
 - tool discovery
 - project info, map info, and world outliner reads
-- actor spawn, search, transform, inspect, and delete
-- tool-namespace dispatch for actor control
+- source-control provider and state reads
+- direct-tool actor create, update, and delete
+- namespace-layer actor spawn, search, transform, inspect, and delete
+- tool-namespace discovery and namespace-layer dispatch for source control and actor control
 
 ### Asset-inclusive smoke test
 
@@ -198,12 +200,23 @@ This adds:
 
 - Blueprint creation
 - Blueprint component editing
+- Blueprint mesh assignment
 - Blueprint compilation
 - DataAsset creation
+- DataAsset metadata readback
 - StringTable creation
+- Texture import and metadata readback
 - Widget Blueprint creation
-- UMG widget insertion
+- TextBlock and Button insertion
+- advanced CanvasPanel and child-widget add, move, and remove flows
 - cleanup of temporary assets under `/Game/MCP/Tests`
+
+Useful options:
+
+- `npm run test:e2e -- --with-assets --keep-assets` keeps the generated test assets so you can inspect them in the Content Browser after the run.
+- `npm run test:e2e -- --skip-namespace` skips the namespace-dispatch portion of the smoke run.
+- `npm run test:e2e -- --verbose` prints MCP server stderr during the run.
+- `npm run test:e2e -- --help` prints the runner options without rebuilding the server.
 
 ### Windows test commands
 
@@ -219,8 +232,8 @@ npm run test:e2e -- --with-assets
 ### What success looks like
 
 - The console prints `[PASS]` for every test step.
-- Actor tests visibly create and then remove temporary actors in the editor.
-- The asset-inclusive test creates temporary Blueprint, DataAsset, StringTable, and Widget Blueprint assets under `/Game/MCP/Tests` and then removes them before exit.
+- Actor tests visibly create and then remove temporary actors in the editor through both the direct-tool and namespace surfaces.
+- The asset-inclusive test creates temporary Blueprint, DataAsset, StringTable, Texture, and Widget Blueprint assets under `/Game/MCP/Tests` and then removes them before exit unless `--keep-assets` is used.
 
 ### Recommended test workflow
 
@@ -383,7 +396,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_tools</code></td>
-		<td width="52%">Tool-namespace registry for listing registered tool namespaces and describing supported actions</td>
+		<td width="52%">Tool-namespace registry for listing registered tool namespaces and describing supported actions. Use this as the discovery entry point for the namespace-first MCP surface.</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
@@ -506,7 +519,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_widget_authoring</code></td>
-		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions</td>
+		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. Use add_child_widget for typical nested layout work under an existing root such as CanvasPanel_0; add_widget without parent_widget_name is only for assigning a new root widget.</td>
 		<td width="30%">create_widget_blueprint, add_text_block, and add_button work; use add_child_widget for normal nested layout under an existing root such as CanvasPanel_0, while add_widget without parent_widget_name is only for assigning a new root. add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.</td>
 	</tr>
 	</tbody>

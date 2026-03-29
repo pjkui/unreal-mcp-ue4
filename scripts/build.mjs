@@ -16,39 +16,56 @@ try {
 	}
 }
 
+const formatDiagnostic = (diagnostic) =>
+	ts.formatDiagnosticsWithColorAndContext([diagnostic], {
+		getCanonicalFileName: (fileName) => fileName,
+		getCurrentDirectory: () => rootDir,
+		getNewLine: () => "\n",
+	})
+
+const failWithDiagnostics = (diagnostics) => {
+	if (!diagnostics.length) {
+		return
+	}
+
+	const formatted = ts.formatDiagnosticsWithColorAndContext(diagnostics, {
+		getCanonicalFileName: (fileName) => fileName,
+		getCurrentDirectory: () => rootDir,
+		getNewLine: () => "\n",
+	})
+	throw new Error(formatted)
+}
+
+const configPath = ts.findConfigFile(rootDir, ts.sys.fileExists, "tsconfig.json")
+if (!configPath) {
+	throw new Error("Could not find tsconfig.json")
+}
+
+const configFile = ts.readConfigFile(configPath, ts.sys.readFile)
+if (configFile.error) {
+	throw new Error(formatDiagnostic(configFile.error))
+}
+
+const parsedConfig = ts.parseJsonConfigFileContent(configFile.config, ts.sys, path.dirname(configPath))
+failWithDiagnostics(parsedConfig.errors ?? [])
+
 const compilerOptions = {
-	allowSyntheticDefaultImports: true,
-	esModuleInterop: true,
+	...parsedConfig.options,
 	module: ts.ModuleKind.CommonJS,
-	resolveJsonModule: true,
+	outDir: distDir,
+	rootDir: serverDir,
 	target: ts.ScriptTarget.ES2018,
 }
 
-const collectTsFiles = (dirPath) =>
-	fs.readdirSync(dirPath, { withFileTypes: true }).flatMap((entry) => {
-		const entryPath = path.join(dirPath, entry.name)
+const program = ts.createProgram({
+	options: compilerOptions,
+	rootNames: parsedConfig.fileNames,
+})
 
-		if (entry.isDirectory()) {
-			return collectTsFiles(entryPath)
-		}
+failWithDiagnostics(ts.getPreEmitDiagnostics(program))
 
-		return entry.isFile() && entry.name.endsWith(".ts") ? [entryPath] : []
-	})
-
-for (const sourcePath of collectTsFiles(serverDir)) {
-	const outputPath = path.join(
-		distDir,
-		path.relative(serverDir, sourcePath).replace(/\.ts$/u, ".js"),
-	)
-	const source = fs.readFileSync(sourcePath, "utf8")
-	const result = ts.transpileModule(source, {
-		compilerOptions,
-		fileName: sourcePath,
-	})
-
-	fs.mkdirSync(path.dirname(outputPath), { recursive: true })
-	fs.writeFileSync(outputPath, result.outputText)
-}
+const emitResult = program.emit()
+failWithDiagnostics(emitResult.diagnostics ?? [])
 
 fs.mkdirSync(path.join(distDir, "editor"), { recursive: true })
 fs.cpSync(

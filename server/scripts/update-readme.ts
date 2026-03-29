@@ -408,12 +408,17 @@ function extractToolsFromSourceFile(): ToolInfo[] {
 	const content = fs.readFileSync(indexPath, "utf-8")
 	const markers = extractCategoryMarkers(content)
 	const toolRegex =
-		/(?:server\.tool|registerPythonTool|registerZeroArgPythonTool|registerToolNamespace)\(\s*["']([^"']+)["']\s*,\s*["']([^"']+)["']/g
+		/(?:rawServerTool|server\.tool|registerPythonTool|registerZeroArgPythonTool|registerToolNamespace)\(\s*["']([^"']+)["']\s*,\s*["']([^"']+)["']/g
 
 	const tools: ToolInfo[] = []
 	for (const match of content.matchAll(toolRegex)) {
 		const name = match[1]
-		const description = match[2].split(". ")[0].split("\\n")[0].split("\n")[0]
+		const description = match[2]
+			.split("\\n\\n")[0]
+			.split("\n\n")[0]
+			.split("\\n")[0]
+			.split("\n")[0]
+			.trim()
 		const index = match.index ?? 0
 
 		tools.push({

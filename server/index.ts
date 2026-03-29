@@ -9,6 +9,7 @@ export const server = new McpServer({
 	description: "Unreal Engine MCP for UE4.27.2 with UE4/UE5 editor scripting compatibility helpers",
 	version: "0.1.4-ue4.27.2",
 })
+const rawServerTool = server.tool.bind(server) as (...args: any[]) => unknown
 
 const config = new RemoteExecutionConfig(1, ["239.0.0.1", 6766], "0.0.0.0")
 const remoteExecution = new RemoteExecution(config)
@@ -108,7 +109,7 @@ const tryRunCommand = async (command: string): Promise<string> => {
 }
 
 const textResponse = (text: string) => ({
-	content: [{ type: "text", text }] as const,
+	content: [{ type: "text" as const, text }],
 })
 
 const discoverPath = async (command: string, errorMessage: string) => {
@@ -132,7 +133,9 @@ const registerPythonTool = (
 	schema: Record<string, z.ZodTypeAny>,
 	buildCommand: (args: any) => string,
 ) => {
-	server.tool(name, description, schema, async (args) => textResponse(await tryRunCommand(buildCommand(args))))
+	rawServerTool(name, description, schema, async (args: any) =>
+		textResponse(await tryRunCommand(buildCommand(args))),
+	)
 }
 
 const registerZeroArgPythonTool = (
@@ -140,7 +143,7 @@ const registerZeroArgPythonTool = (
 	description: string,
 	buildCommand: () => string,
 ) => {
-	server.tool(name, description, async () => textResponse(await tryRunCommand(buildCommand())))
+	rawServerTool(name, description, async () => textResponse(await tryRunCommand(buildCommand())))
 }
 
 const vector2InputSchema = z.union([
@@ -325,14 +328,14 @@ const registerToolNamespace = (
 	const supportedActions = Object.keys(actions).sort()
 	toolNamespaceRegistry.set(name, { description, supportedActions })
 
-	server.tool(
+	rawServerTool(
 		name,
 		description,
 		{
 			action: z.string().describe(`Action to execute inside tool namespace ${name}`),
 			params: recordSchema.optional().describe("Optional action parameter object"),
 		},
-		async ({ action, params }) => {
+		async ({ action, params }: { action: string; params?: Record<string, any> }) => {
 			const normalizedAction = normalizeActionName(action)
 
 			try {
@@ -460,7 +463,7 @@ const sourceControlFilesCommand = (
 }
 
 /// Editor Session Paths
-server.tool(
+rawServerTool(
 	"get_unreal_engine_path",
 	"Get the active Unreal Engine root path from the connected editor session",
 	async () => {
@@ -483,7 +486,7 @@ server.tool(
 	},
 )
 
-server.tool(
+rawServerTool(
 	"get_unreal_project_path",
 	"Get the active Unreal project file path from the connected editor session",
 	async () => {
@@ -503,7 +506,7 @@ server.tool(
 )
 
 /// Core Direct Tools
-server.tool(
+registerPythonTool(
 	"editor_create_object",
 	"Create a new object/actor in the world\n\nExample output: {'success': true, 'actor_name': 'StaticMeshActor_1', 'actor_label': 'MyCube', 'class': 'StaticMeshActor', 'location': {'x': 100.0, 'y': 200.0, 'z': 0.0}, 'rotation': {'pitch': 0.0, 'yaw': 45.0, 'roll': 0.0}, 'scale': {'x': 1.0, 'y': 1.0, 'z': 1.0}}\n\nReturns created actor details with final transform values.",
 	{
@@ -540,22 +543,11 @@ server.tool(
 				'Additional actor properties. For StaticMeshActor: use \'StaticMesh\' for mesh path, \'Material\' for single material path, or \'Materials\' for array of material paths. Example: {"StaticMesh": "/Game/Meshes/Cube", "Material": "/Game/Materials/M_Basic"}',
 			),
 	},
-	async ({ object_class, object_name, location, rotation, scale, properties }) => {
-		const result = await tryRunCommand(
-			editorTools.UECreateObject(object_class, object_name, location, rotation, scale, properties),
-		)
-		return {
-			content: [
-				{
-					type: "text",
-					text: result,
-				},
-			],
-		}
-	},
+	({ object_class, object_name, location, rotation, scale, properties }) =>
+		editorTools.UECreateObject(object_class, object_name, location, rotation, scale, properties),
 )
 
-server.tool(
+registerPythonTool(
 	"editor_update_object",
 	"Update an existing object/actor in the world\n\nExample output: {'success': true, 'actor_name': 'StaticMeshActor_1', 'actor_label': 'UpdatedCube', 'class': 'StaticMeshActor', 'location': {'x': 150.0, 'y': 200.0, 'z': 50.0}, 'rotation': {'pitch': 0.0, 'yaw': 90.0, 'roll': 0.0}, 'scale': {'x': 2.0, 'y': 2.0, 'z': 2.0}}\n\nReturns updated actor details with new transform values.",
 	{
@@ -592,38 +584,17 @@ server.tool(
 			),
 		new_name: z.string().optional().describe("New name/label for the actor"),
 	},
-	async ({ actor_name, location, rotation, scale, properties, new_name }) => {
-		const result = await tryRunCommand(
-			editorTools.UEUpdateObject(actor_name, location, rotation, scale, properties, new_name),
-		)
-		return {
-			content: [
-				{
-					type: "text",
-					text: result,
-				},
-			],
-		}
-	},
+	({ actor_name, location, rotation, scale, properties, new_name }) =>
+		editorTools.UEUpdateObject(actor_name, location, rotation, scale, properties, new_name),
 )
 
-server.tool(
+registerPythonTool(
 	"editor_delete_object",
 	"Delete an object/actor from the world\n\nExample output: {'success': true, 'message': 'Successfully deleted actor: MyCube', 'deleted_actor': {'actor_name': 'StaticMeshActor_1', 'actor_label': 'MyCube', 'class': 'StaticMeshActor', 'location': {'x': 100.0, 'y': 200.0, 'z': 0.0}}}\n\nReturns deletion confirmation with details of the deleted actor.",
 	{
 		actor_names: z.string(),
 	},
-	async ({ actor_names }) => {
-		const result = await tryRunCommand(editorTools.UEDeleteObject(actor_names))
-		return {
-			content: [
-				{
-					type: "text",
-					text: result,
-				},
-			],
-		}
-	},
+	({ actor_names }) => editorTools.UEDeleteObject(actor_names),
 )
 
 /// Tool Namespaces
