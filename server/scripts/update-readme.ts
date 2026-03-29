@@ -86,37 +86,9 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 		status: "Partial",
 		note: "Blueprint graph listings depend on what UE4.27 Python exposes; asset and component reads still work.",
 	},
-	analyze_blueprint_graph: {
-		status: "Partial",
-		note: "Only Blueprint graphs exposed by UE4.27 Python can be inspected.",
-	},
-	get_blueprint_variable_details: {
-		status: "Partial",
-		note: "Reads existing variable metadata only when UE4.27 Python exposes it.",
-	},
-	get_blueprint_function_details: {
-		status: "Partial",
-		note: "Only function graphs exposed by UE4.27 Python can be inspected.",
-	},
 	add_component_to_blueprint: {
 		status: "Partial",
 		note: "Basic component adds work; parent_component_name and some hierarchy edits require SimpleConstructionScript exposure.",
-	},
-	connect_blueprint_nodes: {
-		status: "Partial",
-		note: "Requires Blueprint graphs and pins to be visible through UE4.27 Python.",
-	},
-	find_blueprint_nodes: {
-		status: "Partial",
-		note: "Searches only the Blueprint graphs that UE4.27 Python exposes.",
-	},
-	connect_nodes: {
-		status: "Partial",
-		note: "Requires Blueprint graphs and pins to be visible through UE4.27 Python.",
-	},
-	disconnect_nodes: {
-		status: "Partial",
-		note: "Requires Blueprint graphs and pins to be visible through UE4.27 Python.",
 	},
 	editor_umg_add_widget: {
 		status: "Partial",
@@ -144,7 +116,7 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_inspection: {
 		status: "Partial",
-		note: "Asset, actor, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure.",
+		note: "Asset, actor, and map inspection work; Blueprint inspection is limited to high-level asset summaries in stock UE4.27 Python.",
 	},
 	manage_editor: {
 		status: "Supported",
@@ -156,7 +128,7 @@ const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_blueprint: {
 		status: "Partial",
-		note: "Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface.",
+		note: "Blueprint asset and component edits work; graph inspection, pin wiring, and variable or function metadata helpers are excluded from the MCP surface in stock UE4.27 Python.",
 	},
 	manage_widget_authoring: {
 		status: "Partial",
@@ -189,6 +161,13 @@ const excludedCapabilities: ExcludedCapabilityInfo[] = [
 			"The current UE4.27 Python environment does not expose reliable event graph access or K2 event reference setup.",
 	},
 	{
+		capability: "Blueprint graph inspection and node search",
+		affectedSurface:
+			"Graph-analysis, graph-inspection, and node-search helpers are excluded from the MCP surface.",
+		reason:
+			"The current UE4.27 Python environment does not expose Blueprint graph arrays such as UbergraphPages or FunctionGraphs reliably enough for deterministic inspection.",
+	},
+	{
 		capability: "Low-level Blueprint graph node creation",
 		affectedSurface:
 			"Generic graph-node helpers and related self or component reference insertion helpers are excluded from the MCP surface.",
@@ -201,6 +180,13 @@ const excludedCapabilities: ExcludedCapabilityInfo[] = [
 			"Function-node helpers that depend on editor graph member-reference setup are excluded from the MCP surface.",
 		reason:
 			"The current UE4.27 Python environment does not expose reliable function-call node reference setup.",
+	},
+	{
+		capability: "Blueprint variable and function metadata inspection",
+		affectedSurface:
+			"Variable-detail and function-detail helpers are excluded from the MCP surface.",
+		reason:
+			"The current UE4.27 Python environment does not expose NewVariables or FunctionGraphs reliably enough for deterministic inspection.",
 	},
 	{
 		capability: "Blueprint variable authoring",

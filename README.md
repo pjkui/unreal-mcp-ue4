@@ -265,7 +265,7 @@ npm run test:e2e -- --with-assets
 ### Some Blueprint graph or UMG binding commands are unavailable
 
 - Widget Blueprint creation and common widget-tree editing work in this fork; the main UMG gaps are delegate binding helpers and runtime-dependent viewport flows.
-- Blueprint asset creation, component editing, and compilation work; the main Blueprint gaps are editor-only graph node and variable authoring APIs that UE4.27 Python does not expose reliably.
+- Blueprint asset creation, component editing, compilation, and high-level asset summaries work; graph inspection, graph pin wiring, and variable or function metadata helpers are intentionally excluded because stock UE4.27 Python does not expose the required Blueprint metadata reliably.
 - Capability areas that are not reliable enough to keep in the MCP surface are listed under `Excluded Capability Areas` in the tool section.
 
 ## Notes and Limitations
@@ -274,7 +274,7 @@ npm run test:e2e -- --with-assets
 - Common UMG widget-tree editing works well with CanvasPanel-based layouts, but delegate binding helpers remain unavailable in stock UE4.27 Python.
 - UMG positioning currently targets `CanvasPanel` slots in UE4.27.
 - Reparenting the current root widget and editing named-slot content are not currently handled.
-- Blueprint asset and component editing work, but advanced Blueprint graph node and variable authoring remain limited by what UE4.27 exposes through Python.
+- Blueprint asset and component editing work, but Blueprint graph inspection, pin wiring, and variable or function metadata inspection are excluded in the stock UE4.27 Python environment.
 - The tool surface includes both granular tools and action-based tool namespaces so different MCP clients can work at different abstraction levels.
 
 The tool list below is generated from `server/index.ts` during build.
@@ -396,8 +396,8 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_inspection</code></td>
-		<td width="52%">Inspection tool namespace for asset, actor, map, and Blueprint analysis actions.</td>
-		<td width="30%">Asset, actor, and map inspection work; Blueprint graph inspection is limited by UE4.27 Python exposure.</td>
+		<td width="52%">Inspection tool namespace for asset, actor, map, and basic Blueprint summary actions.</td>
+		<td width="30%">Asset, actor, and map inspection work; Blueprint inspection is limited to high-level asset summaries in stock UE4.27 Python.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_tools</code></td>
@@ -509,8 +509,8 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_blueprint</code></td>
-		<td width="52%">Blueprint tool namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions.</td>
-		<td width="30%">Blueprint asset and component edits work; graph inspection and pin wiring remain limited by UE4.27 Python exposure, and unsupported node or variable creation helpers are excluded from the MCP surface.</td>
+		<td width="52%">Blueprint tool namespace for Blueprint creation, component editing, compilation, and basic Blueprint summary actions.</td>
+		<td width="30%">Blueprint asset and component edits work; graph inspection, pin wiring, and variable or function metadata helpers are excluded from the MCP surface in stock UE4.27 Python.</td>
 	</tr>
 	<tr>
 		<td width="18%"><code>manage_sequence</code></td>
@@ -576,8 +576,10 @@ These capability areas are intentionally not exposed through the MCP surface in 
 | Capability Area | Effect on MCP Surface | Why It Is Excluded |
 |-----------------|-----------------------|---------------------|
 | Blueprint event-graph event insertion | Related event-node and input-action helpers are excluded from the MCP surface. | The current UE4.27 Python environment does not expose reliable event graph access or K2 event reference setup. |
+| Blueprint graph inspection and node search | Graph-analysis, graph-inspection, and node-search helpers are excluded from the MCP surface. | The current UE4.27 Python environment does not expose Blueprint graph arrays such as UbergraphPages or FunctionGraphs reliably enough for deterministic inspection. |
 | Low-level Blueprint graph node creation | Generic graph-node helpers and related self or component reference insertion helpers are excluded from the MCP surface. | The current UE4.27 Python environment does not expose stable low-level graph node creation or member-reference wiring. |
 | Blueprint function-call node authoring | Function-node helpers that depend on editor graph member-reference setup are excluded from the MCP surface. | The current UE4.27 Python environment does not expose reliable function-call node reference setup. |
+| Blueprint variable and function metadata inspection | Variable-detail and function-detail helpers are excluded from the MCP surface. | The current UE4.27 Python environment does not expose NewVariables or FunctionGraphs reliably enough for deterministic inspection. |
 | Blueprint variable authoring | Variable-creation helpers are excluded from the MCP surface. | BPVariableDescription and EdGraphPinType are not exposed in the current UE4.27 Python environment. |
 | UMG delegate-binding authoring | Widget event-binding and text-binding helpers are excluded from the MCP surface. | DelegateEditorBinding is not exposed in the current UE4.27 Python environment. |
 

@@ -821,7 +821,7 @@ registerToolNamespace(
 
 registerToolNamespace(
 	"manage_inspection",
-	"Inspection tool namespace for asset, actor, map, and Blueprint analysis actions.",
+	"Inspection tool namespace for asset, actor, map, and basic Blueprint summary actions.",
 	{
 		asset: (params) =>
 			pythonDispatch(
@@ -848,14 +848,6 @@ registerToolNamespace(
 				editorTools.UEBlueprintAnalysisTool("read_blueprint_content", {
 					blueprint_name: blueprintNameParam(params),
 					include_nodes: Boolean(params.include_nodes),
-				}),
-			),
-		blueprint_graph: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintAnalysisTool("analyze_blueprint_graph", {
-					blueprint_name: blueprintNameParam(params),
-					graph_name: optionalStringParam(params, ["graph_name"]),
-					include_nodes: params.include_nodes ?? true,
 				}),
 			),
 		map: () => pythonDispatch(editorTools.UEGetMapInfo()),
@@ -1374,7 +1366,7 @@ registerToolNamespace(
 
 registerToolNamespace(
 	"manage_blueprint",
-	"Blueprint tool namespace for Blueprint creation, component editing, graph inspection, graph pin wiring, compilation, and Blueprint inspection actions.",
+	"Blueprint tool namespace for Blueprint creation, component editing, compilation, and basic Blueprint summary actions.",
 	{
 		create_blueprint: (params) =>
 			pythonDispatch(
@@ -1445,57 +1437,6 @@ registerToolNamespace(
 				editorTools.UEBlueprintAnalysisTool("read_blueprint_content", {
 					blueprint_name: blueprintNameParam(params),
 					include_nodes: Boolean(params.include_nodes),
-				}),
-			),
-		analyze_graph: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintAnalysisTool("analyze_blueprint_graph", {
-					blueprint_name: blueprintNameParam(params),
-					graph_name: optionalStringParam(params, ["graph_name"]),
-					include_nodes: params.include_nodes ?? true,
-				}),
-			),
-		get_variable_details: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintAnalysisTool("get_blueprint_variable_details", {
-					blueprint_name: blueprintNameParam(params),
-					variable_name: optionalStringParam(params, ["variable_name", "name"]),
-				}),
-			),
-		get_function_details: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintAnalysisTool("get_blueprint_function_details", {
-					blueprint_name: blueprintNameParam(params),
-					function_name: optionalStringParam(params, ["function_name", "name"]),
-				}),
-			),
-		find_nodes: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintGraphTool("find_blueprint_nodes", {
-					blueprint_name: blueprintNameParam(params),
-					search_term: optionalStringParam(params, ["search_term", "query"]),
-					graph_name: optionalStringParam(params, ["graph_name"]),
-					node_class: optionalStringParam(params, ["node_class", "class_name"]),
-				}),
-			),
-		connect_nodes: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintGraphTool("connect_nodes", {
-					blueprint_name: blueprintNameParam(params),
-					source_node: requiredStringParam(params, ["source_node"]),
-					source_pin: requiredStringParam(params, ["source_pin"]),
-					target_node: requiredStringParam(params, ["target_node"]),
-					target_pin: requiredStringParam(params, ["target_pin"]),
-				}),
-			),
-		disconnect_nodes: (params) =>
-			pythonDispatch(
-				editorTools.UEBlueprintGraphTool("disconnect_nodes", {
-					blueprint_name: blueprintNameParam(params),
-					source_node: requiredStringParam(params, ["source_node"]),
-					source_pin: requiredStringParam(params, ["source_pin"]),
-					target_node: optionalStringParam(params, ["target_node"]),
-					target_pin: optionalStringParam(params, ["target_pin"]),
 				}),
 			),
 	},
