@@ -397,6 +397,27 @@ async function main() {
 		return latestStatus
 	}
 
+	const firstAssetPathFromSearch = (searchResult) => {
+		if (!Array.isArray(searchResult?.assets)) {
+			return ""
+		}
+
+		for (const asset of searchResult.assets) {
+			for (const candidate of [
+				asset?.package_name,
+				asset?.path,
+				asset?.asset_path,
+				asset?.package,
+			]) {
+				if (typeof candidate === "string" && candidate.length > 0) {
+					return candidate
+				}
+			}
+		}
+
+		return ""
+	}
+
 	try {
 		await runStep("Connect to Unreal MCP server", async () => {
 			await withTimeout(client.connect(transport), options.timeoutMs, "MCP connect")
@@ -414,9 +435,22 @@ async function main() {
 			"manage_editor",
 			"manage_actor",
 			"manage_level",
+			"manage_inspection",
 			"manage_lighting",
+			"manage_navigation",
+			"manage_volumes",
+			"manage_effect",
+			"manage_splines",
+			"manage_level_structure",
+			"manage_environment",
+			"manage_geometry",
 			"manage_material_authoring",
 			"manage_data",
+			"manage_sequence",
+			"manage_audio",
+			"manage_skeleton",
+			"manage_behavior_tree",
+			"manage_gas",
 			"manage_source_control",
 			"manage_system",
 			"manage_tools",
@@ -578,6 +612,174 @@ async function main() {
 				params: { asset_path: "/Engine/BasicShapes/Cube" },
 			})
 			assert(Array.isArray(references), "manage_inspection asset_references did not return an array")
+		})
+
+		let sequenceAssetPath = ""
+		await runStep("Search sequence assets through manage_sequence", async () => {
+			const sequenceSearchResult = await callJsonTool("manage_sequence", {
+				action: "search_sequences",
+				params: { search_term: "" },
+			})
+			assert(Array.isArray(sequenceSearchResult.assets), "manage_sequence search_sequences did not return an asset list")
+			sequenceAssetPath = firstAssetPathFromSearch(sequenceSearchResult)
+			if (!sequenceAssetPath) {
+				throw new StepSkipError("No LevelSequence assets were found in the active project or engine content.")
+			}
+		})
+
+		await runStep("Read sequence metadata through manage_sequence", async () => {
+			if (!sequenceAssetPath) {
+				throw new StepSkipError("No LevelSequence asset was available for sequence_info.")
+			}
+			const sequenceInfo = await callJsonTool("manage_sequence", {
+				action: "sequence_info",
+				params: { asset_path: sequenceAssetPath },
+			})
+			assert(Array.isArray(sequenceInfo) && sequenceInfo.length === 1, "manage_sequence sequence_info did not return one asset record")
+			assert(
+				sequenceInfo[0].package === sequenceAssetPath,
+				"manage_sequence sequence_info returned the wrong asset package",
+			)
+		})
+
+		let audioAssetPath = ""
+		await runStep("Search audio assets through manage_audio", async () => {
+			const audioSearchResult = await callJsonTool("manage_audio", {
+				action: "search_audio_assets",
+				params: { search_term: "" },
+			})
+			assert(Array.isArray(audioSearchResult.assets), "manage_audio search_audio_assets did not return an asset list")
+			audioAssetPath = firstAssetPathFromSearch(audioSearchResult)
+			if (!audioAssetPath) {
+				throw new StepSkipError("No SoundCue assets were found in the active project or engine content.")
+			}
+		})
+
+		await runStep("Read audio metadata through manage_audio", async () => {
+			if (!audioAssetPath) {
+				throw new StepSkipError("No SoundCue asset was available for audio_info.")
+			}
+			const audioInfo = await callJsonTool("manage_audio", {
+				action: "audio_info",
+				params: { asset_path: audioAssetPath },
+			})
+			assert(Array.isArray(audioInfo) && audioInfo.length === 1, "manage_audio audio_info did not return one asset record")
+			assert(
+				audioInfo[0].package === audioAssetPath,
+				"manage_audio audio_info returned the wrong asset package",
+			)
+		})
+
+		let skeletonAssetPath = ""
+		await runStep("Search skeleton assets through manage_skeleton", async () => {
+			const skeletonSearchResult = await callJsonTool("manage_skeleton", {
+				action: "search_skeletons",
+				params: { search_term: "" },
+			})
+			assert(Array.isArray(skeletonSearchResult.assets), "manage_skeleton search_skeletons did not return an asset list")
+			skeletonAssetPath = firstAssetPathFromSearch(skeletonSearchResult)
+			if (!skeletonAssetPath) {
+				throw new StepSkipError("No Skeleton assets were found in the active project or engine content.")
+			}
+		})
+
+		let skeletalMeshAssetPath = ""
+		await runStep("Search skeletal meshes through manage_skeleton", async () => {
+			const skeletalMeshSearchResult = await callJsonTool("manage_skeleton", {
+				action: "search_skeletal_meshes",
+				params: { search_term: "" },
+			})
+			assert(Array.isArray(skeletalMeshSearchResult.assets), "manage_skeleton search_skeletal_meshes did not return an asset list")
+			skeletalMeshAssetPath = firstAssetPathFromSearch(skeletalMeshSearchResult)
+			if (!skeletalMeshAssetPath) {
+				throw new StepSkipError("No SkeletalMesh assets were found in the active project or engine content.")
+			}
+		})
+
+		await runStep("Read skeleton-related metadata through manage_skeleton", async () => {
+			const skeletonInfoTarget = skeletonAssetPath || skeletalMeshAssetPath
+			if (!skeletonInfoTarget) {
+				throw new StepSkipError("No Skeleton or SkeletalMesh asset was available for asset_info.")
+			}
+			const skeletonInfo = await callJsonTool("manage_skeleton", {
+				action: "asset_info",
+				params: { asset_path: skeletonInfoTarget },
+			})
+			assert(Array.isArray(skeletonInfo) && skeletonInfo.length === 1, "manage_skeleton asset_info did not return one asset record")
+			assert(
+				skeletonInfo[0].package === skeletonInfoTarget,
+				"manage_skeleton asset_info returned the wrong asset package",
+			)
+		})
+
+		let behaviorTreeAssetPath = ""
+		await runStep("Search behavior trees through manage_behavior_tree", async () => {
+			const behaviorTreeSearchResult = await callJsonTool("manage_behavior_tree", {
+				action: "search_behavior_trees",
+				params: { search_term: "" },
+			})
+			assert(Array.isArray(behaviorTreeSearchResult.assets), "manage_behavior_tree search_behavior_trees did not return an asset list")
+			behaviorTreeAssetPath = firstAssetPathFromSearch(behaviorTreeSearchResult)
+			if (!behaviorTreeAssetPath) {
+				throw new StepSkipError("No BehaviorTree assets were found in the active project or engine content.")
+			}
+		})
+
+		let aiAssetPath = ""
+		await runStep("Search AI assets through manage_behavior_tree", async () => {
+			const aiAssetSearchResult = await callJsonTool("manage_behavior_tree", {
+				action: "search_ai_assets",
+				params: { search_term: "" },
+			})
+			assert(Array.isArray(aiAssetSearchResult.assets), "manage_behavior_tree search_ai_assets did not return an asset list")
+			aiAssetPath = firstAssetPathFromSearch(aiAssetSearchResult)
+			if (!aiAssetPath) {
+				throw new StepSkipError("No AI behavior assets were found in the active project or engine content.")
+			}
+		})
+
+		await runStep("Read behavior-tree metadata through manage_behavior_tree", async () => {
+			const behaviorTreeInfoTarget = behaviorTreeAssetPath || aiAssetPath
+			if (!behaviorTreeInfoTarget) {
+				throw new StepSkipError("No BehaviorTree asset was available for behavior_tree_info.")
+			}
+			const behaviorTreeInfo = await callJsonTool("manage_behavior_tree", {
+				action: "behavior_tree_info",
+				params: { asset_path: behaviorTreeInfoTarget },
+			})
+			assert(Array.isArray(behaviorTreeInfo) && behaviorTreeInfo.length === 1, "manage_behavior_tree behavior_tree_info did not return one asset record")
+			assert(
+				behaviorTreeInfo[0].package === behaviorTreeInfoTarget,
+				"manage_behavior_tree behavior_tree_info returned the wrong asset package",
+			)
+		})
+
+		let gasAssetPath = ""
+		await runStep("Search GAS assets through manage_gas", async () => {
+			const gasSearchResult = await callJsonTool("manage_gas", {
+				action: "search_gas_assets",
+				params: { search_term: "GameplayAbility" },
+			})
+			assert(Array.isArray(gasSearchResult.assets), "manage_gas search_gas_assets did not return an asset list")
+			gasAssetPath = firstAssetPathFromSearch(gasSearchResult)
+			if (!gasAssetPath) {
+				throw new StepSkipError("No gameplay-ability-related assets were found for the current search term.")
+			}
+		})
+
+		await runStep("Read GAS asset metadata through manage_gas", async () => {
+			if (!gasAssetPath) {
+				throw new StepSkipError("No gameplay-ability-related asset was available for asset_info.")
+			}
+			const gasAssetInfo = await callJsonTool("manage_gas", {
+				action: "asset_info",
+				params: { asset_path: gasAssetPath },
+			})
+			assert(Array.isArray(gasAssetInfo) && gasAssetInfo.length === 1, "manage_gas asset_info did not return one asset record")
+			assert(
+				gasAssetInfo[0].package === gasAssetPath,
+				"manage_gas asset_info returned the wrong asset package",
+			)
 		})
 
 		await runStep("Validate an asset through manage_system", async () => {
@@ -1002,13 +1204,27 @@ async function main() {
 		}
 
 		const lightActorName = `${options.prefix}_PointLight`
+		const directionalLightActorName = `${options.prefix}_DirectionalLight`
+		const spotLightActorName = `${options.prefix}_SpotLight`
 		const navBoundsVolumeName = `${options.prefix}_NavBounds`
+		const navModifierVolumeName = `${options.prefix}_NavModifier`
+		const navLinkProxyName = `${options.prefix}_NavLinkProxy`
 		const triggerVolumeName = `${options.prefix}_TriggerVolume`
+		const blockingVolumeName = `${options.prefix}_BlockingVolume`
+		const physicsVolumeName = `${options.prefix}_PhysicsVolume`
+		const audioVolumeName = `${options.prefix}_AudioVolume`
 		const debugShapeActorName = `cube_${options.prefix}_DebugShape`
 		const splineActorName = `${options.prefix}_SplineHost`
 		addCleanup(`Delete actor ${lightActorName}`, () => safeDeleteActor(lightActorName))
+		addCleanup(`Delete actor ${directionalLightActorName}`, () => safeDeleteActor(directionalLightActorName))
+		addCleanup(`Delete actor ${spotLightActorName}`, () => safeDeleteActor(spotLightActorName))
 		addCleanup(`Delete actor ${navBoundsVolumeName}`, () => safeDeleteActor(navBoundsVolumeName))
+		addCleanup(`Delete actor ${navModifierVolumeName}`, () => safeDeleteActor(navModifierVolumeName))
+		addCleanup(`Delete actor ${navLinkProxyName}`, () => safeDeleteActor(navLinkProxyName))
 		addCleanup(`Delete actor ${triggerVolumeName}`, () => safeDeleteActor(triggerVolumeName))
+		addCleanup(`Delete actor ${blockingVolumeName}`, () => safeDeleteActor(blockingVolumeName))
+		addCleanup(`Delete actor ${physicsVolumeName}`, () => safeDeleteActor(physicsVolumeName))
+		addCleanup(`Delete actor ${audioVolumeName}`, () => safeDeleteActor(audioVolumeName))
 		addCleanup(`Delete actor ${debugShapeActorName}`, () => safeDeleteActor(debugShapeActorName))
 		addCleanup(`Delete actor ${splineActorName}`, () => safeDeleteActor(splineActorName))
 
@@ -1021,6 +1237,36 @@ async function main() {
 				},
 			})
 			assert(lightResult.actor?.label === lightActorName, "manage_lighting spawn_point_light did not create the expected actor")
+		})
+
+		await runStep("Spawn a directional light through manage_lighting", async () => {
+			const directionalLightResult = await callJsonTool("manage_lighting", {
+				action: "spawn_directional_light",
+				params: {
+					name: directionalLightActorName,
+					location: { x: -420, y: 320, z: 320 },
+					rotation: { pitch: -35, yaw: 15, roll: 0 },
+				},
+			})
+			assert(
+				directionalLightResult.actor?.label === directionalLightActorName,
+				"manage_lighting spawn_directional_light did not create the expected actor",
+			)
+		})
+
+		await runStep("Spawn a spot light through manage_lighting", async () => {
+			const spotLightResult = await callJsonTool("manage_lighting", {
+				action: "spawn_spot_light",
+				params: {
+					name: spotLightActorName,
+					location: { x: -80, y: 300, z: 280 },
+					rotation: { pitch: -45, yaw: 0, roll: 0 },
+				},
+			})
+			assert(
+				spotLightResult.actor?.label === spotLightActorName,
+				"manage_lighting spawn_spot_light did not create the expected actor",
+			)
 		})
 
 		await runStep("Move the point light through manage_lighting", async () => {
@@ -1068,6 +1314,35 @@ async function main() {
 			)
 		})
 
+		await runStep("Spawn a nav modifier volume through manage_navigation", async () => {
+			const navModifierResult = await callJsonTool("manage_navigation", {
+				action: "spawn_nav_modifier_volume",
+				params: {
+					name: navModifierVolumeName,
+					location: { x: 470, y: 250, z: 0 },
+					scale: { x: 2, y: 2, z: 2 },
+				},
+			})
+			assert(
+				navModifierResult.actor_label === navModifierVolumeName,
+				"manage_navigation spawn_nav_modifier_volume did not create the expected actor label",
+			)
+		})
+
+		await runStep("Spawn a nav link proxy through manage_navigation", async () => {
+			const navLinkResult = await callJsonTool("manage_navigation", {
+				action: "spawn_nav_link_proxy",
+				params: {
+					name: navLinkProxyName,
+					location: { x: 520, y: 250, z: 0 },
+				},
+			})
+			assert(
+				navLinkResult.actor_label === navLinkProxyName,
+				"manage_navigation spawn_nav_link_proxy did not create the expected actor label",
+			)
+		})
+
 		await runStep("Inspect navigation through manage_navigation", async () => {
 			const navigationInfo = await callJsonTool("manage_navigation", {
 				action: "inspect_navigation",
@@ -1090,6 +1365,20 @@ async function main() {
 			})
 		})
 
+		await runStep("Delete the nav modifier volume", async () => {
+			await callJsonTool("manage_actor", {
+				action: "delete",
+				params: { name: navModifierVolumeName },
+			})
+		})
+
+		await runStep("Delete the nav link proxy", async () => {
+			await callJsonTool("manage_actor", {
+				action: "delete",
+				params: { name: navLinkProxyName },
+			})
+		})
+
 		await runStep("Spawn a trigger volume through manage_volumes", async () => {
 			const triggerVolumeResult = await callJsonTool("manage_volumes", {
 				action: "spawn_trigger_volume",
@@ -1102,6 +1391,51 @@ async function main() {
 			assert(
 				triggerVolumeResult.actor_label === triggerVolumeName,
 				"manage_volumes spawn_trigger_volume did not create the expected actor label",
+			)
+		})
+
+		await runStep("Spawn a blocking volume through manage_volumes", async () => {
+			const blockingVolumeResult = await callJsonTool("manage_volumes", {
+				action: "spawn_blocking_volume",
+				params: {
+					name: blockingVolumeName,
+					location: { x: 600, y: 260, z: 0 },
+					scale: { x: 2, y: 2, z: 2 },
+				},
+			})
+			assert(
+				blockingVolumeResult.actor_label === blockingVolumeName,
+				"manage_volumes spawn_blocking_volume did not create the expected actor label",
+			)
+		})
+
+		await runStep("Spawn a physics volume through manage_volumes", async () => {
+			const physicsVolumeResult = await callJsonTool("manage_volumes", {
+				action: "spawn_physics_volume",
+				params: {
+					name: physicsVolumeName,
+					location: { x: 650, y: 260, z: 0 },
+					scale: { x: 2, y: 2, z: 2 },
+				},
+			})
+			assert(
+				physicsVolumeResult.actor_label === physicsVolumeName,
+				"manage_volumes spawn_physics_volume did not create the expected actor label",
+			)
+		})
+
+		await runStep("Spawn an audio volume through manage_volumes", async () => {
+			const audioVolumeResult = await callJsonTool("manage_volumes", {
+				action: "spawn_audio_volume",
+				params: {
+					name: audioVolumeName,
+					location: { x: 700, y: 260, z: 0 },
+					scale: { x: 2, y: 2, z: 2 },
+				},
+			})
+			assert(
+				audioVolumeResult.actor_label === audioVolumeName,
+				"manage_volumes spawn_audio_volume did not create the expected actor label",
 			)
 		})
 
@@ -1124,6 +1458,27 @@ async function main() {
 			await callJsonTool("manage_volumes", {
 				action: "delete_volume",
 				params: { name: triggerVolumeName },
+			})
+		})
+
+		await runStep("Delete the blocking volume through manage_volumes", async () => {
+			await callJsonTool("manage_volumes", {
+				action: "delete_volume",
+				params: { name: blockingVolumeName },
+			})
+		})
+
+		await runStep("Delete the physics volume through manage_volumes", async () => {
+			await callJsonTool("manage_volumes", {
+				action: "delete_volume",
+				params: { name: physicsVolumeName },
+			})
+		})
+
+		await runStep("Delete the audio volume through manage_volumes", async () => {
+			await callJsonTool("manage_volumes", {
+				action: "delete_volume",
+				params: { name: audioVolumeName },
 			})
 		})
 
@@ -1398,6 +1753,72 @@ async function main() {
 				assert(
 					applyResult.material?.path === resolvedBlueprintMaterialPath,
 					"manage_material_authoring apply_to_blueprint returned the wrong material path",
+				)
+			})
+
+			await runStep("Set a Blueprint component property through manage_blueprint", async () => {
+				const componentPropertyResult = await callJsonTool("manage_blueprint", {
+					action: "set_component_property",
+					params: {
+						blueprint_name: blueprintPath,
+						component_name: "SmokeMesh",
+						property_name: "cast_shadow",
+						property_value: false,
+					},
+				})
+				assert(
+					componentPropertyResult.blueprint === blueprintPath,
+					"manage_blueprint set_component_property returned the wrong blueprint path",
+				)
+				assert(
+					componentPropertyResult.component?.name === "SmokeMesh",
+					"manage_blueprint set_component_property returned the wrong component summary",
+				)
+			})
+
+			await runStep("Set Blueprint physics properties through manage_blueprint", async () => {
+				const physicsPropertyResult = await callJsonTool("manage_blueprint", {
+					action: "set_physics_properties",
+					params: {
+						blueprint_name: blueprintPath,
+						component_name: "SmokeMesh",
+						simulate_physics: false,
+						gravity_enabled: false,
+						mass: 2.0,
+						linear_damping: 0.2,
+						angular_damping: 0.1,
+					},
+				})
+				assert(
+					physicsPropertyResult.blueprint === blueprintPath,
+					"manage_blueprint set_physics_properties returned the wrong blueprint path",
+				)
+				assert(
+					physicsPropertyResult.component?.name === "SmokeMesh",
+					"manage_blueprint set_physics_properties returned the wrong component summary",
+				)
+			})
+
+			await runStep("Set a Blueprint default property through manage_blueprint", async () => {
+				const blueprintPropertyResult = await callJsonTool("manage_blueprint", {
+					action: "set_blueprint_property",
+					params: {
+						blueprint_name: blueprintPath,
+						property_name: "can_be_damaged",
+						property_value: true,
+					},
+				})
+				assert(
+					blueprintPropertyResult.blueprint === blueprintPath,
+					"manage_blueprint set_blueprint_property returned the wrong blueprint path",
+				)
+				assert(
+					blueprintPropertyResult.property_name === "can_be_damaged",
+					"manage_blueprint set_blueprint_property returned the wrong property name",
+				)
+				assert(
+					blueprintPropertyResult.property_value === true,
+					"manage_blueprint set_blueprint_property returned the wrong property value",
 				)
 			})
 
