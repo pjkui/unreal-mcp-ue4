@@ -7,10 +7,29 @@ const args = process.argv.slice(2)
 const wantsHelp = args.includes("--help") || args.includes("-h")
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm"
 
+function quoteWindowsArg(value) {
+	if (!value.length) {
+		return '""'
+	}
+
+	if (!/[\s"]/u.test(value)) {
+		return value
+	}
+
+	return `"${value.replace(/"/g, '\\"')}"`
+}
+
 function run(command, commandArgs) {
-	const result = spawnSync(command, commandArgs, {
-		stdio: "inherit",
-	})
+	const result =
+		process.platform === "win32" && command.toLowerCase().endsWith(".cmd")
+			? spawnSync(
+					process.env.ComSpec ?? "cmd.exe",
+					["/d", "/s", "/c", [command, ...commandArgs.map(quoteWindowsArg)].join(" ")],
+					{ stdio: "inherit" },
+				)
+			: spawnSync(command, commandArgs, {
+					stdio: "inherit",
+				})
 
 	if (result.error) {
 		throw result.error
