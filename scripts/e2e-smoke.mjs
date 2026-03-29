@@ -347,6 +347,15 @@ async function main() {
 		}
 	}
 
+	const safeDeleteActors = async (actorNames) => {
+		for (const actorName of actorNames) {
+			if (typeof actorName !== "string" || !actorName) {
+				continue
+			}
+			await safeDeleteActor(actorName)
+		}
+	}
+
 	const safeDeleteAssets = async (assetPaths) => {
 		if (assetPaths.length === 0) {
 			return
@@ -504,6 +513,15 @@ async function main() {
 			assert(Number.isFinite(levelInfo.total_actors), "manage_level info did not return total_actors")
 		})
 
+		await runStep("Inspect the current map through manage_inspection", async () => {
+			const mapInfo = await callJsonTool("manage_inspection", {
+				action: "map",
+				params: {},
+			})
+			assert(mapInfo.map_name === currentMapInfo.map_name, "manage_inspection map returned a different map name")
+			assert(Number.isFinite(mapInfo.total_actors), "manage_inspection map did not return total_actors")
+		})
+
 		await runStep("Read world outliner through manage_level", async () => {
 			const outliner = await callJsonTool("manage_level", {
 				action: "world_outliner",
@@ -543,6 +561,23 @@ async function main() {
 				params: { asset_path: "/Engine/BasicShapes/Cube" },
 			})
 			assert(Array.isArray(references), "manage_asset references did not return an array")
+		})
+
+		await runStep("Inspect an asset through manage_inspection", async () => {
+			const assetInfo = await callJsonTool("manage_inspection", {
+				action: "asset",
+				params: { asset_path: "/Engine/BasicShapes/Cube" },
+			})
+			assert(Array.isArray(assetInfo) && assetInfo.length === 1, "manage_inspection asset did not return one asset record")
+			assert(assetInfo[0].package === "/Engine/BasicShapes/Cube", "manage_inspection asset returned the wrong asset package")
+		})
+
+		await runStep("Inspect asset references through manage_inspection", async () => {
+			const references = await callJsonTool("manage_inspection", {
+				action: "asset_references",
+				params: { asset_path: "/Engine/BasicShapes/Cube" },
+			})
+			assert(Array.isArray(references), "manage_inspection asset_references did not return an array")
 		})
 
 		await runStep("Validate an asset through manage_system", async () => {
@@ -849,6 +884,32 @@ async function main() {
 			assert(propertyResult.actor?.label === granularActorName, "manage_actor get_properties returned the wrong actor")
 		})
 
+		await runStep("Inspect actor properties through manage_inspection", async () => {
+			const inspectionResult = await callJsonTool("manage_inspection", {
+				action: "actor",
+				params: { name: granularActorName },
+			})
+			assert(inspectionResult.actor?.label === granularActorName, "manage_inspection actor returned the wrong actor")
+		})
+
+		await runStep("Inspect actor materials through manage_inspection", async () => {
+			const materialInspection = await callJsonTool("manage_inspection", {
+				action: "actor_materials",
+				params: { name: granularActorName },
+			})
+			assert(
+				Array.isArray(materialInspection.materials?.components),
+				"manage_inspection actor_materials did not return component materials",
+			)
+			assert(
+				materialInspection.materials.components.some((component) =>
+					Array.isArray(component.materials)
+						&& component.materials.some((slot) => slot.material?.path === basicShapeMaterialPath),
+				),
+				"manage_inspection actor_materials did not report the applied material",
+			)
+		})
+
 		await runStep("Delete the granular smoke-test actor", async () => {
 			await callJsonTool("manage_actor", {
 				action: "delete",
@@ -1123,6 +1184,88 @@ async function main() {
 				action: "delete_actor",
 				params: { name: splineActorName },
 			})
+		})
+
+		const levelStructurePrefix = `${options.prefix}_House`
+		const environmentPrefix = `${options.prefix}_Arch`
+		const geometryPrefix = `${options.prefix}_Stairs`
+
+		await runStep("Construct a house through manage_level_structure", async () => {
+			const structureResult = await callJsonTool("manage_level_structure", {
+				action: "construct_house",
+				params: {
+					prefix: levelStructurePrefix,
+					location: { x: 960, y: 320, z: 0 },
+					width: 260,
+					depth: 220,
+					wall_height: 180,
+					roof_height: 60,
+				},
+			})
+			assert(
+				structureResult.structure === "construct_house",
+				"manage_level_structure construct_house returned the wrong structure",
+			)
+			assert(
+				Number(structureResult.actor_count) >= 5,
+				"manage_level_structure construct_house did not spawn enough actors",
+			)
+			addCleanup(
+				`Delete level-structure actors for ${levelStructurePrefix}`,
+				() => safeDeleteActors((structureResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create an arch through manage_environment", async () => {
+			const environmentResult = await callJsonTool("manage_environment", {
+				action: "create_arch",
+				params: {
+					prefix: environmentPrefix,
+					location: { x: 1260, y: 320, z: 0 },
+					span_width: 220,
+					pillar_height: 180,
+					pillar_width: 40,
+					beam_height: 40,
+				},
+			})
+			assert(
+				environmentResult.structure === "create_arch",
+				"manage_environment create_arch returned the wrong structure",
+			)
+			assert(
+				Number(environmentResult.actor_count) === 3,
+				"manage_environment create_arch did not spawn the expected actor count",
+			)
+			addCleanup(
+				`Delete environment actors for ${environmentPrefix}`,
+				() => safeDeleteActors((environmentResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
+		})
+
+		await runStep("Create a staircase through manage_geometry", async () => {
+			const geometryResult = await callJsonTool("manage_geometry", {
+				action: "create_staircase",
+				params: {
+					prefix: geometryPrefix,
+					location: { x: 1500, y: 320, z: 0 },
+					steps: 4,
+					step_width: 180,
+					step_height: 30,
+					step_depth: 90,
+				},
+			})
+			assert(
+				geometryResult.structure === "create_staircase",
+				"manage_geometry create_staircase returned the wrong structure",
+			)
+			assert(
+				Number(geometryResult.actor_count) === 4,
+				"manage_geometry create_staircase did not spawn the expected actor count",
+			)
+			addCleanup(
+				`Delete geometry actors for ${geometryPrefix}`,
+				() => safeDeleteActors((geometryResult.actors || []).map((actor) => actor.label || actor.name)),
+			)
 		})
 
 		if (options.withAssets) {
