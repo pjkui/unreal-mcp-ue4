@@ -259,6 +259,7 @@ async function main() {
 	const summary = []
 	let projectInfo
 	let currentMapInfo
+	const basicShapeMaterialPath = "/Engine/BasicShapes/BasicShapeMaterial"
 
 	const addCleanup = (name, fn) => {
 		cleanupTasks.push({ name, fn })
@@ -377,8 +378,10 @@ async function main() {
 			"manage_actor",
 			"manage_level",
 			"manage_lighting",
+			"manage_material_authoring",
 			"manage_data",
 			"manage_source_control",
+			"manage_system",
 			"manage_tools",
 		]
 
@@ -514,6 +517,18 @@ async function main() {
 			assert(Array.isArray(references), "manage_asset references did not return an array")
 		})
 
+		await runStep("Validate an asset through manage_system", async () => {
+			const validationResult = await callJsonTool("manage_system", {
+				action: "validate_assets",
+				params: { asset_paths: "/Engine/BasicShapes/Cube" },
+			})
+			assert(validationResult.total_validated === 1, "manage_system validate_assets did not validate one asset")
+			assert(
+				validationResult.validation_summary?.valid_count === 1,
+				"manage_system validate_assets did not mark the engine cube as valid",
+			)
+		})
+
 		await runStep("Read source control provider info", async () => {
 			const sourceControlInfo = await callJsonTool("manage_source_control", {
 				action: "provider_info",
@@ -604,6 +619,51 @@ async function main() {
 			)
 		})
 
+		await runStep("Assign a static mesh through manage_actor", async () => {
+			const propertyResult = await callJsonTool("manage_actor", {
+				action: "set_property",
+				params: {
+					name: granularActorName,
+					property_name: "StaticMesh",
+					property_value: "/Engine/BasicShapes/Cube",
+				},
+			})
+			assert(propertyResult.actor?.label === granularActorName, "manage_actor set_property returned the wrong actor")
+		})
+
+		await runStep("Apply a material to the actor through manage_material_authoring", async () => {
+			const applyResult = await callJsonTool("manage_material_authoring", {
+				action: "apply_to_actor",
+				params: {
+					actor_name: granularActorName,
+					material_path: basicShapeMaterialPath,
+				},
+			})
+			assert(applyResult.actor?.label === granularActorName, "manage_material_authoring apply_to_actor returned the wrong actor")
+			assert(
+				applyResult.material?.path === basicShapeMaterialPath,
+				"manage_material_authoring apply_to_actor returned the wrong material path",
+			)
+		})
+
+		await runStep("Inspect actor material info through manage_actor", async () => {
+			const materialInfo = await callJsonTool("manage_actor", {
+				action: "get_material_info",
+				params: { name: granularActorName },
+			})
+			assert(
+				Array.isArray(materialInfo.materials?.components),
+				"manage_actor get_material_info did not return component materials",
+			)
+			assert(
+				materialInfo.materials.components.some((component) =>
+					Array.isArray(component.materials)
+						&& component.materials.some((slot) => slot.material?.path === basicShapeMaterialPath),
+				),
+				"manage_actor get_material_info did not report the applied material",
+			)
+		})
+
 		await runStep("Move the spawned actor", async () => {
 			const transformResult = await callJsonTool("manage_actor", {
 				action: "transform",
@@ -651,6 +711,22 @@ async function main() {
 				]) {
 					assert(namespaceNames.has(requiredNamespace), `Tool namespace is missing: ${requiredNamespace}`)
 				}
+			})
+
+			await runStep("Describe a tool namespace through manage_tools", async () => {
+				const namespaceDescription = await callJsonTool("manage_tools", {
+					action: "describe_namespace",
+					params: { tool_name: "manage_material_authoring" },
+				})
+				assert(
+					namespaceDescription.tool_namespace === "manage_material_authoring",
+					"manage_tools describe_namespace returned the wrong namespace",
+				)
+				assert(
+					Array.isArray(namespaceDescription.supported_actions)
+						&& namespaceDescription.supported_actions.includes("apply_to_actor"),
+					"manage_tools describe_namespace did not include apply_to_actor",
+				)
 			})
 
 			await runStep("Read source control provider info through the tool-namespace layer", async () => {
@@ -748,7 +824,7 @@ async function main() {
 				: null
 			const originalClassicInputActionCount = Number(projectInfo.classic_input_actions_count ?? 0)
 			let widgetAuthoringUnsupportedReason = ""
-			let basicShapeMaterialPath = "/Engine/BasicShapes/BasicShapeMaterial"
+			let resolvedBlueprintMaterialPath = basicShapeMaterialPath
 			const texturePixelBase64 =
 				"iVBORw0KGgoAAAANSUhEUgAAAAQAAAAECAYAAACp8Z5+AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAZSURBVBhXY/jPAEQNIAoO/oMBlEMQMDAAAO2DCXg4buGUAAAAAElFTkSuQmCC"
 			fs.writeFileSync(tempTextureFile, Buffer.from(texturePixelBase64, "base64"))
@@ -831,7 +907,7 @@ async function main() {
 					String(material.path).includes("BasicShapeMaterial"),
 				)
 				assert(discoveredMaterial, "manage_material_authoring list_materials did not find BasicShapeMaterial")
-				basicShapeMaterialPath = discoveredMaterial.path
+				resolvedBlueprintMaterialPath = discoveredMaterial.path
 			})
 
 			await runStep("Apply a material to the Blueprint through manage_material_authoring", async () => {
@@ -840,7 +916,7 @@ async function main() {
 					params: {
 						blueprint_name: blueprintPath,
 						component_name: "SmokeMesh",
-						material_path: basicShapeMaterialPath,
+						material_path: resolvedBlueprintMaterialPath,
 					},
 				})
 				assert(applyResult.blueprint === blueprintPath, "manage_material_authoring apply_to_blueprint returned the wrong blueprint")
@@ -849,7 +925,7 @@ async function main() {
 					"manage_material_authoring apply_to_blueprint returned the wrong component",
 				)
 				assert(
-					applyResult.material?.path === basicShapeMaterialPath,
+					applyResult.material?.path === resolvedBlueprintMaterialPath,
 					"manage_material_authoring apply_to_blueprint returned the wrong material path",
 				)
 			})
