@@ -3,7 +3,10 @@
 import { spawnSync } from "node:child_process"
 import process from "node:process"
 
-const args = process.argv.slice(2)
+const wrapperArgs = process.argv.slice(2)
+const skipBuild =
+	wrapperArgs.includes("--skip-build") || process.env.UNREAL_MCP_SKIP_BUILD === "1"
+const args = wrapperArgs.filter((value) => value !== "--skip-build")
 const wantsHelp = args.includes("--help") || args.includes("-h")
 const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm"
 
@@ -40,7 +43,7 @@ function run(command, commandArgs) {
 	}
 }
 
-if (!wantsHelp) {
+if (!wantsHelp && !skipBuild) {
 	run(npmCommand, ["run", "build"])
 }
 

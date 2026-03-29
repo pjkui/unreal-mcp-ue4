@@ -1,9 +1,10 @@
 import { z } from "zod"
-import os from "node:os"
 
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js"
-import { RemoteExecution, RemoteExecutionConfig } from "unreal-remote-execution"
 import * as editorTools from "./editor/tools.js"
+import { discoverPath, shutdownRemoteExecution, tryRunCommand } from "./remote-execution.js"
+
+export { shutdownRemoteExecution }
 
 export const server = new McpServer({
 	name: "UnrealMCP-UE4",
@@ -12,138 +13,9 @@ export const server = new McpServer({
 })
 const rawServerTool = server.tool.bind(server) as (...args: any[]) => unknown
 
-const resolveRemoteExecutionBindAddress = () => {
-	const interfaces = os.networkInterfaces()
-
-	for (const networkInterface of Object.values(interfaces)) {
-		for (const addressInfo of networkInterface ?? []) {
-			if (addressInfo.family === "IPv4" && !addressInfo.internal) {
-				return addressInfo.address
-			}
-		}
-	}
-
-	return "0.0.0.0"
-}
-
-const remoteExecutionBindAddress = resolveRemoteExecutionBindAddress()
-const config = new RemoteExecutionConfig(1, ["239.0.0.1", 6766], remoteExecutionBindAddress)
-const remoteExecution = new RemoteExecution(config)
-
-console.error(`Using Unreal Remote Execution bind address: ${remoteExecutionBindAddress}`)
-
-// Start the remote execution server
-remoteExecution.start()
-
-let remoteNode: RemoteExecution | undefined = undefined
-let remoteConnectionPromise: Promise<void> | undefined = undefined
-
-const connectWithRetry = async (maxRetries: number = 3, retryDelay: number = 2000) => {
-	let lastError: unknown = undefined
-
-	for (let attempt = 1; attempt <= maxRetries; attempt++) {
-		try {
-			const node = await remoteExecution.getFirstRemoteNode(1000, 5000)
-
-			// Once a node is found, open a command connection
-			await remoteExecution.openCommandConnection(node)
-			remoteNode = remoteExecution
-
-			// Execute a command to verify connection
-			const result = await remoteExecution.runCommand('print("rrmcp:init")')
-			if (!result.success) {
-				throw new Error(`Failed to run command: ${JSON.stringify(result.result)}`)
-			}
-
-			return
-		} catch (error) {
-			lastError = error
-			console.error(`Connection attempt ${attempt} failed:`, error)
-
-			if (attempt < maxRetries) {
-				console.error(`Retrying in ${retryDelay}ms...`)
-				await new Promise((resolve) => setTimeout(resolve, retryDelay))
-				// Exponential backoff
-				retryDelay = Math.min(retryDelay * 1.5, 10000)
-			}
-		}
-	}
-
-	throw lastError instanceof Error
-		? lastError
-		: new Error("Unable to connect to your Unreal Engine Editor after multiple attempts")
-}
-
-const ensureRemoteConnection = async () => {
-	if (remoteNode) {
-		return
-	}
-
-	if (!remoteConnectionPromise) {
-		remoteConnectionPromise = connectWithRetry().finally(() => {
-			if (!remoteNode) {
-				remoteConnectionPromise = undefined
-			}
-		})
-	}
-
-	await remoteConnectionPromise
-}
-
-void ensureRemoteConnection().catch((error) => {
-	console.error("Initial Unreal Remote Execution connection failed:", error)
-})
-
-const tryRunCommand = async (command: string): Promise<string> => {
-	await ensureRemoteConnection()
-
-	try {
-		const result = await remoteNode!.runCommand(command)
-		if (!result.success) {
-			throw new Error(`Command failed with: ${result.result}`)
-		}
-
-		return result.output.map((line) => line.output).join("\n")
-	} catch (error) {
-		try {
-			if (remoteExecution.hasCommandConnection()) {
-				remoteExecution.closeCommandConnection()
-			}
-		} catch (closeError) {
-			console.error("Failed to close stale Unreal command connection:", closeError)
-		}
-
-		remoteNode = undefined
-		remoteConnectionPromise = undefined
-		await ensureRemoteConnection()
-
-		const retryResult = await remoteNode!.runCommand(command)
-		if (!retryResult.success) {
-			throw error instanceof Error ? error : new Error(String(error))
-		}
-
-		return retryResult.output.map((line) => line.output).join("\n")
-	}
-}
-
 const textResponse = (text: string) => ({
 	content: [{ type: "text" as const, text }],
 })
-
-const discoverPath = async (command: string, errorMessage: string) => {
-	const output = await tryRunCommand(command)
-	const lines = output
-		.split(/\r?\n/)
-		.map((line) => line.trim())
-		.filter(Boolean)
-	const discoveredPath = lines.length > 0 ? lines[lines.length - 1] : ""
-
-	if (!discoveredPath || discoveredPath === "None") {
-		throw new Error(errorMessage)
-	}
-
-	return discoveredPath
-}
 
 const registerPythonTool = (
 	name: string,
