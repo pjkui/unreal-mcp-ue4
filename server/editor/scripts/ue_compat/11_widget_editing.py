@@ -1,0 +1,211 @@
+def add_widget_to_tree(widget_tree, widget, parent_widget=None):
+    if parent_widget is None:
+        if get_root_widget(widget_tree):
+            raise ValueError(
+                "Widget blueprint already has a root widget. Use manage_widget_authoring.add_child_widget for nested widgets, or pass parent_widget_name when calling add_widget."
+            )
+        if not set_object_property(widget_tree, "root_widget", widget):
+            raise RuntimeError("Failed to assign root widget")
+        return None
+
+    parent_widget = require_panel_widget(parent_widget)
+
+    slot = None
+    try:
+        if object_is_instance_of(parent_widget, unreal.CanvasPanel) and hasattr(
+            parent_widget, "add_child_to_canvas"
+        ):
+            slot = parent_widget.add_child_to_canvas(widget)
+        else:
+            slot = parent_widget.add_child(widget)
+    except Exception as exc:
+        raise RuntimeError(
+            "Failed to add widget '{0}' to parent '{1}': {2}".format(
+                get_widget_name(widget), get_widget_name(parent_widget), exc
+            )
+        )
+
+    if slot is None:
+        raise RuntimeError(
+            "Parent widget '{0}' could not accept child widget '{1}'.".format(
+                get_widget_name(parent_widget), get_widget_name(widget)
+            )
+        )
+
+    return slot
+
+
+def get_canvas_panel_slot(widget):
+    slot = get_editor_property_value(widget, "slot")
+    if not slot:
+        return None
+
+    try:
+        if object_is_instance_of(slot, unreal.CanvasPanelSlot):
+            return slot
+    except Exception:
+        pass
+
+    return None
+
+
+def set_widget_canvas_position(widget, position, z_order=None):
+    slot = get_canvas_panel_slot(widget)
+    if not slot:
+        raise ValueError(
+            "Widget '{0}' is not attached to a CanvasPanel slot. Position changes are only supported for CanvasPanel children in UE4.27.".format(
+                get_widget_name(widget)
+            )
+        )
+
+    slot.set_position(
+        unreal.Vector2D(
+            x=float(position.get("x", 0.0)),
+            y=float(position.get("y", 0.0)),
+        )
+    )
+
+    if z_order is not None:
+        slot.set_z_order(int(z_order))
+
+    return slot
+
+
+def get_canvas_slot_layout(widget):
+    slot = get_canvas_panel_slot(widget)
+    if not slot:
+        return None
+
+    position = slot.get_position()
+    size = slot.get_size()
+
+    return {
+        "position": {"x": position.x, "y": position.y},
+        "size": {"x": size.x, "y": size.y},
+        "z_order": slot.get_z_order(),
+    }
+
+
+def remove_widget_from_blueprint_tree(widget_tree, widget):
+    if not widget_tree or not widget:
+        return False
+
+    root_widget = get_root_widget(widget_tree)
+    subtree = get_widget_subtree(widget)
+
+    if root_widget == widget:
+        if not set_object_property(widget_tree, "root_widget", None):
+            return False
+    else:
+        try:
+            widget.remove_from_parent()
+        except Exception:
+            return False
+
+    transient_package_getter = getattr(unreal, "get_transient_package", None)
+    transient_package = None
+    if callable(transient_package_getter):
+        try:
+            transient_package = transient_package_getter()
+        except Exception:
+            transient_package = None
+
+    if transient_package is None:
+        try:
+            transient_package = unreal.find_object(None, "/Engine/Transient")
+        except Exception:
+            transient_package = None
+
+    for subtree_widget in subtree:
+        try:
+            if transient_package is not None:
+                subtree_widget.rename(None, transient_package)
+            else:
+                subtree_widget.rename(None, widget_tree)
+        except Exception:
+            continue
+
+    return True
+
+
+def touch_editor_object(target):
+    if not target:
+        return
+
+    try:
+        target.modify()
+    except Exception:
+        pass
+
+    try:
+        target.mark_package_dirty()
+    except Exception:
+        pass
+
+
+def try_compile_blueprint(blueprint):
+    try:
+        if hasattr(unreal, "BlueprintEditorLibrary") and hasattr(
+            unreal.BlueprintEditorLibrary, "compile_blueprint"
+        ):
+            unreal.BlueprintEditorLibrary.compile_blueprint(blueprint)
+            return True
+    except Exception:
+        pass
+
+    try:
+        if hasattr(unreal, "KismetEditorUtilities") and hasattr(
+            unreal.KismetEditorUtilities, "compile_blueprint"
+        ):
+            unreal.KismetEditorUtilities.compile_blueprint(blueprint)
+            return True
+    except Exception:
+        pass
+
+    return False
+
+
+def save_widget_blueprint(widget_blueprint):
+    touch_editor_object(widget_blueprint)
+
+    try:
+        widget_tree = get_widget_tree(widget_blueprint)
+        touch_editor_object(widget_tree)
+        touch_editor_object(get_root_widget(widget_tree))
+    except Exception:
+        pass
+
+    try:
+        widget_blueprint.post_edit_change()
+    except Exception:
+        pass
+
+    try_compile_blueprint(widget_blueprint)
+
+    try:
+        result = unreal.EditorAssetLibrary.save_loaded_asset(widget_blueprint)
+        if result is None:
+            return True
+        return bool(result)
+    except TypeError:
+        try:
+            result = unreal.EditorAssetLibrary.save_loaded_asset(widget_blueprint, False)
+            if result is None:
+                return True
+            return bool(result)
+        except Exception:
+            pass
+    except Exception:
+        pass
+
+    asset_path = get_asset_package_name(widget_blueprint)
+    if asset_path:
+        try:
+            result = unreal.EditorAssetLibrary.save_asset(asset_path, False)
+            if result is None:
+                return True
+            return bool(result)
+        except Exception:
+            pass
+
+    return False
