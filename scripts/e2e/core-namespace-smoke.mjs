@@ -24,7 +24,7 @@ export async function runCoreNamespaceScenarios(ctx) {
 			"manage_asset",
 			"manage_data",
 			"manage_source_control",
-			"manage_widget_authoring",
+			"manage_widget",
 		]) {
 			assert(namespaceNames.has(requiredNamespace), `Tool namespace is missing: ${requiredNamespace}`)
 		}
@@ -33,10 +33,10 @@ export async function runCoreNamespaceScenarios(ctx) {
 	await runStep("Describe a tool namespace through manage_tools", async () => {
 		const namespaceDescription = await callJsonTool("manage_tools", {
 			action: "describe_namespace",
-			params: { tool_name: "manage_material_authoring" },
+			params: { tool_name: "manage_material" },
 		})
 		assert(
-			namespaceDescription.tool_namespace === "manage_material_authoring",
+			namespaceDescription.tool_namespace === "manage_material",
 			"manage_tools describe_namespace returned the wrong namespace",
 		)
 		assert(
@@ -57,8 +57,8 @@ export async function runCoreNamespaceScenarios(ctx) {
 		)
 		assert(
 			Array.isArray(toolStatus.tool_namespaces)
-				&& toolStatus.tool_namespaces.includes("manage_widget_authoring"),
-			"manage_tools tool_status did not include manage_widget_authoring",
+				&& toolStatus.tool_namespaces.includes("manage_widget"),
+			"manage_tools tool_status did not include manage_widget",
 		)
 	})
 

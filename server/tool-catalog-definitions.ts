@@ -133,7 +133,7 @@ export const toolCatalogEntries: ToolCatalogEntry[] = [
 		description: "Skeleton tool namespace for searching Skeleton and SkeletalMesh assets and inspecting their metadata.",
 	},
 	{
-		name: "manage_material_authoring",
+		name: "manage_material",
 		category: "Content & Authoring Tool Namespaces",
 		description: "Material tool namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances.",
 	},
@@ -163,7 +163,7 @@ export const toolCatalogEntries: ToolCatalogEntry[] = [
 		description: "Audio tool namespace for importing audio files, searching audio assets, and inspecting their asset metadata.",
 	},
 	{
-		name: "manage_widget_authoring",
+		name: "manage_widget",
 		category: "Content & Authoring Tool Namespaces",
 		description: "Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. Use add_child_widget for typical nested layout work under an existing root such as CanvasPanel_0; add_widget without parent_widget_name is only for assigning a new root widget.",
 	},

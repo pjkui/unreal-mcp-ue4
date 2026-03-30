@@ -1,4 +1,4 @@
-export async function runAssetContentScenarios(state) {
+export async function runContentAssetScenarios(state) {
 	const {
 		fs,
 		os,

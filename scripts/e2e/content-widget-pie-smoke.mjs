@@ -1,4 +1,4 @@
-export async function runAssetWidgetPieScenarios(state) {
+export async function runContentWidgetPieScenarios(state) {
 	const {
 		options,
 		logSkip,
@@ -15,7 +15,7 @@ export async function runAssetWidgetPieScenarios(state) {
 	let widgetAuthoringUnsupportedReason = ""
 
 	await runStep("Create a Widget Blueprint through the tool-namespace layer", async () => {
-		const createWidgetResult = await callJsonTool("manage_widget_authoring", {
+		const createWidgetResult = await callJsonTool("manage_widget", {
 			action: "create_widget_blueprint",
 			params: { widget_name: widgetPath },
 		})
@@ -27,7 +27,7 @@ export async function runAssetWidgetPieScenarios(state) {
 
 	await runStep("Add a TextBlock to the Widget Blueprint", async () => {
 		try {
-			const textResult = await callJsonTool("manage_widget_authoring", {
+			const textResult = await callJsonTool("manage_widget", {
 				action: "add_text_block",
 				params: {
 					widget_name: widgetPath,
@@ -53,7 +53,7 @@ export async function runAssetWidgetPieScenarios(state) {
 	} else {
 		await runStep("Add a Button to the Widget Blueprint", async () => {
 			try {
-				const buttonResult = await callJsonTool("manage_widget_authoring", {
+				const buttonResult = await callJsonTool("manage_widget", {
 					action: "add_button",
 					params: {
 						widget_name: widgetPath,
@@ -75,7 +75,7 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 
 		await runStep("Move the TextBlock through advanced widget tooling", async () => {
-			const moveTextResult = await callJsonTool("manage_widget_authoring", {
+			const moveTextResult = await callJsonTool("manage_widget", {
 				action: "position_widget",
 				params: {
 					widget_blueprint_path: widgetPath,
@@ -91,7 +91,7 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 
 		await runStep("Move the Button through advanced widget tooling", async () => {
-			const moveButtonResult = await callJsonTool("manage_widget_authoring", {
+			const moveButtonResult = await callJsonTool("manage_widget", {
 				action: "position_widget",
 				params: {
 					widget_blueprint_path: widgetPath,
@@ -107,7 +107,7 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 
 		await runStep("Add a CanvasPanel through advanced widget tooling", async () => {
-			const panelResult = await callJsonTool("manage_widget_authoring", {
+			const panelResult = await callJsonTool("manage_widget", {
 				action: "add_widget",
 				params: {
 					widget_blueprint_path: widgetPath,
@@ -121,7 +121,7 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 
 		await runStep("Move the CanvasPanel through advanced widget tooling", async () => {
-			const movePanelResult = await callJsonTool("manage_widget_authoring", {
+			const movePanelResult = await callJsonTool("manage_widget", {
 				action: "position_widget",
 				params: {
 					widget_blueprint_path: widgetPath,
@@ -137,7 +137,7 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 
 		await runStep("Add a child widget through advanced widget tooling", async () => {
-			const childResult = await callJsonTool("manage_widget_authoring", {
+			const childResult = await callJsonTool("manage_widget", {
 				action: "add_child_widget",
 				params: {
 					widget_blueprint_path: widgetPath,
@@ -151,7 +151,7 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 
 		await runStep("Move the child widget through advanced widget tooling", async () => {
-			const moveChildResult = await callJsonTool("manage_widget_authoring", {
+			const moveChildResult = await callJsonTool("manage_widget", {
 				action: "position_child_widget",
 				params: {
 					widget_blueprint_path: widgetPath,
@@ -168,7 +168,7 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 
 		await runStep("Add a second CanvasPanel through advanced widget tooling", async () => {
-			const panelResult = await callJsonTool("manage_widget_authoring", {
+			const panelResult = await callJsonTool("manage_widget", {
 				action: "add_widget",
 				params: {
 					widget_blueprint_path: widgetPath,
@@ -182,7 +182,7 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 
 		await runStep("Reparent the CanvasPanel through advanced widget tooling", async () => {
-			const reparentResult = await callJsonTool("manage_widget_authoring", {
+			const reparentResult = await callJsonTool("manage_widget", {
 				action: "reparent_widget",
 				params: {
 					widget_blueprint_path: widgetPath,
@@ -207,7 +207,7 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 
 		await runStep("Remove the child widget through advanced widget tooling", async () => {
-			const removeChildResult = await callJsonTool("manage_widget_authoring", {
+			const removeChildResult = await callJsonTool("manage_widget", {
 				action: "remove_child_widget",
 				params: {
 					widget_blueprint_path: widgetPath,
@@ -219,7 +219,7 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 
 		await runStep("Remove the CanvasPanel through advanced widget tooling", async () => {
-			const removePanelResult = await callJsonTool("manage_widget_authoring", {
+			const removePanelResult = await callJsonTool("manage_widget", {
 				action: "remove_widget",
 				params: {
 					widget_blueprint_path: widgetPath,
@@ -230,7 +230,7 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 
 		await runStep("Remove the second CanvasPanel through advanced widget tooling", async () => {
-			const removePanelResult = await callJsonTool("manage_widget_authoring", {
+			const removePanelResult = await callJsonTool("manage_widget", {
 				action: "remove_widget",
 				params: {
 					widget_blueprint_path: widgetPath,
@@ -267,7 +267,7 @@ export async function runAssetWidgetPieScenarios(state) {
 	})
 
 	await runStep("Add the Widget Blueprint to the viewport", async () => {
-		const viewportResult = await callJsonTool("manage_widget_authoring", {
+		const viewportResult = await callJsonTool("manage_widget", {
 			action: "add_to_viewport",
 			params: {
 				widget_name: widgetPath,
@@ -276,11 +276,11 @@ export async function runAssetWidgetPieScenarios(state) {
 		})
 		assert(
 			viewportResult.widget_blueprint === widgetPath,
-			"manage_widget_authoring add_to_viewport returned the wrong widget blueprint path",
+			"manage_widget add_to_viewport returned the wrong widget blueprint path",
 		)
 		assert(
 			typeof viewportResult.widget_class === "string" && viewportResult.widget_class.length > 0,
-			"manage_widget_authoring add_to_viewport did not return a widget class",
+			"manage_widget add_to_viewport did not return a widget class",
 		)
 	})
 

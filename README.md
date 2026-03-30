@@ -494,7 +494,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
-		<td width="18%"><code>manage_material_authoring</code></td>
+		<td width="18%"><code>manage_material</code></td>
 		<td width="52%">Material tool namespace for listing materials, applying them to actors or Blueprints, and tinting them with material instances.</td>
 		<td width="30%">&nbsp;</td>
 	</tr>
@@ -524,7 +524,7 @@ The recommended public surface is the `manage_*` namespace layer. Prefer `manage
 		<td width="30%">&nbsp;</td>
 	</tr>
 	<tr>
-		<td width="18%"><code>manage_widget_authoring</code></td>
+		<td width="18%"><code>manage_widget</code></td>
 		<td width="52%">Widget tool namespace for UMG Blueprint creation, widget-tree edits, and viewport spawning actions. Use add_child_widget for typical nested layout work under an existing root such as CanvasPanel_0; add_widget without parent_widget_name is only for assigning a new root widget.</td>
 		<td width="30%">create_widget_blueprint, add_text_block, and add_button work; use add_child_widget for normal nested layout under an existing root such as CanvasPanel_0, while add_widget without parent_widget_name is only for assigning a new root. add_to_viewport requires PIE, and unsupported binding helpers are excluded from the MCP surface.</td>
 	</tr>

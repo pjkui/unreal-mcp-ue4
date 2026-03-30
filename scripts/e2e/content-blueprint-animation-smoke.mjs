@@ -1,4 +1,4 @@
-export async function runAssetBlueprintAnimationScenarios(state) {
+export async function runContentBlueprintAnimationScenarios(state) {
 	const {
 		options,
 		addCleanup,
@@ -47,8 +47,8 @@ export async function runAssetBlueprintAnimationScenarios(state) {
 		})
 	})
 
-	await runStep("List materials through manage_material_authoring", async () => {
-		const materialsResult = await callJsonTool("manage_material_authoring", {
+	await runStep("List materials through manage_material", async () => {
+		const materialsResult = await callJsonTool("manage_material", {
 			action: "list_materials",
 			params: {
 				search_term: "BasicShapeMaterial",
@@ -56,16 +56,16 @@ export async function runAssetBlueprintAnimationScenarios(state) {
 				limit: 10,
 			},
 		})
-		assert(Array.isArray(materialsResult.materials), "manage_material_authoring list_materials did not return a materials list")
+		assert(Array.isArray(materialsResult.materials), "manage_material list_materials did not return a materials list")
 		const discoveredMaterial = materialsResult.materials.find((material) =>
 			String(material.path).includes("BasicShapeMaterial"),
 		)
-		assert(discoveredMaterial, "manage_material_authoring list_materials did not find BasicShapeMaterial")
+		assert(discoveredMaterial, "manage_material list_materials did not find BasicShapeMaterial")
 		state.resolvedBlueprintMaterialPath = discoveredMaterial.path
 	})
 
-	await runStep("Apply a material to the Blueprint through manage_material_authoring", async () => {
-		const applyResult = await callJsonTool("manage_material_authoring", {
+	await runStep("Apply a material to the Blueprint through manage_material", async () => {
+		const applyResult = await callJsonTool("manage_material", {
 			action: "apply_to_blueprint",
 			params: {
 				blueprint_name: blueprintPath,
@@ -73,14 +73,14 @@ export async function runAssetBlueprintAnimationScenarios(state) {
 				material_path: state.resolvedBlueprintMaterialPath,
 			},
 		})
-		assert(applyResult.blueprint === blueprintPath, "manage_material_authoring apply_to_blueprint returned the wrong blueprint")
+		assert(applyResult.blueprint === blueprintPath, "manage_material apply_to_blueprint returned the wrong blueprint")
 		assert(
 			String(applyResult.component).includes("SmokeMesh"),
-			"manage_material_authoring apply_to_blueprint returned the wrong component",
+			"manage_material apply_to_blueprint returned the wrong component",
 		)
 		assert(
 			applyResult.material?.path === state.resolvedBlueprintMaterialPath,
-			"manage_material_authoring apply_to_blueprint returned the wrong material path",
+			"manage_material apply_to_blueprint returned the wrong material path",
 		)
 	})
 

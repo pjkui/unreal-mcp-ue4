@@ -95,8 +95,8 @@ export function registerContentAuthoringNamespaces(ctx: RegistrationContext) {
 	)
 
 	registerToolNamespace(
-		"manage_widget_authoring",
-		ctx.toolDescription("manage_widget_authoring"),
+		"manage_widget",
+		ctx.toolDescription("manage_widget"),
 		{
 			create_widget_blueprint: (params) =>
 				pythonDispatch(

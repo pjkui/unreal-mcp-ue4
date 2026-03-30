@@ -28,8 +28,8 @@ export function registerContentAssetNamespaces(ctx: RegistrationContext) {
 	)
 
 	registerToolNamespace(
-		"manage_material_authoring",
-		ctx.toolDescription("manage_material_authoring"),
+		"manage_material",
+		ctx.toolDescription("manage_material"),
 		{
 			list_materials: (params) =>
 				pythonDispatch(

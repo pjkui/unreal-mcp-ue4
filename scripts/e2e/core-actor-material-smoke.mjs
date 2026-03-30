@@ -109,18 +109,18 @@ export async function runCoreActorMaterialScenarios(ctx) {
 		assert(propertyResult.actor?.label === granularActorName, "manage_actor set_property returned the wrong actor")
 	})
 
-	await runStep("Apply a material to the actor through manage_material_authoring", async () => {
-		const applyResult = await callJsonTool("manage_material_authoring", {
+	await runStep("Apply a material to the actor through manage_material", async () => {
+		const applyResult = await callJsonTool("manage_material", {
 			action: "apply_to_actor",
 			params: {
 				actor_name: granularActorName,
 				material_path: basicShapeMaterialPath,
 			},
 		})
-		assert(applyResult.actor?.label === granularActorName, "manage_material_authoring apply_to_actor returned the wrong actor")
+		assert(applyResult.actor?.label === granularActorName, "manage_material apply_to_actor returned the wrong actor")
 		assert(
 			applyResult.material?.path === basicShapeMaterialPath,
-			"manage_material_authoring apply_to_actor returned the wrong material path",
+			"manage_material apply_to_actor returned the wrong material path",
 		)
 	})
 
@@ -142,8 +142,8 @@ export async function runCoreActorMaterialScenarios(ctx) {
 		)
 	})
 
-	await runStep("Tint the actor material through manage_material_authoring", async () => {
-		const tintResult = await callJsonTool("manage_material_authoring", {
+	await runStep("Tint the actor material through manage_material", async () => {
+		const tintResult = await callJsonTool("manage_material", {
 			action: "tint_material",
 			params: {
 				actor_name: granularActorName,
@@ -154,14 +154,14 @@ export async function runCoreActorMaterialScenarios(ctx) {
 				instance_path: path.dirname(actorTintMaterialPath).replace(/\\/g, "/"),
 			},
 		})
-		assert(tintResult.actor?.label === granularActorName, "manage_material_authoring tint_material returned the wrong actor")
+		assert(tintResult.actor?.label === granularActorName, "manage_material tint_material returned the wrong actor")
 		assert(
 			tintResult.material?.path === actorTintMaterialPath,
-			`manage_material_authoring tint_material returned an unexpected material path: ${tintResult.material?.path}`,
+			`manage_material tint_material returned an unexpected material path: ${tintResult.material?.path}`,
 		)
 		assert(
 			typeof tintResult.parameter_name === "string" && tintResult.parameter_name.length > 0,
-			"manage_material_authoring tint_material did not report a parameter name",
+			"manage_material tint_material did not report a parameter name",
 		)
 	})
 

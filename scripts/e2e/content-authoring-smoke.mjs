@@ -1,9 +1,9 @@
-import { runAssetBlueprintAnimationScenarios } from "./asset-blueprint-animation-smoke.mjs"
-import { runAssetContentScenarios } from "./asset-content-smoke.mjs"
-import { runAssetWidgetPieScenarios } from "./asset-widget-pie-smoke.mjs"
+import { runContentBlueprintAnimationScenarios } from "./content-blueprint-animation-smoke.mjs"
+import { runContentAssetScenarios } from "./content-asset-smoke.mjs"
+import { runContentWidgetPieScenarios } from "./content-widget-pie-smoke.mjs"
 import { runSourceControlMutationScenarios } from "./source-control-mutation-smoke.mjs"
 
-export async function runAssetAuthoringScenarios(ctx) {
+export async function runContentAuthoringScenarios(ctx) {
 	const {
 		fs,
 		os,
@@ -148,9 +148,9 @@ export async function runAssetAuthoringScenarios(ctx) {
 		resolvedBlueprintMaterialPath: basicShapeMaterialPath,
 	}
 
-	await runAssetBlueprintAnimationScenarios(state)
-	await runAssetContentScenarios(state)
-	await runAssetWidgetPieScenarios(state)
+	await runContentBlueprintAnimationScenarios(state)
+	await runContentAssetScenarios(state)
+	await runContentWidgetPieScenarios(state)
 
 	if (options.withSourceControlMutations) {
 		await runSourceControlMutationScenarios(ctx, {

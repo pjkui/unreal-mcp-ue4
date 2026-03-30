@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url"
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js"
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js"
-import { runAssetAuthoringScenarios } from "./e2e/asset-authoring-smoke.mjs"
+import { runContentAuthoringScenarios } from "./e2e/content-authoring-smoke.mjs"
 import { runCoreScenarios } from "./e2e/core-smoke.mjs"
 import { runWorldActorScenarios } from "./e2e/world-actors-smoke.mjs"
 import { runWorldPresetScenarios } from "./e2e/world-presets-smoke.mjs"
@@ -536,7 +536,7 @@ async function main() {
 			"manage_level_structure",
 			"manage_environment",
 			"manage_geometry",
-			"manage_material_authoring",
+			"manage_material",
 			"manage_data",
 			"manage_sequence",
 			"manage_audio",
@@ -553,9 +553,9 @@ async function main() {
 				"manage_animation_physics",
 				"manage_blueprint",
 				"manage_input",
-				"manage_material_authoring",
+				"manage_material",
 				"manage_texture",
-				"manage_widget_authoring",
+				"manage_widget",
 			)
 		}
 
@@ -570,7 +570,7 @@ async function main() {
 		await runWorldPresetScenarios(ctx)
 
 		if (options.withAssets) {
-			await runAssetAuthoringScenarios(ctx)
+			await runContentAuthoringScenarios(ctx)
 		}
 
 		console.log("")
