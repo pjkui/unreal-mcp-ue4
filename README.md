@@ -1,7 +1,7 @@
 # unreal-mcp-ue4
 > UE4.27.2-focused MCP server for Unreal Engine using Unreal Python Remote Execution
 
-`unreal-mcp-ue4` is a UE4.27.2-compatible fork of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp). It keeps the original local Node.js MCP workflow, adapts the tool layer to Unreal Engine 4.27, and adds broader UE4-safe coverage for actors, assets, Blueprints, UMG, materials, world-building helpers, and grouped tool namespaces.
+`unreal-mcp-ue4` started from the core idea and early workflow shape of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), but it has since been heavily refactored for Unreal Engine 4.27.2 and expanded with many new tools, UE4-specific compatibility layers, documentation, and smoke coverage. At this point, the original inspiration remains, but the public surface and day-to-day behavior are substantially different and UE4-first.
 
 This port and the follow-up tool, documentation, and smoke-test work were developed with assistance from OpenAI Codex.
 
@@ -16,8 +16,9 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 
 ## Origin
 
-- Original project: [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp)
-- This fork adapts that workflow for Unreal Engine 4.27.2.
+- Original inspiration and starting point: [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp)
+- The current codebase has gone through extensive UE4.27-focused refactoring, architecture changes, and tool expansion.
+- In practice, the shared idea is still visible, but the implementation, scope, and supported workflows now reflect a separate UE4-first project.
 - Unreal Python API reference: [Unreal Engine Python API 4.27](https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.27)
 
 ## Safety
