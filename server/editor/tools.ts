@@ -1,42 +1,8 @@
-import fs from "node:fs"
-import path from "node:path"
-import { Template } from "../utils.js"
-
-export function read(filePath: string): string {
-	return fs.readFileSync(path.join(__dirname, filePath), "utf8")
-}
-
-function buildOrderedPrelude(relativeDir: string): string {
-	const absoluteDir = path.join(__dirname, relativeDir)
-	if (!fs.existsSync(absoluteDir)) {
-		return ""
-	}
-
-	return fs
-		.readdirSync(absoluteDir)
-		.filter((fileName) => fileName.endsWith(".py"))
-		.sort()
-		.map((fileName) => read(`${relativeDir}/${fileName}`))
-		.join("\n\n")
-}
-
-const compatPrelude = buildOrderedPrelude("./scripts/ue_compat")
-const blueprintPrelude = buildOrderedPrelude("./scripts/ue_blueprint")
-const blueprintGraphPrelude = buildOrderedPrelude("./scripts/ue_blueprint_graph")
-const sourceControlPrelude = buildOrderedPrelude("./scripts/ue_source_control")
-const umgPrelude = buildOrderedPrelude("./scripts/ue_umg")
-const worldBuildingPrelude = buildOrderedPrelude("./scripts/ue_world_building")
-
-function readWithPrelude(filePath: string, extraPrelude = ""): string {
-	return [compatPrelude, extraPrelude, read(filePath)].filter(Boolean).join("\n\n")
-}
+import { editorPreludes } from "./prelude-loader.js"
+import { jsonArg, renderEditorScript } from "./script-renderer.js"
 
 function renderScript(filePath: string, vars: Record<string, string>, extraPrelude = "") {
-	return Template(readWithPrelude(filePath, extraPrelude), vars)
-}
-
-function jsonArg(value: unknown): string {
-	return Buffer.from(JSON.stringify(value === undefined ? null : value), "utf8").toString("base64")
+	return renderEditorScript(filePath, vars, { extraPrelude })
 }
 
 export const UEGetAssetInfo = (asset_path: string) => renderScript("./scripts/ue_get_asset_info.py", { asset_path })
@@ -250,7 +216,7 @@ export const UEBlueprintTool = (operation: string, args: Record<string, unknown>
 	renderScript("./scripts/ue_blueprint_tools.py", {
 		operation: jsonArg(operation),
 		args: jsonArg(args),
-	}, blueprintPrelude)
+	}, editorPreludes.blueprint)
 
 export const UEBlueprintAnalysisTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_blueprint_analysis_tools.py", {
@@ -262,7 +228,7 @@ export const UEBlueprintGraphTool = (operation: string, args: Record<string, unk
 	renderScript("./scripts/ue_blueprint_graph_tools.py", {
 		operation: jsonArg(operation),
 		args: jsonArg(args),
-	}, blueprintGraphPrelude)
+	}, editorPreludes.blueprintGraph)
 
 export const UEProjectTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_project_tools.py", {
@@ -286,13 +252,13 @@ export const UEUMGTool = (operation: string, args: Record<string, unknown> = {})
 	renderScript("./scripts/ue_umg_tools.py", {
 		operation: jsonArg(operation),
 		args: jsonArg(args),
-	}, umgPrelude)
+	}, editorPreludes.umg)
 
 export const UESourceControlTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_source_control_tools.py", {
 		operation: jsonArg(operation),
 		args: jsonArg(args),
-	}, sourceControlPrelude)
+	}, editorPreludes.sourceControl)
 
 export const UEDataTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_data_tools.py", {
@@ -310,7 +276,7 @@ export const UEWorldBuildingTool = (operation: string, args: Record<string, unkn
 	renderScript("./scripts/ue_world_building_tools.py", {
 		operation: jsonArg(operation),
 		args: jsonArg(args),
-	}, worldBuildingPrelude)
+	}, editorPreludes.worldBuilding)
 
 export const UEPIETool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_pie_tools.py", {

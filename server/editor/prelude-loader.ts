@@ -1,0 +1,29 @@
+import fs from "node:fs"
+import path from "node:path"
+
+export function readEditorScript(filePath: string): string {
+	return fs.readFileSync(path.join(__dirname, filePath), "utf8")
+}
+
+export function buildOrderedPrelude(relativeDir: string): string {
+	const absoluteDir = path.join(__dirname, relativeDir)
+	if (!fs.existsSync(absoluteDir)) {
+		return ""
+	}
+
+	return fs
+		.readdirSync(absoluteDir)
+		.filter((fileName) => fileName.endsWith(".py"))
+		.sort()
+		.map((fileName) => readEditorScript(`${relativeDir}/${fileName}`))
+		.join("\n\n")
+}
+
+export const editorPreludes = {
+	compat: buildOrderedPrelude("./scripts/ue_compat"),
+	blueprint: buildOrderedPrelude("./scripts/ue_blueprint"),
+	blueprintGraph: buildOrderedPrelude("./scripts/ue_blueprint_graph"),
+	sourceControl: buildOrderedPrelude("./scripts/ue_source_control"),
+	umg: buildOrderedPrelude("./scripts/ue_umg"),
+	worldBuilding: buildOrderedPrelude("./scripts/ue_world_building"),
+}
