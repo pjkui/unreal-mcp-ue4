@@ -21,8 +21,10 @@ function buildOrderedPrelude(relativeDir: string): string {
 }
 
 const compatPrelude = buildOrderedPrelude("./scripts/ue_compat")
+const blueprintPrelude = buildOrderedPrelude("./scripts/ue_blueprint")
 const blueprintGraphPrelude = buildOrderedPrelude("./scripts/ue_blueprint_graph")
 const sourceControlPrelude = buildOrderedPrelude("./scripts/ue_source_control")
+const umgPrelude = buildOrderedPrelude("./scripts/ue_umg")
 const worldBuildingPrelude = buildOrderedPrelude("./scripts/ue_world_building")
 
 function readWithPrelude(filePath: string, extraPrelude = ""): string {
@@ -248,7 +250,7 @@ export const UEBlueprintTool = (operation: string, args: Record<string, unknown>
 	renderScript("./scripts/ue_blueprint_tools.py", {
 		operation: jsonArg(operation),
 		args: jsonArg(args),
-	})
+	}, blueprintPrelude)
 
 export const UEBlueprintAnalysisTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_blueprint_analysis_tools.py", {
@@ -284,7 +286,7 @@ export const UEUMGTool = (operation: string, args: Record<string, unknown> = {})
 	renderScript("./scripts/ue_umg_tools.py", {
 		operation: jsonArg(operation),
 		args: jsonArg(args),
-	})
+	}, umgPrelude)
 
 export const UESourceControlTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_source_control_tools.py", {
