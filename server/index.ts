@@ -4,13 +4,14 @@ import { createRegistrationContext } from "./registration-context.js"
 import { registerDirectTools } from "./register-direct-tools.js"
 import { registerToolNamespaces } from "./register-namespaces.js"
 import { shutdownRemoteExecution } from "./remote-execution.js"
+import { projectVersion } from "./version.js"
 
 export { shutdownRemoteExecution }
 
 export const server = new McpServer({
 	name: "UnrealMCP-UE4",
 	description: "Unreal Engine MCP for UE4.27.2 with UE4/UE5 editor scripting compatibility helpers",
-	version: "0.1.4-ue4.27.2",
+	version: projectVersion,
 })
 
 const registrationContext = createRegistrationContext(server)

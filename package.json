@@ -1,6 +1,6 @@
 {
   "name": "unreal-mcp-ue4",
-  "version": "0.1.4-ue4.27.2",
+  "version": "2026.03.30.1",
   "description": "UE4.27-compatible fork of runreal/unreal-mcp for controlling the Unreal Editor through MCP.",
   "main": "dist/index.js",
   "bin": {
@@ -13,10 +13,20 @@
     "test:e2e": "node scripts/run-e2e.mjs",
     "typecheck": "tsc --noEmit",
     "postbuild": "node dist/scripts/make-executable.js && node dist/scripts/update-readme.js",
-    "fmt": "biome format . --write && biome check --formatter-enabled=false --linter-enabled=false --organize-imports-enabled=true --write"
+    "fmt": "biome format . --write && biome check --formatter-enabled=false --linter-enabled=false --organize-imports-enabled=true --write",
+    "set:version": "node scripts/set-version.mjs"
   },
-  "files": ["dist"],
-  "keywords": ["unreal", "mcp", "modelcontextprotocol", "unreal-mcp", "ue4", "ue4.27"],
+  "files": [
+    "dist"
+  ],
+  "keywords": [
+    "unreal",
+    "mcp",
+    "modelcontextprotocol",
+    "unreal-mcp",
+    "ue4",
+    "ue4.27"
+  ],
   "author": "Seungjee Baek (conaman)",
   "license": "MIT",
   "packageManager": "npm@10.8.1",
