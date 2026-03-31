@@ -4,7 +4,7 @@ export const UEActorTool = (operation: string, args: Record<string, unknown> = {
 	renderScript("./scripts/ue_actor_tools.py", {
 		operation: jsonArg(operation),
 		args: jsonArg(args),
-	})
+	}, editorPreludes.actor)
 
 export const UEBlueprintTool = (operation: string, args: Record<string, unknown> = {}) =>
 	renderScript("./scripts/ue_blueprint_tools.py", {
