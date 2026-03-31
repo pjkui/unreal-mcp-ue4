@@ -7,6 +7,7 @@ const repoRoot = process.cwd()
 const packageJsonPath = path.join(repoRoot, "package.json")
 const packageLockPath = path.join(repoRoot, "package-lock.json")
 const serverVersionPath = path.join(repoRoot, "server", "version.ts")
+const serverMetadataPath = path.join(repoRoot, "server.json")
 
 const requestedVersion = process.argv[2]
 
@@ -55,5 +56,18 @@ if (fs.existsSync(packageLockPath)) {
 
 const serverVersionSource = `export const projectVersion = "${nextVersion}"\n`
 fs.writeFileSync(serverVersionPath, serverVersionSource)
+
+if (fs.existsSync(serverMetadataPath)) {
+	const serverMetadata = JSON.parse(fs.readFileSync(serverMetadataPath, "utf8"))
+	serverMetadata.version = nextVersion
+	if (Array.isArray(serverMetadata.packages)) {
+		for (const pkg of serverMetadata.packages) {
+			if (pkg && typeof pkg === "object") {
+				pkg.version = nextVersion
+			}
+		}
+	}
+	fs.writeFileSync(serverMetadataPath, `${JSON.stringify(serverMetadata, null, 2)}\n`)
+}
 
 console.log(`Updated project version to ${nextVersion}`)
