@@ -1,11 +1,17 @@
 # unreal-mcp-ue4
 > UE4.27.2-focused MCP server for Unreal Engine using Unreal Python Remote Execution
 
+[![npm version](https://img.shields.io/npm/v/unreal-mcp-ue4?label=npm)](https://www.npmjs.com/package/unreal-mcp-ue4)
+[![MCP Registry](https://img.shields.io/badge/MCP%20Registry-published-2ea44f)](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.conaman/unreal-mcp-ue4)
+
 `unreal-mcp-ue4` started from the core idea and early workflow shape of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), but it has since been heavily refactored for Unreal Engine 4.27.2 and expanded with many new tools, UE4-specific compatibility layers, documentation, and smoke coverage. At this point, the original inspiration remains, but the public surface and day-to-day behavior are substantially different and UE4-first.
 
 This port and the follow-up tool, documentation, and smoke-test work were developed with assistance from OpenAI Codex.
 
 > This project is still under active development, so bugs, rough edges, and UE4.27-specific limitations may still surface.
+>
+> Published package: [`unreal-mcp-ue4`](https://www.npmjs.com/package/unreal-mcp-ue4)  
+> Registry name: `io.github.conaman/unreal-mcp-ue4`
 
 ## Overview
 
