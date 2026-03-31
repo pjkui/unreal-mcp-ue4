@@ -66,6 +66,24 @@ npm run build
 
 Successful build output should create `dist/bin.js`, `dist/index.js`, and `dist/editor/tools.js`.
 
+### 1a. Install from npm
+
+Once the package is published on npm, you can install it directly instead of cloning the repository.
+
+Global install:
+
+```bash
+npm install -g unreal-mcp-ue4
+```
+
+One-off invocation with `npx`:
+
+```bash
+npx unreal-mcp-ue4
+```
+
+If you install from npm, the MCP server entry point is the published `unreal-mcp-ue4` binary instead of a local `dist/bin.js` path.
+
 ### 2. Enable the Unreal requirements
 
 In Unreal Editor:
@@ -104,6 +122,12 @@ If `node` is already on your `PATH`, you can use `"command": "node"` instead.
 
 ```bash
 codex mcp add unreal-ue4 -- /absolute/path/to/node /absolute/path/to/unreal-mcp-ue4/dist/bin.js
+```
+
+If you installed the package globally from npm, you can point the client directly at the published executable:
+
+```bash
+codex mcp add unreal-ue4 -- unreal-mcp-ue4
 ```
 
 ### GitHub Copilot example
@@ -242,6 +266,37 @@ npm run test:e2e -- --with-assets
 2. If that passes, run `npm run test:e2e -- --with-assets`.
 3. After both pass, try the server once from your real MCP client.
 4. Use a separate Unreal test project before pointing the server at production content.
+
+## Publishing to npm
+
+The package is prepared for npm publishing as a public package.
+
+Recommended maintainer flow:
+
+1. Update the project version.
+2. Run the publish preflight:
+
+```bash
+npm run publish:check
+```
+
+3. If you have a running UE4.27 editor test environment available, also run:
+
+```bash
+npm run test:e2e -- --with-assets --skip-build
+```
+
+4. Publish:
+
+```bash
+npm publish
+```
+
+Notes:
+
+- `prepack` runs `npm run build`, so the published tarball always uses a fresh `dist`.
+- `npm run publish:check` verifies typecheck, rebuilds the package, and runs `npm pack --dry-run` so you can inspect the exact tarball contents before publishing.
+- The package name `unreal-mcp-ue4` is currently available on npm.
 
 ## Troubleshooting
 

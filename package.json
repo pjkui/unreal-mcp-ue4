@@ -1,18 +1,21 @@
 {
   "name": "unreal-mcp-ue4",
   "version": "2026.04.01.1",
-  "description": "UE4.27-compatible fork of runreal/unreal-mcp for controlling the Unreal Editor through MCP.",
+  "description": "UE4.27-first MCP server for controlling the Unreal Editor through Unreal Python Remote Execution.",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "bin": {
     "unreal-mcp-ue4": "dist/bin.js"
   },
   "scripts": {
     "dev": "tsx --watch server/bin.ts",
     "build": "node scripts/build.mjs",
+    "prepack": "npm run build",
     "start": "node dist/bin.js",
     "test:e2e": "node scripts/run-e2e.mjs",
     "typecheck": "tsc --noEmit",
     "postbuild": "node dist/scripts/make-executable.js && node dist/scripts/update-readme.js",
+    "publish:check": "npm run typecheck && npm run build && npm pack --dry-run",
     "fmt": "biome format . --write && biome check --formatter-enabled=false --linter-enabled=false --organize-imports-enabled=true --write",
     "set:version": "node scripts/set-version.mjs"
   },
@@ -37,9 +40,12 @@
     "type": "git",
     "url": "https://github.com/conaman/unreal-mcp-ue4.git"
   },
-  "homepage": "https://github.com/conaman/unreal-mcp-ue4",
+  "homepage": "https://github.com/conaman/unreal-mcp-ue4#readme",
   "bugs": {
     "url": "https://github.com/conaman/unreal-mcp-ue4/issues"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
