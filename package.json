@@ -1,6 +1,6 @@
 {
   "name": "unreal-mcp-ue4",
-  "version": "2026.03.30.1",
+  "version": "2026.04.01.1",
   "description": "UE4.27-compatible fork of runreal/unreal-mcp for controlling the Unreal Editor through MCP.",
   "main": "dist/index.js",
   "bin": {
