@@ -1,0 +1,22 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.conaman/unreal-mcp-ue4",
+  "title": "unreal-mcp-ue4",
+  "description": "UE4.27 MCP server for controlling Unreal Editor sessions over Python Remote Execution.",
+  "websiteUrl": "https://github.com/conaman/unreal-mcp-ue4",
+  "repository": {
+    "url": "https://github.com/conaman/unreal-mcp-ue4",
+    "source": "github"
+  },
+  "version": "2026.4.1-1",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "unreal-mcp-ue4",
+      "version": "2026.4.1-1",
+      "transport": {
+        "type": "stdio"
+      }
+    }
+  ]
+}
