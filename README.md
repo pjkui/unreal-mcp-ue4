@@ -271,6 +271,8 @@ npm run test:e2e -- --with-assets
 
 The package is prepared for npm publishing as a public package.
 
+The project version format is unified everywhere as the semver-compatible date form `YYYY.M.D-N`. For example, the current release is published consistently as `2026.4.1-1`.
+
 Recommended maintainer flow:
 
 1. Update the project version.
@@ -297,6 +299,7 @@ Notes:
 - `prepack` runs `npm run build`, so the published tarball always uses a fresh `dist`.
 - `npm run publish:check` verifies typecheck, rebuilds the package, and runs `npm pack --dry-run` so you can inspect the exact tarball contents before publishing.
 - The package name `unreal-mcp-ue4` is currently available on npm.
+- Because the unified date version uses a semver prerelease suffix, publish with an explicit dist-tag such as `npm publish --tag latest`.
 
 ## Troubleshooting
 
