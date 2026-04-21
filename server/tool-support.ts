@@ -59,8 +59,9 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	read_blueprint_content: {
 		status: "Partial",
-		note: "Blueprint graph listings depend on what UE4.27 Python exposes; asset and component reads still work.",
+		note: "Blueprint graph listings depend on what stock UE4.26/4.27 Python exposes; asset and component reads still work.",
 	},
+
 	add_component_to_blueprint: {
 		status: "Partial",
 		note: "Basic component adds work; parent_component_name and some hierarchy edits require SimpleConstructionScript exposure.",
@@ -91,7 +92,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_inspection: {
 		status: "Partial",
-		note: "Asset, actor, and map inspection work; Blueprint inspection is limited to high-level asset summaries in stock UE4.27 Python.",
+		note: "Asset, actor, and map inspection work; Blueprint inspection is limited to high-level asset summaries in stock UE4.26/4.27 Python.",
 	},
 	manage_editor: {
 		status: "Supported",
@@ -103,7 +104,7 @@ export const toolSupport: Record<string, ToolSupportInfo> = {
 	},
 	manage_blueprint: {
 		status: "Partial",
-		note: "Blueprint asset and component edits work; graph inspection, pin wiring, and variable or function metadata helpers are excluded from the MCP surface in stock UE4.27 Python.",
+		note: "Blueprint asset and component edits work; graph inspection, pin wiring, and variable or function metadata helpers are excluded from the MCP surface in stock UE4.26/4.27 Python.",
 	},
 	manage_widget: {
 		status: "Partial",

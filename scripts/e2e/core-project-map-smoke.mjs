@@ -1,4 +1,7 @@
+import { getSupportedEngineVersionLabel, isSupportedEngineVersion } from "./engine-version-support.mjs"
+
 export async function runCoreProjectMapScenarios(ctx) {
+
 	const {
 		runStep,
 		callJsonTool,
@@ -22,8 +25,12 @@ export async function runCoreProjectMapScenarios(ctx) {
 			params: {},
 		})
 		assert(typeof projectInfo.project_name === "string" && projectInfo.project_name.length > 0, "project_name is missing")
-		assert(typeof projectInfo.engine_version === "string" && projectInfo.engine_version.includes("4.27"), "engine_version does not look like UE4.27")
+		assert(
+			typeof projectInfo.engine_version === "string" && isSupportedEngineVersion(projectInfo.engine_version),
+			`engine_version does not look like ${getSupportedEngineVersionLabel()}`,
+		)
 		setProjectInfo(projectInfo)
+
 	})
 
 	await runStep("Read Unreal Engine path through direct tool", async () => {
@@ -59,9 +66,10 @@ export async function runCoreProjectMapScenarios(ctx) {
 			"get_unreal_version did not return the expected text format",
 		)
 		assert(
-			versionText.includes("4.27"),
-			"get_unreal_version did not report a UE4.27 engine version",
+			isSupportedEngineVersion(versionText),
+			`get_unreal_version did not report a supported engine version (${getSupportedEngineVersionLabel()})`,
 		)
+
 		assert(
 			typeof projectInfo.engine_version === "string" &&
 				versionText.includes(projectInfo.engine_version),

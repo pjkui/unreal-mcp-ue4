@@ -50,11 +50,12 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 		action: string,
 		supportedActions: string[],
 	): NamespaceDispatchResult =>
-		directDispatch({
-			success: false,
-			message: `Action '${action}' is not supported by ${toolName} in this UE4.27 port.`,
-			supported_actions: supportedActions,
-		})
+			directDispatch({
+				success: false,
+				message: `Action '${action}' is not supported by ${toolName} in this UE4.26/4.27 port.`,
+				supported_actions: supportedActions,
+			})
+
 
 	const runNamespaceDispatch = async (result: NamespaceDispatchResult) => {
 		if (result.kind === "python") {

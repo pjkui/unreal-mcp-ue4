@@ -2,7 +2,17 @@ from typing import Any, Dict
 import json
 
 
+def _detect_engine_support(engine_version):
+    normalized = str(engine_version or "")
+    return {
+        "supported": normalized.startswith("4.26.2") or normalized.startswith("4.27"),
+        "family": "4.26.2" if normalized.startswith("4.26.2") else ("4.27" if normalized.startswith("4.27") else "unsupported"),
+        "supported_versions": ["4.26.2", "4.27.x"],
+    }
+
+
 def get_project_info() -> Dict[str, Any]:
+
     project_file_path = unreal.Paths.get_project_file_path()
     project_directory = unreal.Paths.project_dir()
     enabled_plugins = get_enabled_plugins()
@@ -67,13 +77,20 @@ def get_project_info() -> Dict[str, Any]:
     if classic_input_enabled:
         input_systems.append("classic_input")
 
+    engine_version = unreal.SystemLibrary.get_engine_version()
+    engine_support = _detect_engine_support(engine_version)
+
     return {
         "project_name": project_file_path.split("/")[-1].replace(".uproject", "")
         if project_file_path
         else "Unknown",
         "project_directory": project_directory,
-        "engine_version": unreal.SystemLibrary.get_engine_version(),
+        "engine_version": engine_version,
+        "engine_version_supported": engine_support["supported"],
+        "engine_version_family": engine_support["family"],
+        "supported_engine_versions": engine_support["supported_versions"],
         "total_assets": len(all_assets),
+
         "asset_locations": dict(
             sorted(asset_locations.items(), key=lambda item: item[1], reverse=True)[:10]
         ),

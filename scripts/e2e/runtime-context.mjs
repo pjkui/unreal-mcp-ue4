@@ -132,8 +132,9 @@ export function createSmokeRuntime({ options, repoRoot, paths: defaultPaths }) {
 
 		return (
 			error instanceof Error &&
-			error.message.includes("Widget blueprint does not expose an editable widget tree in UE4.27 Python.")
+			error.message.includes("Widget blueprint does not expose an editable widget tree in this UE4.26/4.27 Python environment.")
 		)
+
 	}
 
 	const safeDeleteActor = async (actorName) => {

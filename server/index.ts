@@ -10,9 +10,10 @@ export { shutdownRemoteExecution }
 
 export const server = new McpServer({
 	name: "UnrealMCP-UE4",
-	description: "Unreal Engine MCP for UE4.27.2 with UE4/UE5 editor scripting compatibility helpers",
+	description: "Unreal Engine MCP for UE4.26.2 and UE4.27 with editor scripting compatibility helpers",
 	version: projectVersion,
 })
+
 
 const registrationContext = createRegistrationContext(server)
 
@@ -23,9 +24,14 @@ server.resource("docs", "docs://unreal_python", async () => {
 	return {
 		contents: [
 			{
+				uri: "https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.26",
+				text: "Unreal Engine 4.26 Python API Documentation",
+			},
+			{
 				uri: "https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.27",
 				text: "Unreal Engine 4.27 Python API Documentation",
 			},
 		],
 	}
 })
+

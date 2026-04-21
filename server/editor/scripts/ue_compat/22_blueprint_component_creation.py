@@ -69,7 +69,7 @@ def add_component_node_to_blueprint(
 
             if not hasattr(parent_node, "add_child_node"):
                 raise ValueError(
-                    "Parent component cannot accept child nodes in this UE4.27 Python environment."
+                    "Parent component cannot accept child nodes in this UE4.26/4.27 Python environment."
                 )
 
             parent_node.add_child_node(new_node)

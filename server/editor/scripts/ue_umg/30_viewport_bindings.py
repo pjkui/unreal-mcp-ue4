@@ -81,7 +81,7 @@ def add_widget_to_viewport(args):
     if widget_instance is None or not hasattr(widget_instance, "add_to_viewport"):
         return {
             "success": False,
-            "message": "Could not instantiate a UserWidget in this UE4.27 Python environment.",
+            "message": "Could not instantiate a UserWidget in this UE4.26/4.27 Python environment.",
         }
 
     try:

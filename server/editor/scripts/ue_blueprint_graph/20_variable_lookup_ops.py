@@ -25,7 +25,7 @@ def add_blueprint_variable(args):
     if not variable_desc_class:
         return {
             "success": False,
-            "message": "BPVariableDescription is not exposed in this UE4.27 Python environment.",
+            "message": "BPVariableDescription is not exposed in this UE4.26/4.27 Python environment.",
         }
 
     try:

@@ -119,7 +119,7 @@ def _apply_delegate_binding(widget_blueprint, object_name, property_name, functi
     binding_class = getattr(unreal, "DelegateEditorBinding", None)
     if not binding_class:
         raise ValueError(
-            "DelegateEditorBinding is not exposed in this UE4.27 Python environment."
+            "DelegateEditorBinding is not exposed in this UE4.26/4.27 Python environment."
         )
 
     bindings = list(get_editor_property_value(widget_blueprint, "bindings", []) or [])
