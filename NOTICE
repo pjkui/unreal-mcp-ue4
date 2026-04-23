@@ -1,0 +1,31 @@
+unreal-mcp-ue4
+==============
+
+This product is a derivative work and is distributed under the MIT License.
+
+The following copyright notices are retained and redistributed together with
+this software, as required by the MIT License of the upstream projects this
+work is based on.
+
+------------------------------------------------------------------------------
+Upstream root project: runreal/unreal-mcp
+    https://github.com/runreal/unreal-mcp
+    Copyright (c) 2025 runreal
+    License: MIT
+------------------------------------------------------------------------------
+UE4-focused fork and original npm publisher of "unreal-mcp-ue4":
+    https://github.com/conaman/unreal-mcp-ue4
+    Copyright (c) 2025-2026 Seungjee Baek / conaman
+    License: MIT
+------------------------------------------------------------------------------
+This fork:
+    https://github.com/pjkui/unreal-mcp-ue4
+    Copyright (c) 2026 pjkui
+    License: MIT
+------------------------------------------------------------------------------
+
+The full MIT License text applicable to all copyright holders above is
+reproduced in the LICENSE file at the root of this repository.
+
+No claim is made to the trademarks "Unreal", "Unreal Engine", or "Epic Games".
+This is not an official Epic Games project.

@@ -16,6 +16,18 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 > Published package: [`unreal-mcp-ue4`](https://www.npmjs.com/package/unreal-mcp-ue4)  
 > Registry name: `io.github.conaman/unreal-mcp-ue4`
 
+## Credits & Attribution
+
+This project is a derivative work, distributed under the MIT License. The original copyright notices are retained and the original authors are gratefully acknowledged.
+
+- **Original project (upstream root)**: [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp) — Copyright (c) 2025 runreal. The core idea, initial MCP wiring, and early tool surface originated there.
+- **UE4-focused fork and original npm publisher**: [conaman/unreal-mcp-ue4](https://github.com/conaman/unreal-mcp-ue4) — Copyright (c) 2025-2026 Seungjee Baek / `conaman`. The current `unreal-mcp-ue4` npm package, the UE4.27-focused refactor, the tool-namespace layer, the smoke-test suite, and most of the existing documentation come from this repository. Much of the code in this fork is still based directly on that work.
+- **This fork**: [pjkui/unreal-mcp-ue4](https://github.com/pjkui/unreal-mcp-ue4) — Copyright (c) 2026 `pjkui`. Adds UE4.26.2 compatibility, Chinese documentation (`README_zh.md`), packaging tweaks, and miscellaneous fixes.
+
+Thanks to `runreal` for open-sourcing the original implementation, and to `conaman` for the substantial UE4-oriented refactor and for publishing `unreal-mcp-ue4` on npm. If you build on this project, please also credit the upstream projects above.
+
+See the [`LICENSE`](LICENSE) file for the full copyright statement.
+
 ## Overview
 
 - No custom Unreal C++ plugin from this repository is required.
@@ -655,3 +667,5 @@ These capability areas are intentionally not exposed through the MCP surface in 
 ## License
 
 Licensed under the [MIT License](LICENSE).
+
+This project is a derivative work. Copyright is held jointly by `runreal` (original project), `Seungjee Baek / conaman` (the UE4-focused fork and original npm publisher of `unreal-mcp-ue4`), and `pjkui` (this fork). All prior copyright notices are retained as required by the MIT License. See the [`LICENSE`](LICENSE) file and the [Credits & Attribution](#credits--attribution) section for details.

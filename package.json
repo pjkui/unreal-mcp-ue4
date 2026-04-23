@@ -22,7 +22,11 @@
     "set:version": "node scripts/set-version.mjs"
   },
   "files": [
-    "dist"
+    "dist",
+    "README.md",
+    "README_zh.md",
+    "LICENSE",
+    "NOTICE"
   ],
   "keywords": [
     "unreal",
@@ -33,7 +37,11 @@
     "ue4.26",
     "ue4.27"
   ],
-  "author": "Seungjee Baek (conaman)",
+  "author": "pjkui",
+  "contributors": [
+    "runreal (original project: https://github.com/runreal/unreal-mcp)",
+    "Seungjee Baek / conaman (UE4-focused fork and original npm package 'unreal-mcp-ue4': https://github.com/conaman/unreal-mcp-ue4)"
+  ],
   "license": "MIT",
   "packageManager": "npm@10.8.1",
   "engines": {

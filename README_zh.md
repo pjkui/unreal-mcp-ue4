@@ -16,6 +16,18 @@
 > 已发布的 npm 包：[`unreal-mcp-ue4`](https://www.npmjs.com/package/unreal-mcp-ue4)
 > MCP Registry 名称：`io.github.conaman/unreal-mcp-ue4`
 
+## 致谢与版权归属（Credits & Attribution）
+
+本项目是一个基于 MIT 协议的衍生作品，保留所有上游项目的原始版权声明，并在此向原作者致谢。
+
+- **最上游项目**：[runreal/unreal-mcp](https://github.com/runreal/unreal-mcp) — Copyright (c) 2025 runreal。MCP 的核心理念、最初的接线以及早期工具面源自该项目。
+- **UE4 专属分支与 npm 首发者**：[conaman/unreal-mcp-ue4](https://github.com/conaman/unreal-mcp-ue4) — Copyright (c) 2025-2026 Seungjee Baek / `conaman`。当前 `unreal-mcp-ue4` npm 包、UE4.27 重构、工具命名空间层、smoke 测试套件以及大量现有文档均来自该仓库，本分支大量代码仍直接基于其工作。
+- **本分支**：[pjkui/unreal-mcp-ue4](https://github.com/pjkui/unreal-mcp-ue4) — Copyright (c) 2026 `pjkui`。在其基础上补充了 UE4.26.2 兼容、中文文档（`README_zh.md`）、打包相关调整以及若干修复。
+
+感谢 `runreal` 开源最初版本，感谢 `conaman` 完成大量面向 UE4 的重构并将 `unreal-mcp-ue4` 发布到 npm。如果你在本项目之上继续构建，请同时致谢上述上游项目。
+
+完整的版权声明见 [`LICENSE`](LICENSE) 文件。
+
 ## 概览
 
 - 本仓库不需要额外的 Unreal C++ 插件。
@@ -656,3 +668,5 @@ npm publish
 ## 许可证
 
 基于 [MIT License](LICENSE) 授权发布。
+
+本项目为衍生作品，版权由 `runreal`（上游原始项目）、`Seungjee Baek / conaman`（UE4 专属分支与 `unreal-mcp-ue4` npm 首发者）以及 `pjkui`（本分支）共同持有。依据 MIT License 的要求，所有上游版权声明均已保留。详见 [`LICENSE`](LICENSE) 文件以及 [致谢与版权归属](#致谢与版权归属credits--attribution) 章节。
