@@ -12,7 +12,10 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 
 > This project is still under active development, so bugs, rough edges, and UE4.26/4.27-specific limitations may still surface.
 >
-> Published package: [`@pjkui/unreal-mcp-ue4`](https://www.npmjs.com/package/@pjkui/unreal-mcp-ue4)  
+> Published packages (same code, shipped under two names):
+> - Short alias: [`ue4-mcp`](https://www.npmjs.com/package/ue4-mcp) — recommended for end-users
+> - Canonical scoped name: [`@pjkui/unreal-mcp-ue4`](https://www.npmjs.com/package/@pjkui/unreal-mcp-ue4)
+>
 > Registry name: `io.github.pjkui/unreal-mcp-ue4`
 >
 > This is an independent fork. The original `unreal-mcp-ue4` npm package is still maintained at [conaman/unreal-mcp-ue4](https://github.com/conaman/unreal-mcp-ue4); see [Credits & Attribution](#credits--attribution) below.
@@ -92,19 +95,27 @@ Successful build output should create `dist/bin.js`, `dist/index.js`, and `dist/
 
 Once the package is published on npm, you can install it directly instead of cloning the repository.
 
-Global install:
+Global install (recommended for end-users):
 
 ```bash
-npm install -g unreal-mcp-ue4
+npm install -g ue4-mcp
 ```
 
 One-off invocation with `npx`:
 
 ```bash
-npx unreal-mcp-ue4
+npx --yes ue4-mcp
 ```
 
-If you install from npm, the MCP server entry point is the published `unreal-mcp-ue4` binary instead of a local `dist/bin.js` path.
+The exact same code is also published as the scoped package `@pjkui/unreal-mcp-ue4`; pick whichever fits your workflow:
+
+```bash
+npm install -g @pjkui/unreal-mcp-ue4
+# or one-off:
+npx --yes -p @pjkui/unreal-mcp-ue4 ue4-mcp
+```
+
+Either package ships the same CLI binary named `ue4-mcp`.
 
 ### 2. Enable the Unreal requirements
 
@@ -150,10 +161,10 @@ codex mcp add unreal-ue4 -- /absolute/path/to/node /absolute/path/to/unreal-mcp-
 If you installed the package globally from npm, you can point the client directly at the published executable:
 
 ```bash
-codex mcp add unreal-ue4 -- unreal-mcp-ue4
+codex mcp add unreal-ue4 -- ue4-mcp
 ```
 
-> Note: the CLI name is `unreal-mcp-ue4` even though the npm package is scoped as `@pjkui/unreal-mcp-ue4`. If the unscoped `unreal-mcp-ue4` global package from `conaman` is also installed on the same machine, they share the same binary name and may shadow each other; remove the unused one first.
+> Note: the CLI binary is `ue4-mcp`. Both npm package names (`ue4-mcp` and `@pjkui/unreal-mcp-ue4`) expose the same executable; if you install both globally they overwrite each other harmlessly since they are the same code.
 
 ### GitHub Copilot example
 
@@ -294,14 +305,17 @@ npm run test:e2e -- --with-assets
 
 ## Publishing to npm
 
-The package is prepared for npm publishing as a public scoped package (`@pjkui/unreal-mcp-ue4`).
+This repository is dual-published under two npm package names that share the exact same built artifact:
 
-The project version format is unified everywhere as the semver-compatible date form `YYYY.M.D-N`. For example, this fork's first release is published as `2026.4.23-1`.
+- `ue4-mcp` (short, non-scoped public name)
+- `@pjkui/unreal-mcp-ue4` (scoped canonical name)
+
+The project version format is unified everywhere as the semver-compatible date form `YYYY.M.D-N`. For example, this fork's current release is `2026.4.23-2`.
 
 Recommended maintainer flow:
 
-1. Update the project version with `npm run set:version 2026.4.23-2` (or edit `package.json`, `server.json`, and `server/version.ts` in sync).
-2. Run the publish preflight:
+1. Bump the project version with `npm run set:version 2026.4.23-3` (updates `package.json`, `package-lock.json`, `server.json`, `server/version.ts` in one shot).
+2. Run the publish preflight on the canonical scoped name:
 
 ```bash
 npm run publish:check
@@ -313,18 +327,25 @@ npm run publish:check
 npm run test:e2e -- --with-assets --skip-build
 ```
 
-4. Publish (scoped packages need `--access public` the first time; the repo's `publishConfig.access` already requests it, but keep the explicit flag as a safety net):
+4. Dual-publish both names with one command (requires a granular npm token with `Bypass 2FA requirement when publishing` enabled, or a one-time TOTP code):
 
 ```bash
-npm publish --access public --tag latest
+# with a granular token
+NPM_TOKEN=npm_xxx npm run publish:both
+
+# with a 2FA one-time code
+npm run publish:both -- --otp=123456
+
+# simulate only, no auth needed
+npm run publish:both -- --dry-run
 ```
 
 Notes:
 
+- `scripts/publish-both.mjs` publishes `@pjkui/unreal-mcp-ue4` with `package.json` untouched, then temporarily rewrites the `name` field to `ue4-mcp`, publishes again, and restores `package.json`. The token is never written to `~/.npmrc`.
 - `prepack` runs `npm run build`, so the published tarball always uses a fresh `dist`.
 - `npm run publish:check` verifies typecheck, rebuilds the package, and runs `npm pack --dry-run` so you can inspect the exact tarball contents before publishing.
-- This fork is published under the scoped name `@pjkui/unreal-mcp-ue4`; the unscoped `unreal-mcp-ue4` package on npm is maintained by `conaman` and is not affected by this fork's publishing.
-- Because the unified date version uses a semver prerelease suffix, publish with an explicit `--tag latest`, otherwise `npm install @pjkui/unreal-mcp-ue4` will not resolve to this version by default.
+- Because the unified date version uses a semver prerelease suffix, the script publishes both packages with an explicit `--tag latest` so `npm install` resolves to them by default.
 
 ## Troubleshooting
 

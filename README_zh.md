@@ -91,19 +91,27 @@ npm run build
 
 一旦包在 npm 上发布完成，你也可以直接从 npm 安装，而不必克隆仓库。
 
-全局安装：
+全局安装（推荐最终用户使用）：
 
 ```bash
-npm install -g unreal-mcp-ue4
+npm install -g ue4-mcp
 ```
 
 使用 `npx` 单次调用：
 
 ```bash
-npx unreal-mcp-ue4
+npx --yes ue4-mcp
 ```
 
-如果是从 npm 安装，MCP 服务器的入口是已发布的 `unreal-mcp-ue4` 可执行文件，而不是本地的 `dist/bin.js`。
+同一份代码也发布为 scoped 包 `@pjkui/unreal-mcp-ue4`，二选一均可：
+
+```bash
+npm install -g @pjkui/unreal-mcp-ue4
+# 或一次性调用：
+npx --yes -p @pjkui/unreal-mcp-ue4 ue4-mcp
+```
+
+两个包发布的都是同一个名为 `ue4-mcp` 的 CLI 可执行文件。
 
 ### 2. 启用 Unreal 相关要求
 
@@ -148,10 +156,10 @@ codex mcp add unreal-ue4 -- /absolute/path/to/node /absolute/path/to/unreal-mcp-
 如果从 npm 全局安装，可以让客户端直接指向已发布的可执行文件：
 
 ```bash
-codex mcp add unreal-ue4 -- unreal-mcp-ue4
+codex mcp add unreal-ue4 -- ue4-mcp
 ```
 
-> 注意：npm 包为 scoped 包 `@pjkui/unreal-mcp-ue4`，但安装后生成的 CLI 名仍是 `unreal-mcp-ue4`。如果同一机器还装了 `conaman` 发布的非 scoped 全局包 `unreal-mcp-ue4`，两者会共享同一个二进制名并相互覆盖；请先卸载用不到的那一个。
+> 注意：CLI 可执行文件名统一为 `ue4-mcp`。两个 npm 包名（`ue4-mcp` 与 `@pjkui/unreal-mcp-ue4`）发布的是完全相同的二进制，如果两个都全局安装，它们会互相覆盖，但因为内容一致不会造成功能差异。
 
 ### GitHub Copilot 示例
 
@@ -292,14 +300,17 @@ npm run test:e2e -- --with-assets
 
 ## 发布到 npm
 
-本包已按公开 scoped 包（`@pjkui/unreal-mcp-ue4`）准备好用于 npm 发布。
+本仓库以双包形式发布，两个 npm 包共享完全相同的构建产物：
 
-项目版本号在各处统一采用与 semver 兼容的日期格式 `YYYY.M.D-N`，本分支的首次发布版本为 `2026.4.23-1`。
+- `ue4-mcp`（短的公共名）
+- `@pjkui/unreal-mcp-ue4`（规范 scoped 名）
+
+项目版本号在各处统一采用与 semver 兼容的日期格式 `YYYY.M.D-N`，本分支当前版本为 `2026.4.23-2`。
 
 推荐的维护者发布流程：
 
-1. 使用 `npm run set:version 2026.4.23-2` 更新项目版本号（或同时手动编辑 `package.json`、`server.json`、`server/version.ts`）。
-2. 运行发布前预检：
+1. 使用 `npm run set:version 2026.4.23-3` 更新版本号（会同步改 `package.json`、`package-lock.json`、`server.json`、`server/version.ts`）。
+2. 针对规范 scoped 包运行发布前预检：
 
 ```bash
 npm run publish:check
@@ -311,18 +322,25 @@ npm run publish:check
 npm run test:e2e -- --with-assets --skip-build
 ```
 
-4. 发布（scoped 包首次发布需要 `--access public`，仓库里的 `publishConfig.access` 已经配置，显式传入作为双保险）：
+4. 使用一条命令同时发布两个包名（需要一个开启了 "Bypass 2FA requirement when publishing" 的 granular npm token，或当前 TOTP 一次性验证码）：
 
 ```bash
-npm publish --access public --tag latest
+# 使用 granular token
+NPM_TOKEN=npm_xxx npm run publish:both
+
+# 使用 2FA 一次性验证码
+npm run publish:both -- --otp=123456
+
+# 仅干跑模拟，不需要鉴权
+npm run publish:both -- --dry-run
 ```
 
 说明：
 
+- `scripts/publish-both.mjs` 先用原 `package.json` 发布 `@pjkui/unreal-mcp-ue4`，再临时把 `name` 字段改成 `ue4-mcp` 发一次，最后还原 `package.json`。Token 不会写入 `~/.npmrc`。
 - `prepack` 会触发 `npm run build`，因此发布的 tarball 始终使用全新的 `dist`。
 - `npm run publish:check` 会做 typecheck、重新构建包并跑 `npm pack --dry-run`，以便在发布前检查 tarball 的实际内容。
-- 本分支以 scoped 名 `@pjkui/unreal-mcp-ue4` 发布；npm 上的非 scoped 包 `unreal-mcp-ue4` 由 `conaman` 维护，不受本分支发布影响。
-- 由于统一的日期版本号带有 semver 预发布后缀，发布时必须显式 `--tag latest`，否则用户运行 `npm install @pjkui/unreal-mcp-ue4` 默认不会解析到此版本。
+- 由于统一的日期版本号带有 semver 预发布后缀，脚本在两个包上都显式指定了 `--tag latest`，`npm install` 能默认解析到最新版本。
 
 ## 故障排查
 
