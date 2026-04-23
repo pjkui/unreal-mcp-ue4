@@ -1,11 +1,13 @@
 # unreal-mcp-ue4
-> UE4.26.2/4.27-focused MCP server for Unreal Engine using Unreal Python Remote Execution
+> UE4.26.2 / UE4.27-focused MCP server for Unreal Engine using Unreal Python Remote Execution
 
 [![npm version](https://img.shields.io/npm/v/unreal-mcp-ue4?label=npm)](https://www.npmjs.com/package/unreal-mcp-ue4)
 [![MCP Registry](https://img.shields.io/badge/MCP%20Registry-published-2ea44f)](https://registry.modelcontextprotocol.io/v0.1/servers?search=io.github.conaman/unreal-mcp-ue4)
 [![GitHub release](https://img.shields.io/github/v/release/conaman/unreal-mcp-ue4?label=release)](https://github.com/conaman/unreal-mcp-ue4/releases/latest)
 
-`unreal-mcp-ue4` started from the core idea and early workflow shape of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), but it has since been heavily refactored for Unreal Engine 4.27.2 and expanded with many new tools, UE4-specific compatibility layers, documentation, and smoke coverage. At this point, the original inspiration remains, but the public surface and day-to-day behavior are substantially different and UE4-first.
+> 中文文档：[README_zh.md](README_zh.md)
+
+`unreal-mcp-ue4` started from the core idea and early workflow shape of [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp), but it has since been heavily refactored for Unreal Engine 4.26.2 and 4.27.2 and expanded with many new tools, UE4-specific compatibility layers, documentation, and smoke coverage. At this point, the original inspiration remains, but the public surface and day-to-day behavior are substantially different and UE4-first.
 
 This port and the follow-up tool, documentation, and smoke-test work were developed with assistance from OpenAI Codex.
 
@@ -24,9 +26,9 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 ## Origin
 
 - Original inspiration and starting point: [runreal/unreal-mcp](https://github.com/runreal/unreal-mcp)
-- The current codebase has gone through extensive UE4.27-focused refactoring, architecture changes, and tool expansion.
+- The current codebase has gone through extensive UE4.26/4.27-focused refactoring, architecture changes, and tool expansion.
 - In practice, the shared idea is still visible, but the implementation, scope, and supported workflows now reflect a separate UE4-first project.
-- Unreal Python API reference: [Unreal Engine Python API 4.27](https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.27)
+- Unreal Python API reference (shared across 4.26 and 4.27): [Unreal Engine Python API 4.27](https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.27)
 
 ## Safety
 
@@ -36,14 +38,14 @@ This port and the follow-up tool, documentation, and smoke-test work were develo
 
 ## Requirements
 
-- Unreal Engine `4.27.2`
+- Unreal Engine `4.26.2` or `4.27.2`
 - Node.js `18+`
 - `npm`
 - An MCP client such as Codex, Claude Desktop, Cursor, or GitHub Copilot in a supported IDE
 
 ## Required Unreal Editor Setup
 
-This repository does not ship its own Unreal plugin. Instead, it depends on built-in editor features that must be enabled in your UE4.27.2 project.
+This repository does not ship its own Unreal plugin. Instead, it depends on built-in editor features that must be enabled in your UE4.26.2 or UE4.27.2 project.
 
 ### Required plugins
 
@@ -95,7 +97,7 @@ If you install from npm, the MCP server entry point is the published `unreal-mcp
 
 In Unreal Editor:
 
-1. Open the target UE4.26.2 or UE4.27 project.
+1. Open the target UE4.26.2 or UE4.27.2 project.
 
 2. Go to `Edit -> Plugins`.
 3. Enable `Python Editor Script Plugin`.
@@ -174,7 +176,7 @@ Official Copilot docs:
 
 ### Recommended first-run flow
 
-1. Open your UE4.27.2 project and wait for the editor to finish loading.
+1. Open your UE4.26.2 or UE4.27.2 project and wait for the editor to finish loading.
 2. Make sure the required plugins and `Enable Remote Execution` are enabled.
 3. Build the MCP server with `npm run build`.
 4. Start your MCP client or open a new session in the client that already references this server.
@@ -290,7 +292,7 @@ Recommended maintainer flow:
 npm run publish:check
 ```
 
-3. If you have a running UE4.27 editor test environment available, also run:
+3. If you have a running UE4.26.2 or UE4.27.2 editor test environment available, also run:
 
 ```bash
 npm run test:e2e -- --with-assets --skip-build

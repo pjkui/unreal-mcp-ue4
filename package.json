@@ -2,7 +2,7 @@
   "name": "unreal-mcp-ue4",
   "version": "2026.4.1-2",
   "mcpName": "io.github.conaman/unreal-mcp-ue4",
-  "description": "UE4.26.2/4.27-focused MCP server for controlling the Unreal Editor through Unreal Python Remote Execution.",
+  "description": "UE4.26.2 / UE4.27.2-focused MCP server for controlling the Unreal Editor through Unreal Python Remote Execution.",
 
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -30,6 +30,7 @@
     "modelcontextprotocol",
     "unreal-mcp",
     "ue4",
+    "ue4.26",
     "ue4.27"
   ],
   "author": "Seungjee Baek (conaman)",
