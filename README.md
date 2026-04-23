@@ -133,15 +133,96 @@ In Unreal Editor:
 
 ### 3. Configure your MCP client
 
-Most clients use a local `stdio` server command. The safest configuration is to point to an absolute `node` path and an absolute `dist/bin.js` path.
+Most clients use a local `stdio` server command. Pick the option that best matches how you installed the server.
 
-Generic MCP client example:
+#### Option 1 (recommended) — global install + bare `ue4-mcp` command
+
+Install once:
+
+```bash
+npm install -g ue4-mcp
+# equivalent: npm install -g @pjkui/unreal-mcp-ue4
+```
+
+Then in the client config just call the binary directly:
 
 ```json
 {
   "mcpServers": {
     "unreal-ue4": {
-      "command": "/absolute/path/to/node",
+      "command": "ue4-mcp"
+    }
+  }
+}
+```
+
+This is the fastest option to start (no cold-start download per launch), is easy for users to understand, and works the same way on macOS, Linux, and Windows as long as the npm global `bin` directory is on `PATH`.
+
+If your MCP client cannot find `ue4-mcp` on `PATH`, use the absolute path to the installed binary:
+
+```bash
+# locate it:
+npm root -g
+# Windows example: C:\Users\<you>\AppData\Roaming\npm\node_modules
+# The binary sits next to node_modules at:
+#   C:\Users\<you>\AppData\Roaming\npm\ue4-mcp.cmd
+#   /usr/local/bin/ue4-mcp on macOS/Linux
+```
+
+```json
+{
+  "mcpServers": {
+    "unreal-ue4": {
+      "command": "C:\\Users\\YourName\\AppData\\Roaming\\npm\\ue4-mcp.cmd"
+    }
+  }
+}
+```
+
+> Behind a corporate npm mirror? Some mirrors deliver corrupted `ajv` tarballs which will make this server fail to start. Install against the public registry instead: `npm install -g ue4-mcp --registry=https://registry.npmjs.org/`.
+
+#### Option 2 — `npx` (no global install, always-latest)
+
+Good if you want to always pick up the newest release without re-installing:
+
+```json
+{
+  "mcpServers": {
+    "unreal-ue4": {
+      "command": "npx",
+      "args": ["--yes", "ue4-mcp@latest"]
+    }
+  }
+}
+```
+
+Force the public npm registry (strongly recommended if your default is a corporate mirror):
+
+```json
+{
+  "mcpServers": {
+    "unreal-ue4": {
+      "command": "npx",
+      "args": ["--yes", "ue4-mcp@latest"],
+      "env": {
+        "npm_config_registry": "https://registry.npmjs.org/"
+      }
+    }
+  }
+}
+```
+
+Trade-off: each cold start may take a few seconds while `npx` checks for updates, and if the `~/.npm/_npx` cache gets corrupted by a flaky mirror you will need to clear it manually.
+
+#### Option 3 — local development build (unpublished code)
+
+When iterating on this repository itself and you do not want to publish, point the client at the freshly built `dist/bin.js`:
+
+```json
+{
+  "mcpServers": {
+    "unreal-ue4": {
+      "command": "node",
       "args": [
         "/absolute/path/to/unreal-mcp-ue4/dist/bin.js"
       ]
@@ -150,25 +231,60 @@ Generic MCP client example:
 }
 ```
 
-If `node` is already on your `PATH`, you can use `"command": "node"` instead.
+If `node` is already on your `PATH`, `"command": "node"` is enough; otherwise use the absolute path to the `node` executable. Remember to run `npm run build` after every change.
 
 ### Codex example
 
-```bash
-codex mcp add unreal-ue4 -- /absolute/path/to/node /absolute/path/to/unreal-mcp-ue4/dist/bin.js
-```
-
-If you installed the package globally from npm, you can point the client directly at the published executable:
+Once the package is installed globally:
 
 ```bash
 codex mcp add unreal-ue4 -- ue4-mcp
+```
+
+Or via `npx` (no global install):
+
+```bash
+codex mcp add unreal-ue4 -- npx --yes ue4-mcp@latest
+```
+
+Local development fallback:
+
+```bash
+codex mcp add unreal-ue4 -- /absolute/path/to/node /absolute/path/to/unreal-mcp-ue4/dist/bin.js
 ```
 
 > Note: the CLI binary is `ue4-mcp`. Both npm package names (`ue4-mcp` and `@pjkui/unreal-mcp-ue4`) expose the same executable; if you install both globally they overwrite each other harmlessly since they are the same code.
 
 ### GitHub Copilot example
 
-For VS Code, create `.vscode/mcp.json`:
+For VS Code, create `.vscode/mcp.json`.
+
+Recommended (global install):
+
+```json
+{
+  "servers": {
+    "unreal-ue4": {
+      "command": "ue4-mcp"
+    }
+  }
+}
+```
+
+Using `npx` instead:
+
+```json
+{
+  "servers": {
+    "unreal-ue4": {
+      "command": "npx",
+      "args": ["--yes", "ue4-mcp@latest"]
+    }
+  }
+}
+```
+
+Local development:
 
 ```json
 {

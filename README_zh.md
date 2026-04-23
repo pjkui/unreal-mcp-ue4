@@ -128,15 +128,96 @@ npx --yes -p @pjkui/unreal-mcp-ue4 ue4-mcp
 
 ### 3. 配置你的 MCP 客户端
 
-大多数客户端使用本地 `stdio` 服务器命令。最稳妥的配置是同时使用 `node` 的绝对路径和 `dist/bin.js` 的绝对路径。
+大多数 MCP 客户端使用本地 `stdio` 服务器命令。根据你的安装方式，从下面三种里选一种即可。
 
-通用 MCP 客户端示例：
+#### 方式一（推荐）——全局安装 + 直接使用 `ue4-mcp` 命令
+
+一次性安装：
+
+```bash
+npm install -g ue4-mcp
+# 等价写法：npm install -g @pjkui/unreal-mcp-ue4
+```
+
+配置文件里直接调用命令：
 
 ```json
 {
   "mcpServers": {
     "unreal-ue4": {
-      "command": "/absolute/path/to/node",
+      "command": "ue4-mcp"
+    }
+  }
+}
+```
+
+这是启动最快的方式（不会在每次启动时重新联网下载），配置最简单，在 macOS、Linux、Windows 上只要全局 `bin` 目录在 `PATH` 中，写法完全一致。
+
+如果你的 MCP 客户端找不到 `ue4-mcp`，请改写绝对路径：
+
+```bash
+# 定位安装目录：
+npm root -g
+# Windows 示例：C:\Users\<你>\AppData\Roaming\npm\node_modules
+# 可执行文件通常位于：
+#   C:\Users\<你>\AppData\Roaming\npm\ue4-mcp.cmd
+#   macOS/Linux：/usr/local/bin/ue4-mcp
+```
+
+```json
+{
+  "mcpServers": {
+    "unreal-ue4": {
+      "command": "C:\\Users\\YourName\\AppData\\Roaming\\npm\\ue4-mcp.cmd"
+    }
+  }
+}
+```
+
+> 走公司 npm 镜像？部分镜像在同步 `ajv` 的 tarball 时可能丢失文件，会导致本服务器启动失败。建议显式使用公网 registry 安装：`npm install -g ue4-mcp --registry=https://registry.npmjs.org/`。
+
+#### 方式二——使用 `npx`（免全局安装，始终拿最新版）
+
+适合希望每次启动都获取最新版本的场景：
+
+```json
+{
+  "mcpServers": {
+    "unreal-ue4": {
+      "command": "npx",
+      "args": ["--yes", "ue4-mcp@latest"]
+    }
+  }
+}
+```
+
+如果默认走的是公司 npm 镜像，强烈建议显式指向公网 registry：
+
+```json
+{
+  "mcpServers": {
+    "unreal-ue4": {
+      "command": "npx",
+      "args": ["--yes", "ue4-mcp@latest"],
+      "env": {
+        "npm_config_registry": "https://registry.npmjs.org/"
+      }
+    }
+  }
+}
+```
+
+取舍：每次冷启动 `npx` 都会检查新版，会多几秒钟；若 `~/.npm/_npx` 缓存被不稳定镜像搞坏，需要手动清理。
+
+#### 方式三——本地开发版构建（未发布代码）
+
+在本仓库做开发、不想发布时，直接让客户端指向构建好的 `dist/bin.js`：
+
+```json
+{
+  "mcpServers": {
+    "unreal-ue4": {
+      "command": "node",
       "args": [
         "/absolute/path/to/unreal-mcp-ue4/dist/bin.js"
       ]
@@ -145,25 +226,60 @@ npx --yes -p @pjkui/unreal-mcp-ue4 ue4-mcp
 }
 ```
 
-如果 `node` 已在 `PATH` 中，也可以使用 `"command": "node"`。
+如果 `node` 已在 `PATH` 中，`"command": "node"` 即可，否则请写 `node` 可执行文件的绝对路径。每次改动后记得先 `npm run build`。
 
 ### Codex 示例
 
-```bash
-codex mcp add unreal-ue4 -- /absolute/path/to/node /absolute/path/to/unreal-mcp-ue4/dist/bin.js
-```
-
-如果从 npm 全局安装，可以让客户端直接指向已发布的可执行文件：
+全局安装后：
 
 ```bash
 codex mcp add unreal-ue4 -- ue4-mcp
 ```
 
-> 注意：CLI 可执行文件名统一为 `ue4-mcp`。两个 npm 包名（`ue4-mcp` 与 `@pjkui/unreal-mcp-ue4`）发布的是完全相同的二进制，如果两个都全局安装，它们会互相覆盖，但因为内容一致不会造成功能差异。
+使用 `npx`（免全局安装）：
+
+```bash
+codex mcp add unreal-ue4 -- npx --yes ue4-mcp@latest
+```
+
+本地开发兜底：
+
+```bash
+codex mcp add unreal-ue4 -- /absolute/path/to/node /absolute/path/to/unreal-mcp-ue4/dist/bin.js
+```
+
+> 注意：CLI 可执行文件名统一为 `ue4-mcp`。两个 npm 包名（`ue4-mcp` 与 `@pjkui/unreal-mcp-ue4`）发布的是完全相同的二进制，如果两个都全局安装会互相覆盖，但因为内容一致不会造成功能差异。
 
 ### GitHub Copilot 示例
 
-对于 VS Code，创建 `.vscode/mcp.json`：
+对于 VS Code，创建 `.vscode/mcp.json`。
+
+推荐写法（全局安装）：
+
+```json
+{
+  "servers": {
+    "unreal-ue4": {
+      "command": "ue4-mcp"
+    }
+  }
+}
+```
+
+使用 `npx`：
+
+```json
+{
+  "servers": {
+    "unreal-ue4": {
+      "command": "npx",
+      "args": ["--yes", "ue4-mcp@latest"]
+    }
+  }
+}
+```
+
+本地开发：
 
 ```json
 {
