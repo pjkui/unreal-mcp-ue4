@@ -20,18 +20,34 @@ const registrationContext = createRegistrationContext(server)
 registerDirectTools(registrationContext)
 registerToolNamespaces(registrationContext)
 
-server.resource("docs", "docs://unreal_python", async () => {
-	return {
-		contents: [
-			{
-				uri: "https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.26",
-				text: "Unreal Engine 4.26 Python API Documentation",
-			},
-			{
-				uri: "https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.27",
-				text: "Unreal Engine 4.27 Python API Documentation",
-			},
-		],
-	}
-})
+server.registerResource(
+	"unreal_python_docs",
+	"docs://unreal_python",
+	{
+		title: "Unreal Engine Python API Documentation",
+		description: "Reference links for UE4.26 / UE4.27 Python API documentation",
+		mimeType: "text/markdown",
+	},
+	async (uri) => {
+		const body = [
+			"# Unreal Engine Python API Documentation",
+			"",
+			"- [UE 4.26 Python API](https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.26)",
+			"- [UE 4.27 Python API](https://dev.epicgames.com/documentation/en-us/unreal-engine/python-api/?application_version=4.27)",
+			"",
+			"These pages document the `unreal` Python module available inside the Unreal Editor",
+			"and are the authoritative reference for scripting UE4.26 / UE4.27 via this MCP server.",
+		].join("\n")
+
+		return {
+			contents: [
+				{
+					uri: uri.href,
+					mimeType: "text/markdown",
+					text: body,
+				},
+			],
+		}
+	},
+)
 
