@@ -1,8 +1,8 @@
 MIT License
 
 Copyright (c) 2025 runreal (original project: https://github.com/runreal/unreal-mcp)
-Copyright (c) 2025-2026 Seungjee Baek / conaman (UE4-focused fork and npm package "unreal-mcp-ue4": https://github.com/conaman/unreal-mcp-ue4)
-Copyright (c) 2026 pjkui (this fork: https://github.com/pjkui/unreal-mcp-ue4)
+Copyright (c) 2025-2026 Seungjee Baek / conaman (UE4-focused fork and original npm package "unreal-mcp-ue4": https://github.com/conaman/unreal-mcp-ue4)
+Copyright (c) 2026 pjkui (this fork, published on npm as "@pjkui/unreal-mcp-ue4": https://github.com/pjkui/unreal-mcp-ue4)
 
 This project is a derivative work of the MIT-licensed projects listed above.
 All prior copyright notices are retained as required by the MIT License.

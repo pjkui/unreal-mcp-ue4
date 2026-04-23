@@ -1,8 +1,8 @@
 {
-  "name": "unreal-mcp-ue4",
-  "version": "2026.4.1-2",
-  "mcpName": "io.github.conaman/unreal-mcp-ue4",
-  "description": "UE4.26.2 / UE4.27.2-focused MCP server for controlling the Unreal Editor through Unreal Python Remote Execution.",
+  "name": "@pjkui/unreal-mcp-ue4",
+  "version": "2026.4.23-1",
+  "mcpName": "io.github.pjkui/unreal-mcp-ue4",
+  "description": "UE4.26.2 / UE4.27.2-focused MCP server for controlling the Unreal Editor through Unreal Python Remote Execution. Fork of conaman/unreal-mcp-ue4 with UE4.26 compatibility and Chinese documentation.",
 
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -49,11 +49,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/conaman/unreal-mcp-ue4.git"
+    "url": "https://github.com/pjkui/unreal-mcp-ue4.git"
   },
-  "homepage": "https://github.com/conaman/unreal-mcp-ue4#readme",
+  "homepage": "https://github.com/pjkui/unreal-mcp-ue4#readme",
   "bugs": {
-    "url": "https://github.com/conaman/unreal-mcp-ue4/issues"
+    "url": "https://github.com/pjkui/unreal-mcp-ue4/issues"
   },
   "publishConfig": {
     "access": "public"

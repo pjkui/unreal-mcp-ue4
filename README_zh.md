@@ -151,6 +151,8 @@ codex mcp add unreal-ue4 -- /absolute/path/to/node /absolute/path/to/unreal-mcp-
 codex mcp add unreal-ue4 -- unreal-mcp-ue4
 ```
 
+> 注意：npm 包为 scoped 包 `@pjkui/unreal-mcp-ue4`，但安装后生成的 CLI 名仍是 `unreal-mcp-ue4`。如果同一机器还装了 `conaman` 发布的非 scoped 全局包 `unreal-mcp-ue4`，两者会共享同一个二进制名并相互覆盖；请先卸载用不到的那一个。
+
 ### GitHub Copilot 示例
 
 对于 VS Code，创建 `.vscode/mcp.json`：
@@ -290,13 +292,13 @@ npm run test:e2e -- --with-assets
 
 ## 发布到 npm
 
-本包已按公开包准备好用于 npm 发布。
+本包已按公开 scoped 包（`@pjkui/unreal-mcp-ue4`）准备好用于 npm 发布。
 
-项目版本号在各处统一采用与 semver 兼容的日期格式 `YYYY.M.D-N`，例如当前发布版本统一为 `2026.4.1-1`。
+项目版本号在各处统一采用与 semver 兼容的日期格式 `YYYY.M.D-N`，本分支的首次发布版本为 `2026.4.23-1`。
 
 推荐的维护者发布流程：
 
-1. 更新项目版本号。
+1. 使用 `npm run set:version 2026.4.23-2` 更新项目版本号（或同时手动编辑 `package.json`、`server.json`、`server/version.ts`）。
 2. 运行发布前预检：
 
 ```bash
@@ -309,18 +311,18 @@ npm run publish:check
 npm run test:e2e -- --with-assets --skip-build
 ```
 
-4. 发布：
+4. 发布（scoped 包首次发布需要 `--access public`，仓库里的 `publishConfig.access` 已经配置，显式传入作为双保险）：
 
 ```bash
-npm publish
+npm publish --access public --tag latest
 ```
 
 说明：
 
 - `prepack` 会触发 `npm run build`，因此发布的 tarball 始终使用全新的 `dist`。
 - `npm run publish:check` 会做 typecheck、重新构建包并跑 `npm pack --dry-run`，以便在发布前检查 tarball 的实际内容。
-- npm 包名 `unreal-mcp-ue4` 目前是空闲可用的。
-- 由于统一的日期版本号带有 semver 预发布后缀，发布时建议显式指定 dist-tag，例如 `npm publish --tag latest`。
+- 本分支以 scoped 名 `@pjkui/unreal-mcp-ue4` 发布；npm 上的非 scoped 包 `unreal-mcp-ue4` 由 `conaman` 维护，不受本分支发布影响。
+- 由于统一的日期版本号带有 semver 预发布后缀，发布时必须显式 `--tag latest`，否则用户运行 `npm install @pjkui/unreal-mcp-ue4` 默认不会解析到此版本。
 
 ## 故障排查
 

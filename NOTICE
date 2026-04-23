@@ -1,5 +1,5 @@
-unreal-mcp-ue4
-==============
+unreal-mcp-ue4 (published on npm as "@pjkui/unreal-mcp-ue4")
+============================================================
 
 This product is a derivative work and is distributed under the MIT License.
 
@@ -18,7 +18,7 @@ UE4-focused fork and original npm publisher of "unreal-mcp-ue4":
     Copyright (c) 2025-2026 Seungjee Baek / conaman
     License: MIT
 ------------------------------------------------------------------------------
-This fork:
+This fork (published as "@pjkui/unreal-mcp-ue4" on npm):
     https://github.com/pjkui/unreal-mcp-ue4
     Copyright (c) 2026 pjkui
     License: MIT
