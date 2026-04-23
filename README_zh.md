@@ -347,6 +347,312 @@ npm publish
 
 完整的工具列表详见英文 README 的 [Available Tools](README.md#available-tools) 章节，该表由 `server/index.ts` 在构建时自动生成。
 
+## 可用工具
+
+备注列会指出重要的前置条件或 UE4.26/4.27 限制。备注为空表示除常规编辑器设置之外没有其他注意事项。
+
+推荐的对外公开面是 `manage_*` 命名空间层。优先使用 `manage_editor.project_info`、`manage_editor.map_info` 与 `manage_level.world_outliner` 作为规范读取入口，而一小组直连工具仅作为路径发现与 actor CRUD 的底层原语。
+
+> 本章节为英文 README `## Available Tools` 的人工翻译版本。英文版表格会在 `npm run build` 时由 `server/scripts/update-readme.ts` 自动重新生成；本中文版不会被脚本覆盖，如新增/删除工具请同步手动更新这里。
+
+### 编辑器会话信息（Editor Session Info）
+
+<table width="100%">
+	<colgroup>
+		<col width="22%">
+		<col width="48%">
+		<col width="30%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th width="22%">工具</th>
+			<th width="48%">描述</th>
+			<th width="30%">备注</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td width="22%"><code>get_unreal_engine_path</code></td>
+		<td width="48%">从已连接的编辑器会话获取当前 Unreal Engine 的根路径。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>get_unreal_project_path</code></td>
+		<td width="48%">从已连接的编辑器会话获取当前 Unreal 项目文件路径。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>get_unreal_version</code></td>
+		<td width="48%">从已连接的编辑器会话获取当前 Unreal Engine 版本号字符串。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	</tbody>
+</table>
+
+### 核心直连工具（Core Direct Tools）
+
+<table width="100%">
+	<colgroup>
+		<col width="22%">
+		<col width="48%">
+		<col width="30%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th width="22%">工具</th>
+			<th width="48%">描述</th>
+			<th width="30%">备注</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td width="22%"><code>editor_create_object</code></td>
+		<td width="48%">在世界中创建新的对象 / actor。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>editor_update_object</code></td>
+		<td width="48%">更新世界中已存在的对象 / actor。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>editor_delete_object</code></td>
+		<td width="48%">从世界中删除指定的对象 / actor。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	</tbody>
+</table>
+
+### 核心工具命名空间（Core Tool Namespaces）
+
+<table width="100%">
+	<colgroup>
+		<col width="22%">
+		<col width="48%">
+		<col width="30%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th width="22%">工具</th>
+			<th width="48%">描述</th>
+			<th width="30%">备注</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td width="22%"><code>manage_asset</code></td>
+		<td width="48%">资产命名空间，提供 list、search、info、references、export 与 validation 等操作。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_actor</code></td>
+		<td width="48%">Actor 命名空间，提供关卡 actor 的列出、搜索、生成、删除、变换与检查操作。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_editor</code></td>
+		<td width="48%">编辑器命名空间，提供 Python 执行、控制台命令、项目检查、地图检查、PIE 控制、截图与相机控制。</td>
+		<td width="30%">作为 project_info、map_info、world_outliner、PIE 控制、console_command 与 run_python 的规范命名空间。</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_level</code></td>
+		<td width="48%">关卡命名空间，提供地图检查、actor 列出、world outliner 检查以及预设结构构建操作。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_system</code></td>
+		<td width="48%">系统命名空间，提供控制台命令与资产校验操作。</td>
+		<td width="30%">精简命名空间，集中了 console 与 validation 辅助方法；项目与地图的规范检查请使用 manage_editor。</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_inspection</code></td>
+		<td width="48%">检查命名空间，提供资产、actor、地图以及基础 Blueprint 概览操作。</td>
+		<td width="30%">资产、actor 与地图检查可用；在原生 UE4.26/4.27 Python 下，Blueprint 检查仅限于高层资产概览。</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_tools</code></td>
+		<td width="48%">工具命名空间注册表，用于列出已注册的工具命名空间并描述它们支持的 action；作为命名空间优先的 MCP 面的发现入口。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_source_control</code></td>
+		<td width="48%">源码控制命名空间，提供 provider 检查以及文件或包级别的源码控制操作。</td>
+		<td width="30%">provider_info 广泛可用，但文件与包级操作要求 Unreal 已配置并启用了可用的源码控制 provider。</td>
+	</tr>
+	</tbody>
+</table>
+
+### 世界与环境命名空间（World & Environment Tool Namespaces）
+
+<table width="100%">
+	<colgroup>
+		<col width="22%">
+		<col width="48%">
+		<col width="30%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th width="22%">工具</th>
+			<th width="48%">描述</th>
+			<th width="30%">备注</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td width="22%"><code>manage_lighting</code></td>
+		<td width="48%">光照命名空间，提供常见灯光 actor 的生成、变换以及关卡光照状态检查。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_level_structure</code></td>
+		<td width="48%">关卡结构命名空间，提供预设的城镇、房屋、大宅、塔楼、城墙、桥梁与要塞构建操作。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_volumes</code></td>
+		<td width="48%">Volume 命名空间，提供常见引擎 Volume 的生成以及删除、变换等操作。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_navigation</code></td>
+		<td width="48%">导航命名空间，提供导航 Volume 与代理的生成，以及基础地图检查操作。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_environment</code></td>
+		<td width="48%">环境构建命名空间，提供预设城镇、拱门、阶梯、金字塔与迷宫的生成操作。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_splines</code></td>
+		<td width="48%">Spline 命名空间，提供生成 spline 宿主 actor 或 Blueprint，并可对其进行变换或删除。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_geometry</code></td>
+		<td width="48%">几何体命名空间，提供城墙、拱门、阶梯与金字塔等预设构建操作。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_effect</code></td>
+		<td width="48%">特效命名空间，提供调试用形状 actor 的生成、材质应用、着色染色与删除。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	</tbody>
+</table>
+
+### 内容与作者命名空间（Content & Authoring Tool Namespaces）
+
+<table width="100%">
+	<colgroup>
+		<col width="22%">
+		<col width="48%">
+		<col width="30%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th width="22%">工具</th>
+			<th width="48%">描述</th>
+			<th width="30%">备注</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td width="22%"><code>manage_skeleton</code></td>
+		<td width="48%">骨骼命名空间，用于搜索 Skeleton 与 SkeletalMesh 资产并检查其元数据。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_material</code></td>
+		<td width="48%">材质命名空间，用于列出材质、将材质应用到 actor 或 Blueprint，以及使用 material instance 进行染色。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_texture</code></td>
+		<td width="48%">纹理命名空间，用于搜索纹理资产、从图像文件导入纹理以及读取其资产元数据。</td>
+		<td width="30%">import_texture 需要 Unreal Editor 所在机器可访问的本地图像文件路径。</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_data</code></td>
+		<td width="48%">数据命名空间，用于搜索数据资产、创建常见数据容器以及检查其资产元数据。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_blueprint</code></td>
+		<td width="48%">Blueprint 命名空间，提供 Blueprint 创建、组件编辑、编译以及基础 Blueprint 概览操作。</td>
+		<td width="30%">Blueprint 资产与组件编辑可用；Graph 检查、引脚连线以及变量或函数元数据辅助方法在原生 UE4.26/4.27 Python 下不在 MCP 面之内。</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_sequence</code></td>
+		<td width="48%">Sequence 命名空间，用于 LevelSequence 资产的创建、搜索与检查。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_audio</code></td>
+		<td width="48%">音频命名空间，用于音频文件导入、音频资产搜索及其元数据检查。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_widget</code></td>
+		<td width="48%">Widget 命名空间，提供 UMG Blueprint 创建、widget 树编辑与 viewport 生成操作。常规嵌套布局（例如在已有的 CanvasPanel_0 下）请使用 add_child_widget；不传 parent_widget_name 的 add_widget 仅用于指定新的根 widget。</td>
+		<td width="30%">create_widget_blueprint、add_text_block 与 add_button 可用；常规嵌套布局（如 CanvasPanel_0 下）使用 add_child_widget，而不传 parent_widget_name 的 add_widget 仅用于指定新的根 widget。add_to_viewport 需要进入 PIE，不支持的绑定辅助方法不在 MCP 面之内。</td>
+	</tr>
+	</tbody>
+</table>
+
+### 游戏玩法与系统命名空间（Gameplay & Systems Tool Namespaces）
+
+<table width="100%">
+	<colgroup>
+		<col width="22%">
+		<col width="48%">
+		<col width="30%">
+	</colgroup>
+	<thead>
+		<tr>
+			<th width="22%">工具</th>
+			<th width="48%">描述</th>
+			<th width="30%">备注</th>
+		</tr>
+	</thead>
+	<tbody>
+	<tr>
+		<td width="22%"><code>manage_animation_physics</code></td>
+		<td width="48%">动画与物理命名空间，提供物理 Blueprint 生成、Blueprint 物理设置以及 Blueprint 编译等操作。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_input</code></td>
+		<td width="48%">输入命名空间，用于创建经典的 UE4 输入映射。</td>
+		<td width="30%">聚焦于经典 UE4 输入映射的编写；项目概览请使用 manage_editor.project_info。</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_behavior_tree</code></td>
+		<td width="48%">行为树命名空间，用于 BehaviorTree 资产的创建、搜索与检查。</td>
+		<td width="30%">聚焦于 BehaviorTree 资产的发现与检查；项目概览请使用 manage_editor.project_info。</td>
+	</tr>
+	<tr>
+		<td width="22%"><code>manage_gas</code></td>
+		<td width="48%">GAS 命名空间，用于搜索与 Gameplay Ability 相关的资产并检查其元数据。</td>
+		<td width="30%">&nbsp;</td>
+	</tr>
+	</tbody>
+</table>
+
+### 被排除的能力区域（Excluded Capability Areas）
+
+以下能力在这一 UE4.26/4.27 分支中被有意排除出 MCP 面，因为它们在当前 Python 环境下会稳定失败，只会在存在原生桥接之前增加 prompt 与上下文开销。
+
+| 能力区域 | 对 MCP 面的影响 | 被排除的原因 |
+|----------|------------------|---------------|
+| Blueprint event graph 事件插入 | 相关的 event 节点与 input-action 辅助方法不在 MCP 面之内。 | 当前 UE4.26/4.27 Python 环境未稳定地暴露 event graph 访问或 K2 事件引用设置。 |
+| Blueprint graph 检查与节点搜索 | Graph 分析、graph 检查与节点搜索辅助方法不在 MCP 面之内。 | 当前 UE4.26/4.27 Python 环境未稳定地暴露 `UbergraphPages`、`FunctionGraphs` 等 Blueprint graph 数组，不足以进行确定性检查。 |
+| 低层 Blueprint graph 节点创建 | 通用 graph 节点辅助方法以及相关的 self 或组件引用插入辅助方法不在 MCP 面之内。 | 当前 UE4.26/4.27 Python 环境未稳定地暴露底层 graph 节点创建或成员引用连线。 |
+| Blueprint 函数调用节点编写 | 依赖编辑器 graph 成员引用设置的函数节点辅助方法不在 MCP 面之内。 | 当前 UE4.26/4.27 Python 环境未稳定地暴露函数调用节点的引用设置。 |
+| Blueprint 变量与函数元数据检查 | 变量详情与函数详情辅助方法不在 MCP 面之内。 | 当前 UE4.26/4.27 Python 环境未稳定地暴露 `NewVariables` 或 `FunctionGraphs`，不足以进行确定性检查。 |
+| Blueprint 变量创建 | 变量创建辅助方法不在 MCP 面之内。 | 当前 UE4.26/4.27 Python 环境未暴露 `BPVariableDescription` 与 `EdGraphPinType`。 |
+| UMG 委托绑定编写 | Widget 事件绑定与文本绑定辅助方法不在 MCP 面之内。 | 当前 UE4.26/4.27 Python 环境未暴露 `DelegateEditorBinding`。 |
+
 ## 许可证
 
 基于 [MIT License](LICENSE) 授权发布。
