@@ -1,3 +1,4 @@
+import net from "node:net"
 import os from "node:os"
 
 import { RemoteExecution, RemoteExecutionConfig } from "unreal-remote-execution"
@@ -5,9 +6,20 @@ import { RemoteExecution, RemoteExecutionConfig } from "unreal-remote-execution"
 const DEFAULT_MULTICAST_TTL = 1
 const DEFAULT_MULTICAST_ADDRESS = "239.0.0.1"
 const DEFAULT_MULTICAST_PORT = 6766
-const DEFAULT_COMMAND_PORT = 6776
+const DEFAULT_COMMAND_PORT = 0 // 0 = OS assigns a free port (avoids conflicts with multiple MCP instances)
 const DEFAULT_RETRY_COUNT = 3
 const DEFAULT_RETRY_DELAY_MS = 2000
+
+/** Discover a free TCP port by briefly listening on port 0, then closing. */
+const findFreePort = (host: string): Promise<number> =>
+	new Promise((resolve, reject) => {
+		const srv = net.createServer()
+		srv.once("error", reject)
+		srv.listen(0, host, () => {
+			const addr = srv.address() as net.AddressInfo
+			srv.close(() => resolve(addr.port))
+		})
+	})
 
 const readIntegerEnv = (name: string, fallback: number) => {
 	const value = process.env[name]
@@ -42,14 +54,19 @@ const resolveRemoteExecutionBindAddress = () => {
 	return "0.0.0.0"
 }
 
-const createRemoteExecutionConfig = () => {
+const createRemoteExecutionConfig = async () => {
 	const multicastTTL = readIntegerEnv("UNREAL_MCP_MULTICAST_TTL", DEFAULT_MULTICAST_TTL)
 	const multicastAddress =
 		readStringEnv("UNREAL_MCP_MULTICAST_ADDRESS") ?? DEFAULT_MULTICAST_ADDRESS
 	const multicastPort = readIntegerEnv("UNREAL_MCP_MULTICAST_PORT", DEFAULT_MULTICAST_PORT)
 	const bindAddress = resolveRemoteExecutionBindAddress()
 	const commandAddress = readStringEnv("UNREAL_MCP_COMMAND_ADDRESS") ?? bindAddress
-	const commandPort = readIntegerEnv("UNREAL_MCP_COMMAND_PORT", DEFAULT_COMMAND_PORT)
+	const requestedPort = readIntegerEnv("UNREAL_MCP_COMMAND_PORT", DEFAULT_COMMAND_PORT)
+
+	// When requestedPort is 0, discover a free port so the library config
+	// contains the real port number (it sends this port in the UDP broadcast
+	// and UE4 connects back to it).
+	const commandPort = requestedPort === 0 ? await findFreePort(commandAddress) : requestedPort
 
 	return {
 		bindAddress,
@@ -70,7 +87,7 @@ let remoteConnectionPromise: Promise<RemoteExecution> | undefined = undefined
 
 const ensureRemoteExecutionStarted = async () => {
 	if (!remoteExecution) {
-		const { bindAddress, commandAddress, commandPort, config } = createRemoteExecutionConfig()
+		const { bindAddress, commandAddress, commandPort, config } = await createRemoteExecutionConfig()
 		remoteExecution = new RemoteExecution(config)
 		console.error(
 			`Using Unreal Remote Execution bind address: ${bindAddress} (command: ${commandAddress}:${commandPort})`,
