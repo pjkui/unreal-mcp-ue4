@@ -2,6 +2,23 @@
 
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { server, shutdownRemoteExecution } from "./"
+import { checkForUpdate, performUpdate } from "./update-check.js"
+import { projectVersion } from "./version.js"
+
+const args = process.argv.slice(2)
+
+if (args.includes("--version") || args.includes("-v")) {
+	console.log(projectVersion)
+	process.exit(0)
+}
+
+if (args.includes("--update")) {
+	performUpdate()
+	process.exit(0)
+}
+
+// Background update check — never blocks startup
+checkForUpdate()
 
 const transport = new StdioServerTransport()
 server.connect(transport)
