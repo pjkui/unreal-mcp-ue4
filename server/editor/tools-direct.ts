@@ -1,6 +1,6 @@
 import { jsonArg, renderScript } from "./tools-base.js"
 
-export const UEGetAssetInfo = (asset_path: string) => renderScript("./scripts/ue_get_asset_info.py", { asset_path })
+export const UEGetAssetInfo = (asset_path: string) => renderScript("./scripts/ue_get_asset_info.py", { asset_path }, "", "core")
 
 export const UEListAssets = (
 	root_path?: string,
@@ -11,7 +11,7 @@ export const UEListAssets = (
 		root_path: jsonArg(root_path),
 		recursive: jsonArg(recursive),
 		limit: jsonArg(limit),
-	})
+	}, "", "core")
 
 export const UEExportAsset = (
 	asset_path: string,
@@ -22,37 +22,37 @@ export const UEExportAsset = (
 		asset_path: jsonArg(asset_path),
 		destination_path: jsonArg(destination_path),
 		overwrite: jsonArg(overwrite),
-	})
+	}, "", "core")
 
 export const UEGetAssetReferences = (asset_path: string) =>
-	renderScript("./scripts/ue_get_asset_references.py", { asset_path })
+	renderScript("./scripts/ue_get_asset_references.py", { asset_path }, "", "core")
 
 export const UEConsoleCommand = (command: string) =>
 	renderScript("./scripts/ue_console_command.py", {
 		command: jsonArg(command),
-	})
+	}, "", "core")
 
 export const UEGetConsoleVariable = (variable_name: string) =>
 	renderScript("./scripts/ue_get_console_variable.py", {
 		variable_name: jsonArg(variable_name),
-	})
+	}, "", "core")
 
-export const UEGetProjectInfo = () => renderScript("./scripts/ue_get_project_info.py", {})
+export const UEGetProjectInfo = () => renderScript("./scripts/ue_get_project_info.py", {}, "", "core")
 
-export const UEGetMapInfo = () => renderScript("./scripts/ue_get_map_info.py", {})
+export const UEGetMapInfo = () => renderScript("./scripts/ue_get_map_info.py", {}, "", "core")
 
 export const UESearchAssets = (search_term: string, asset_class?: string) =>
 	renderScript("./scripts/ue_search_assets.py", {
 		search_term,
 		asset_class: asset_class || "",
-	})
+	}, "", "core")
 
-export const UEGetWorldOutliner = () => renderScript("./scripts/ue_get_world_outliner.py", {})
+export const UEGetWorldOutliner = () => renderScript("./scripts/ue_get_world_outliner.py", {}, "", "core")
 
 export const UEValidateAssets = (asset_paths?: string) =>
 	renderScript("./scripts/ue_validate_assets.py", {
 		asset_paths: asset_paths || "",
-	})
+	}, "", "core")
 
 export const UECreateObject = (
 	object_class: string,
@@ -93,9 +93,9 @@ export const UEUpdateObject = (
 export const UEDeleteObject = (actor_names: string) =>
 	renderScript("./scripts/ue_delete_object.py", {
 		actor_names,
-	})
+	}, "", "core")
 
-export const UETakeScreenshot = () => renderScript("./scripts/ue_take_screenshot.py", {})
+export const UETakeScreenshot = () => renderScript("./scripts/ue_take_screenshot.py", {}, "", "core")
 
 export const UEMoveCamera = (
 	location: { x: number; y: number; z: number },
@@ -104,7 +104,7 @@ export const UEMoveCamera = (
 	return renderScript("./scripts/ue_move_camera.py", {
 		location: JSON.stringify(location),
 		rotation: JSON.stringify(rotation),
-	})
+	}, "", "core")
 }
 
 export const UEUMGAddWidget = (
@@ -122,13 +122,13 @@ export const UEUMGAddWidget = (
 		parent_widget_name: jsonArg(parent_widget_name),
 		position: jsonArg(position),
 		z_order: jsonArg(z_order),
-	})
+	}, "", "widget")
 
 export const UEUMGRemoveWidget = (widget_blueprint_path: string, widget_name: string) =>
 	renderScript("./scripts/ue_umg_remove_widget.py", {
 		widget_blueprint_path: jsonArg(widget_blueprint_path),
 		widget_name: jsonArg(widget_name),
-	})
+	}, "", "widget")
 
 export const UEUMGSetWidgetPosition = (
 	widget_blueprint_path: string,
@@ -141,7 +141,7 @@ export const UEUMGSetWidgetPosition = (
 		widget_name: jsonArg(widget_name),
 		position: jsonArg(position),
 		z_order: jsonArg(z_order),
-	})
+	}, "", "widget")
 
 export const UEUMGReparentWidget = (
 	widget_blueprint_path: string,
@@ -156,7 +156,7 @@ export const UEUMGReparentWidget = (
 		new_parent_widget_name: jsonArg(new_parent_widget_name),
 		position: jsonArg(position),
 		z_order: jsonArg(z_order),
-	})
+	}, "", "widget")
 
 export const UEUMGAddChildWidget = (
 	widget_blueprint_path: string,
@@ -173,7 +173,7 @@ export const UEUMGAddChildWidget = (
 		child_widget_name: jsonArg(child_widget_name),
 		position: jsonArg(position),
 		z_order: jsonArg(z_order),
-	})
+	}, "", "widget")
 
 export const UEUMGRemoveChildWidget = (
 	widget_blueprint_path: string,
@@ -184,7 +184,7 @@ export const UEUMGRemoveChildWidget = (
 		widget_blueprint_path: jsonArg(widget_blueprint_path),
 		parent_widget_name: jsonArg(parent_widget_name),
 		child_widget_name: jsonArg(child_widget_name),
-	})
+	}, "", "widget")
 
 export const UEUMGSetChildWidgetPosition = (
 	widget_blueprint_path: string,
@@ -199,4 +199,4 @@ export const UEUMGSetChildWidgetPosition = (
 		child_widget_name: jsonArg(child_widget_name),
 		position: jsonArg(position),
 		z_order: jsonArg(z_order),
-	})
+	}, "", "widget")
