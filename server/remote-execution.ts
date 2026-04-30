@@ -1,5 +1,7 @@
+import fs from "node:fs"
 import net from "node:net"
 import os from "node:os"
+import path from "node:path"
 
 import { RemoteExecution, RemoteExecutionConfig } from "unreal-remote-execution"
 
@@ -9,6 +11,44 @@ const DEFAULT_MULTICAST_PORT = 6766
 const DEFAULT_COMMAND_PORT = 0 // 0 = OS assigns a free port (avoids conflicts with multiple MCP instances)
 const DEFAULT_RETRY_COUNT = 3
 const DEFAULT_RETRY_DELAY_MS = 2000
+
+const timingEnabled = () => !!process.env.UNREAL_MCP_TIMING
+
+const getTimingLogPath = () => {
+	const logDir = process.env.UNREAL_MCP_TIMING_LOG_DIR
+		?? path.join(os.homedir(), ".unreal-mcp")
+	if (!fs.existsSync(logDir)) {
+		fs.mkdirSync(logDir, { recursive: true })
+	}
+	return path.join(logDir, "timing.log")
+}
+
+let timingLogStream: fs.WriteStream | undefined
+
+const ensureLogStream = () => {
+	if (!timingLogStream) {
+		timingLogStream = fs.createWriteStream(getTimingLogPath(), { flags: "a" })
+	}
+	return timingLogStream
+}
+
+const logTiming = (label: string, startMs: number) => {
+	if (timingEnabled()) {
+		const elapsed = (performance.now() - startMs).toFixed(1)
+		const line = `[timing] ${label}: ${elapsed}ms`
+		console.error(line)
+		const ts = new Date().toISOString()
+		ensureLogStream().write(`${ts} ${line}\n`)
+	}
+}
+
+export const logTimingRaw = (line: string) => {
+	if (timingEnabled()) {
+		console.error(line)
+		const ts = new Date().toISOString()
+		ensureLogStream().write(`${ts} ${line}\n`)
+	}
+}
 
 /** Discover a free TCP port by briefly listening on port 0, then closing. */
 const findFreePort = (host: string): Promise<number> =>
@@ -122,10 +162,17 @@ const connectWithRetry = async (
 
 	for (let attempt = 1; attempt <= maxRetries; attempt += 1) {
 		try {
+			let t0 = performance.now()
 			const node = await runtime.getFirstRemoteNode(1000, 5000)
-			await runtime.openCommandConnection(node)
+			logTiming("UDP node discovery", t0)
 
+			t0 = performance.now()
+			await runtime.openCommandConnection(node)
+			logTiming("TCP connection open", t0)
+
+			t0 = performance.now()
 			const result = await runtime.runCommand('print("rrmcp:init")')
+			logTiming("init handshake", t0)
 			if (!result.success) {
 				throw new Error(`Failed to run command: ${JSON.stringify(result.result)}`)
 			}
@@ -198,10 +245,14 @@ export const shutdownRemoteExecution = async () => {
 }
 
 export const tryRunCommand = async (command: string): Promise<string> => {
+	const t0 = performance.now()
 	const runtime = await ensureRemoteConnection()
+	logTiming("ensureConnection", t0)
 
 	try {
+		const tCmd = performance.now()
 		const result = await runtime.runCommand(command)
+		logTiming(`runCommand (${command.length} chars)`, tCmd)
 		if (!result.success) {
 			throw new Error(`Command failed with: ${result.result}`)
 		}

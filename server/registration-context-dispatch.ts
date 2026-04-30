@@ -1,6 +1,6 @@
 import { z } from "zod"
 
-import { tryRunCommand } from "./remote-execution.js"
+import { logTimingRaw, tryRunCommand } from "./remote-execution.js"
 
 export type NamespaceDispatchResult =
 	| { kind: "python"; command: string }
@@ -32,9 +32,12 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 		schema: Record<string, z.ZodTypeAny>,
 		buildCommand: (args: any) => string,
 	) => {
-		rawServerTool(name, description, schema, async (args: any) =>
-			textResponse(await tryRunCommand(buildCommand(args))),
-		)
+		rawServerTool(name, description, schema, async (args: any) => {
+			const t0 = performance.now()
+			const result = textResponse(await tryRunCommand(buildCommand(args)))
+			logTimingRaw(`[timing] tool:${name} total: ${(performance.now() - t0).toFixed(1)}ms`)
+			return result
+		})
 	}
 
 	const registerZeroArgPythonTool = (
@@ -42,7 +45,12 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 		description: string,
 		buildCommand: () => string,
 	) => {
-		rawServerTool(name, description, async () => textResponse(await tryRunCommand(buildCommand())))
+		rawServerTool(name, description, async () => {
+			const t0 = performance.now()
+			const result = textResponse(await tryRunCommand(buildCommand()))
+			logTimingRaw(`[timing] tool:${name} total: ${(performance.now() - t0).toFixed(1)}ms`)
+			return result
+		})
 	}
 
 	const unsupportedNamespaceAction = (
@@ -82,6 +90,7 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 			},
 			async ({ action, params }: { action: string; params?: Record<string, any> }) => {
 				const normalizedAction = normalizeActionName(action)
+				const t0 = performance.now()
 
 				try {
 					const handler = actions[normalizedAction]
@@ -89,7 +98,9 @@ export function createDispatchHelpers(options: DispatchHelperOptions) {
 						? await handler(params ?? {})
 						: unsupportedNamespaceAction(name, normalizedAction, supportedActions)
 
-					return await runNamespaceDispatch(result)
+					const response = await runNamespaceDispatch(result)
+					logTimingRaw(`[timing] tool:${name}.${normalizedAction} total: ${(performance.now() - t0).toFixed(1)}ms`)
+					return response
 				} catch (error) {
 					return textResponse(
 						JSON.stringify(
