@@ -36,7 +36,10 @@ function buildFilteredPrelude(relativeDir: string, prefixFilter: (name: string) 
 const isCore = (f: string) => f < "09"
 const isWidget = (f: string) => f >= "09" && f < "18"
 const isBlueprint = (f: string) => f >= "18" && f < "25"
-const isReporting = (f: string) => f >= "25"
+
+// Actor/material reporting uses helpers from 19_asset_lookup.py.
+// Keep this dependency in the reporting prelude to prevent runtime NameErrors.
+const isReporting = (f: string) => f >= "25" || f === "19_asset_lookup.py"
 
 /**
  * Layered compat preludes — scripts should pull only what they need.
