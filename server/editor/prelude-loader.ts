@@ -35,7 +35,11 @@ function buildFilteredPrelude(relativeDir: string, prefixFilter: (name: string) 
 
 const isCore = (f: string) => f < "09"
 const isWidget = (f: string) => f >= "09" && f < "18"
-const isBlueprint = (f: string) => f >= "18" && f < "25"
+// Blueprint tools (create_blueprint, add_component, graph ops) call class-identity
+// helpers (get_UClass et al.) defined in 09_widget_class_helpers.py. Include just that
+// file so the blueprint prelude resolves them without pulling the whole widget group.
+const isBlueprint = (f: string) =>
+	(f >= "18" && f < "25") || f === "09_widget_class_helpers.py"
 const isReporting = (f: string) => f >= "25"
 
 /**
